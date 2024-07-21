@@ -20,7 +20,8 @@
             td {
                 position: relative;
             }
-            input {
+            input,
+            select {
                 width: 100%;
                 height: 100%;
                 border: none;
@@ -57,6 +58,8 @@
             const tbody = grid.querySelector("tbody");
             let selectedCell = null;
 
+            const dropdownOptions = ["Option 1", "Option 2", "Option 3"];
+
             function createGrid(rows, cols) {
                 for (let i = 0; i < rows; i++) {
                     const row = document.createElement("tr");
@@ -71,6 +74,18 @@
                         input.dataset.row = i;
                         input.dataset.col = j;
                         cell.appendChild(input);
+
+                        const select = document.createElement("select");
+                        dropdownOptions.forEach((option) => {
+                            const optionElement =
+                                document.createElement("option");
+                            optionElement.value = option;
+                            optionElement.textContent = option;
+                            select.appendChild(optionElement);
+                        });
+                        select.style.display = "none";
+                        cell.appendChild(select);
+
                         row.appendChild(cell);
                     }
                     tbody.appendChild(row);
@@ -94,13 +109,19 @@
 
             grid.addEventListener("dblclick", (e) => {
                 const input = e.target.closest("input");
+                const select = e.target.closest("td").querySelector("select");
                 if (input) {
-                    input.focus();
+                    input.style.display = "none";
+                    select.style.display = "block";
+                    select.focus();
                 }
             });
 
             grid.addEventListener("input", (e) => {
-                if (e.target.tagName === "INPUT") {
+                if (
+                    e.target.tagName === "INPUT" ||
+                    e.target.tagName === "SELECT"
+                ) {
                     const { row, col } = e.target.dataset;
                     console.log(
                         `셀 (${row}, ${col}) 값 변경: ${e.target.value}`
@@ -112,24 +133,33 @@
                 if (!selectedCell) return;
 
                 const input = selectedCell.querySelector("input");
+                const select = selectedCell.querySelector("select");
                 const currentRow = parseInt(input.dataset.row);
                 const currentCol = parseInt(input.dataset.col);
-                const isEditing = document.activeElement === input;
+                const isEditing =
+                    document.activeElement === input ||
+                    document.activeElement === select;
 
                 if (isEditing) {
                     switch (e.key) {
                         case "Enter":
                             e.preventDefault();
+                            input.style.display = "block";
+                            select.style.display = "none";
                             input.blur();
                             moveTo(currentRow + 1, currentCol);
                             break;
                         case "Tab":
                             e.preventDefault();
+                            input.style.display = "block";
+                            select.style.display = "none";
                             input.blur();
                             moveTo(currentRow, currentCol + 1);
                             break;
                         case "Escape":
                             e.preventDefault();
+                            input.style.display = "block";
+                            select.style.display = "none";
                             input.blur();
                             break;
                     }
