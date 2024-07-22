@@ -105,7 +105,8 @@
                         input.type = "text";
                         input.dataset.row = i;
                         input.dataset.col = j;
-                        input.disabled = true; // 기본적으로 비활성화
+                        // input.disabled = true; // 기본적으로 비활성화
+                        input.readOnly = true; // 기본적으로 비활성화
                         cell.appendChild(input);
                         row.appendChild(cell);
                     }
@@ -165,16 +166,20 @@
             function selectCell(cell, editMode = false) {
                 if (selectedCell) {
                     selectedCell.classList.remove("selected");
-                    selectedCell.querySelector("input").disabled = true; // 선택 해제 시 비활성화
+                    // selectedCell.querySelector("input").disabled = true; // 선택 해제 시 비활성화
+                    selectedCell.querySelector("input").readOnly = true; // 선택 해제 시 비활성화
                     hidePopover(); // 선택 해제 시 팝오버 숨기기
                 }
                 selectedCell = cell;
                 selectedCell.classList.add("selected");
                 const input = selectedCell.querySelector("input");
                 if (editMode) {
-                    input.disabled = false; // 편집 모드일 때 활성화
+                    // input.disabled = false; // 편집 모드일 때 활성화
+                    input.readOnly = false; // 편집 모드일 때 활성화
                     input.focus();
                 } else {
+                    // input.disabled = true;
+                    input.readOnly = true;
                     input.blur();
                 }
             }
@@ -195,7 +200,6 @@
 
             grid.addEventListener("input", (e) => {
                 if (e.target.tagName === "INPUT") {
-                    e.target.disabled = false; // 텍스트 입력 시 편집 모드 활성화
                     const { row, col } = e.target.dataset;
                     console.log(
                         `셀 (${row}, ${col}) 값 변경: ${e.target.value}`
@@ -289,7 +293,8 @@
                             break;
                         case "Enter":
                             e.preventDefault();
-                            input.disabled = false; // 엔터 키로 편집 모드 활성화
+                            // input.disabled = false; // 엔터 키로 편집 모드 활성화
+                            input.readOnly = false; // 엔터 키로 편집 모드 활성화
                             input.focus();
                             break;
                     }
