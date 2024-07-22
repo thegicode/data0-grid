@@ -37,6 +37,27 @@
             .selected {
                 outline: 2px solid #007bff;
             }
+            .popover {
+                position: absolute;
+                background-color: white;
+                border: 1px solid #ddd;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                max-height: 150px;
+                overflow-y: auto;
+                width: 100%;
+                box-sizing: content-box;
+                font-size: 12px;
+            }
+            .popover-item {
+                padding: 8px;
+                cursor: pointer;
+            }
+            .popover-item:hover,
+            .popover-item.selected {
+                background-color: #007bff;
+                color: white;
+            }
         </style>
     </head>
     <body>
@@ -55,8 +76,21 @@
         <script>
             const grid = document.getElementById("dataGrid");
             const tbody = grid.querySelector("tbody");
+            const ingredients = [
+                "사과",
+                "바나나",
+                "당근",
+                "다시마",
+                "계란",
+                "감자",
+                "토마토",
+                "양파",
+                "호박",
+                "오이",
+            ];
             let selectedCell = null;
             let isComposing = false;
+            let popoverIndex = -1;
 
             function createGrid(rows, cols) {
                 for (let i = 0; i < rows; i++) {
@@ -79,10 +113,60 @@
                 }
             }
 
+            function createPopover() {
+                const popover = document.createElement("div");
+                popover.id = "popover";
+                popover.className = "popover";
+                popover.style.display = "none";
+                document.body.appendChild(popover);
+            }
+
+            function showPopover(input, matches) {
+                const popover = document.getElementById("popover");
+                if (matches.length === 0) {
+                    popover.style.display = "none";
+                    return;
+                }
+
+                popover.innerHTML = matches
+                    .map((item) => `<div class="popover-item">${item}</div>`)
+                    .join("");
+                const rect = input.getBoundingClientRect();
+                popover.style.top = `${rect.bottom + window.scrollY}px`;
+                popover.style.left = `${rect.left + window.scrollX}px`;
+                popover.style.width = `${rect.width}px`;
+                popover.style.display = "block";
+
+                const popoverItems = popover.querySelectorAll(".popover-item");
+                popoverItems.forEach((item, index) => {
+                    item.addEventListener("click", () => {
+                        input.value = item.textContent;
+                        hidePopover();
+                        input.focus();
+                    });
+                });
+                popoverIndex = -1;
+            }
+
+            function hidePopover() {
+                const popover = document.getElementById("popover");
+                popover.style.display = "none";
+                popoverIndex = -1;
+            }
+
+            function highlightPopoverItem(index) {
+                const popover = document.getElementById("popover");
+                const items = popover.querySelectorAll(".popover-item");
+                items.forEach((item, i) => {
+                    item.classList.toggle("selected", i === index);
+                });
+            }
+
             function selectCell(cell, editMode = false) {
                 if (selectedCell) {
                     selectedCell.classList.remove("selected");
                     selectedCell.querySelector("input").disabled = true; // 선택 해제 시 비활성화
+                    hidePopover(); // 선택 해제 시 팝오버 숨기기
                 }
                 selectedCell = cell;
                 selectedCell.classList.add("selected");
@@ -116,6 +200,12 @@
                     console.log(
                         `셀 (${row}, ${col}) 값 변경: ${e.target.value}`
                     );
+
+                    // 입력한 텍스트와 일치하는 식자재 찾기
+                    const matches = ingredients.filter((item) =>
+                        item.includes(e.target.value)
+                    );
+                    showPopover(e.target, matches);
                 }
             });
 
@@ -134,20 +224,49 @@
                 const currentRow = parseInt(input.dataset.row);
                 const currentCol = parseInt(input.dataset.col);
                 const isEditing = document.activeElement === input;
+                const popover = document.getElementById("popover");
+                const items = popover.querySelectorAll(".popover-item");
+
+                if (
+                    popover.style.display === "block" &&
+                    (e.key === "ArrowDown" ||
+                        e.key === "ArrowUp" ||
+                        e.key === "Enter")
+                ) {
+                    e.preventDefault();
+                    if (e.key === "ArrowDown") {
+                        popoverIndex = (popoverIndex + 1) % items.length;
+                    } else if (e.key === "ArrowUp") {
+                        popoverIndex =
+                            (popoverIndex - 1 + items.length) % items.length;
+                    } else if (e.key === "Enter") {
+                        if (popoverIndex >= 0) {
+                            items[popoverIndex].click();
+                        } else {
+                            hidePopover();
+                        }
+                        return;
+                    }
+                    highlightPopoverItem(popoverIndex);
+                    return;
+                }
 
                 if (isEditing && !isComposing) {
                     switch (e.key) {
                         case "Enter":
                             e.preventDefault();
+                            hidePopover();
                             moveTo(currentRow + 1, currentCol);
                             break;
                         case "Tab":
                             e.preventDefault();
+                            hidePopover();
                             moveTo(currentRow, currentCol + 1);
                             break;
                         case "Escape":
                             e.preventDefault();
                             input.blur();
+                            hidePopover();
                             break;
                     }
                 } else if (!isEditing) {
@@ -187,6 +306,7 @@
             }
 
             createGrid(10, 3);
+            createPopover();
             selectCell(tbody.querySelector("td")); // 초기 선택
         </script>
     </body>
