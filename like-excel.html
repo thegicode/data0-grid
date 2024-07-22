@@ -13,7 +13,6 @@
                 border: 1px solid #ddd;
                 padding: 8px;
                 min-width: 100px;
-                position: relative;
             }
             th {
                 background-color: #f2f2f2;
@@ -21,18 +20,12 @@
             td {
                 position: relative;
             }
-            input,
-            select {
+            input {
                 width: 100%;
                 height: 100%;
                 border: none;
                 outline: none;
                 background: transparent;
-                padding: 8px;
-                box-sizing: border-box;
-            }
-            .select-container {
-                display: none;
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -43,21 +36,6 @@
             }
             .selected {
                 outline: 2px solid #007bff;
-            }
-            .edit-btn {
-                position: absolute;
-                right: 0;
-                top: 0;
-                width: 20px;
-                height: 100%;
-
-                /* width: 100%; */
-                background-color: #007bff;
-                color: #fff;
-                border: none;
-                padding: 4px 0;
-                cursor: pointer;
-                box-sizing: border-box;
             }
         </style>
     </head>
@@ -78,8 +56,7 @@
             const grid = document.getElementById("dataGrid");
             const tbody = grid.querySelector("tbody");
             let selectedCell = null;
-
-            const dropdownOptions = ["Option 1", "Option 2", "Option 3"];
+            let isComposing = false;
 
             function createGrid(rows, cols) {
                 for (let i = 0; i < rows; i++) {
@@ -90,35 +67,11 @@
 
                     for (let j = 0; j < cols; j++) {
                         const cell = document.createElement("td");
-
                         const input = document.createElement("input");
                         input.type = "text";
                         input.dataset.row = i;
                         input.dataset.col = j;
                         cell.appendChild(input);
-
-                        const selectContainer = document.createElement("div");
-                        selectContainer.classList.add("select-container");
-
-                        const select = document.createElement("select");
-                        select.dataset.row = i;
-                        select.dataset.col = j;
-                        dropdownOptions.forEach((option) => {
-                            const optionElement =
-                                document.createElement("option");
-                            optionElement.value = option;
-                            optionElement.textContent = option;
-                            select.appendChild(optionElement);
-                        });
-                        selectContainer.appendChild(select);
-
-                        const editBtn = document.createElement("button");
-                        editBtn.classList.add("edit-btn");
-                        editBtn.textContent = "편집";
-                        editBtn.onclick = () => editOption(select);
-                        selectContainer.appendChild(editBtn);
-
-                        cell.appendChild(selectContainer);
                         row.appendChild(cell);
                     }
                     tbody.appendChild(row);
@@ -131,18 +84,8 @@
                 }
                 selectedCell = cell;
                 selectedCell.classList.add("selected");
-            }
-
-            function editOption(select) {
-                const selectedOption = select.options[select.selectedIndex];
-                const newText = prompt(
-                    "새 옵션 값을 입력하세요:",
-                    selectedOption.textContent
-                );
-                if (newText !== null) {
-                    selectedOption.textContent = newText;
-                    selectedOption.value = newText;
-                }
+                const input = selectedCell.querySelector("input");
+                input.focus();
             }
 
             grid.addEventListener("click", (e) => {
@@ -153,21 +96,14 @@
             });
 
             grid.addEventListener("dblclick", (e) => {
-                const cell = e.target.closest("td");
-                const input = cell.querySelector("input");
-                const selectContainer = cell.querySelector(".select-container");
+                const input = e.target.closest("input");
                 if (input) {
-                    input.style.display = "none";
-                    selectContainer.style.display = "block";
-                    selectContainer.querySelector("select").focus();
+                    input.focus();
                 }
             });
 
             grid.addEventListener("input", (e) => {
-                if (
-                    e.target.tagName === "INPUT" ||
-                    e.target.tagName === "SELECT"
-                ) {
+                if (e.target.tagName === "INPUT") {
                     const { row, col } = e.target.dataset;
                     console.log(
                         `셀 (${row}, ${col}) 값 변경: ${e.target.value}`
@@ -175,44 +111,38 @@
                 }
             });
 
+            grid.addEventListener("compositionstart", (e) => {
+                isComposing = true;
+            });
+
+            grid.addEventListener("compositionend", (e) => {
+                isComposing = false;
+            });
+
             document.addEventListener("keydown", (e) => {
                 if (!selectedCell) return;
 
                 const input = selectedCell.querySelector("input");
-                const selectContainer =
-                    selectedCell.querySelector(".select-container");
-                const select = selectContainer.querySelector("select");
-                const editBtn = selectContainer.querySelector(".edit-btn");
                 const currentRow = parseInt(input.dataset.row);
                 const currentCol = parseInt(input.dataset.col);
-                const isEditing =
-                    document.activeElement === input ||
-                    document.activeElement === select;
+                const isEditing = document.activeElement === input;
 
-                if (isEditing) {
+                if (isEditing && !isComposing) {
                     switch (e.key) {
                         case "Enter":
                             e.preventDefault();
-                            input.style.display = "block";
-                            selectContainer.style.display = "none";
-                            input.blur();
                             moveTo(currentRow + 1, currentCol);
                             break;
                         case "Tab":
                             e.preventDefault();
-                            input.style.display = "block";
-                            selectContainer.style.display = "none";
-                            input.blur();
                             moveTo(currentRow, currentCol + 1);
                             break;
                         case "Escape":
                             e.preventDefault();
-                            input.style.display = "block";
-                            selectContainer.style.display = "none";
                             input.blur();
                             break;
                     }
-                } else {
+                } else if (!isEditing) {
                     switch (e.key) {
                         case "ArrowUp":
                             e.preventDefault();
