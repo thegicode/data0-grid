@@ -127,22 +127,7 @@
                 const currentCol = parseInt(input.dataset.col);
                 const isEditing = document.activeElement === input;
 
-                if (isEditing && !isComposing) {
-                    switch (e.key) {
-                        case "Enter":
-                            e.preventDefault();
-                            moveTo(currentRow + 1, currentCol);
-                            break;
-                        case "Tab":
-                            e.preventDefault();
-                            moveTo(currentRow, currentCol + 1);
-                            break;
-                        case "Escape":
-                            e.preventDefault();
-                            input.blur();
-                            break;
-                    }
-                } else if (!isEditing) {
+                if (!isComposing) {
                     switch (e.key) {
                         case "ArrowUp":
                             e.preventDefault();
@@ -162,7 +147,19 @@
                             break;
                         case "Enter":
                             e.preventDefault();
-                            input.focus();
+                            if (isEditing) {
+                                moveTo(currentRow + 1, currentCol);
+                            } else {
+                                input.focus();
+                            }
+                            break;
+                        case "Tab":
+                            e.preventDefault();
+                            moveTo(currentRow, currentCol + 1);
+                            break;
+                        case "Escape":
+                            e.preventDefault();
+                            input.blur();
                             break;
                     }
                 }
