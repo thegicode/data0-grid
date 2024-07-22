@@ -13,12 +13,11 @@
                 border: 1px solid #ddd;
                 padding: 8px;
                 min-width: 100px;
+                position: relative;
             }
             th {
                 background-color: #f2f2f2;
-            }
-            td {
-                position: relative;
+                cursor: move;
             }
             input {
                 width: 100%;
@@ -58,6 +57,9 @@
                 background-color: #007bff;
                 color: white;
             }
+            .drag-over {
+                border-right: 4px solid #007bff;
+            }
         </style>
     </head>
     <body>
@@ -65,9 +67,9 @@
             <thead>
                 <tr>
                     <th></th>
-                    <th>A</th>
-                    <th>B</th>
-                    <th>C</th>
+                    <th draggable="true" data-col="0">A</th>
+                    <th draggable="true" data-col="1">B</th>
+                    <th draggable="true" data-col="2">C</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -76,6 +78,7 @@
         <script>
             const grid = document.getElementById("dataGrid");
             const tbody = grid.querySelector("tbody");
+            const thead = grid.querySelector("thead");
             const ingredients = [
                 "사과",
                 "바나나",
@@ -105,7 +108,7 @@
                         input.type = "text";
                         input.dataset.row = i;
                         input.dataset.col = j;
-                        // input.disabled = true; // 기본적으로 비활성화
+                        input.value = `${i} ${j}`;
                         input.readOnly = true; // 기본적으로 비활성화
                         cell.appendChild(input);
                         row.appendChild(cell);
@@ -166,7 +169,6 @@
             function selectCell(cell, editMode = false) {
                 if (selectedCell) {
                     selectedCell.classList.remove("selected");
-                    // selectedCell.querySelector("input").disabled = true; // 선택 해제 시 비활성화
                     selectedCell.querySelector("input").readOnly = true; // 선택 해제 시 비활성화
                     hidePopover(); // 선택 해제 시 팝오버 숨기기
                 }
@@ -174,11 +176,9 @@
                 selectedCell.classList.add("selected");
                 const input = selectedCell.querySelector("input");
                 if (editMode) {
-                    // input.disabled = false; // 편집 모드일 때 활성화
                     input.readOnly = false; // 편집 모드일 때 활성화
                     input.focus();
                 } else {
-                    // input.disabled = true;
                     input.readOnly = true;
                     input.blur();
                 }
@@ -293,7 +293,6 @@
                             break;
                         case "Enter":
                             e.preventDefault();
-                            // input.disabled = false; // 엔터 키로 편집 모드 활성화
                             input.readOnly = false; // 엔터 키로 편집 모드 활성화
                             input.focus();
                             break;
@@ -313,6 +312,99 @@
             createGrid(10, 3);
             createPopover();
             selectCell(tbody.querySelector("td")); // 초기 선택
+
+            // Drag and drop columns
+            let draggedColIndex = null;
+            let targetColIndex = null;
+
+            thead.addEventListener("dragstart", (e) => {
+                if (e.target.tagName === "TH") {
+                    draggedColIndex = e.target.dataset.col;
+                    e.dataTransfer.effectAllowed = "move";
+                }
+            });
+
+            thead.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                const th = e.target.closest("th");
+                if (th && th.dataset.col !== draggedColIndex) {
+                    targetColIndex = th.dataset.col;
+                    removeDragOverClasses();
+                    th.classList.add("drag-over");
+                }
+            });
+
+            thead.addEventListener("dragleave", (e) => {
+                const th = e.target.closest("th");
+                if (th && th.dataset.col === targetColIndex) {
+                    th.classList.remove("drag-over");
+                    targetColIndex = null;
+                }
+            });
+
+            thead.addEventListener("drop", (e) => {
+                e.preventDefault();
+                const th = e.target.closest("th");
+                if (th && draggedColIndex !== null && targetColIndex !== null) {
+                    insertColumn(draggedColIndex, targetColIndex);
+                    removeDragOverClasses();
+                    draggedColIndex = null;
+                    targetColIndex = null;
+                }
+            });
+
+            function removeDragOverClasses() {
+                thead.querySelectorAll("th").forEach((th) => {
+                    th.classList.remove("drag-over");
+                });
+            }
+
+            function insertColumn(fromCol, toCol) {
+                const fromIndex = parseInt(fromCol);
+                const toIndex = parseInt(toCol);
+
+                // Swap header
+                const headers = Array.from(thead.querySelectorAll("th"));
+                const fromHeader = headers[fromIndex + 1];
+                const toHeader = headers[toIndex + 1];
+
+                if (fromIndex < toIndex) {
+                    toHeader.after(fromHeader);
+                } else {
+                    toHeader.before(fromHeader);
+                }
+
+                // Swap cells
+                tbody.querySelectorAll("tr").forEach((row) => {
+                    const cells = Array.from(row.querySelectorAll("td"));
+                    const fromCell = cells[fromIndex];
+                    const toCell = cells[toIndex];
+
+                    if (fromIndex < toIndex) {
+                        toCell.after(fromCell);
+                    } else {
+                        toCell.before(fromCell);
+                    }
+                });
+
+                // Update dataset.col
+                updateColumnDataIndexes();
+            }
+
+            function updateColumnDataIndexes() {
+                thead.querySelectorAll("th").forEach((th, index) => {
+                    if (index > 0) {
+                        // Skip row header
+                        th.dataset.col = index - 1;
+                    }
+                });
+
+                tbody.querySelectorAll("tr").forEach((row) => {
+                    row.querySelectorAll("td").forEach((td, index) => {
+                        td.querySelector("input").dataset.col = index;
+                    });
+                });
+            }
         </script>
     </body>
 </html>
