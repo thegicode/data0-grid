@@ -222,6 +222,20 @@
                 const popover = document.getElementById("popover");
                 const items = popover.querySelectorAll(".popover-item");
                 const isAlphanumeric = (key) => /^[a-zA-Z0-9]$/.test(key);
+                const isPrintableKey = (e) => {
+                    const key = e.key;
+                    const isPrintable =
+                        /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]$/.test(
+                            key
+                        );
+                    return (
+                        isAlphanumeric &&
+                        !e.ctrlKey &&
+                        !e.altKey &&
+                        !e.metaKey &&
+                        !e.shiftKey
+                    );
+                };
 
                 if (
                     popover.style.display === "block" &&
@@ -247,10 +261,9 @@
                     return;
                 }
 
-                if (isAlphanumeric(e.key)) {
+                if (isPrintableKey(e.key)) {
                     input.readOnly = false;
                     input.focus();
-                    return;
                 }
 
                 if (isEditing && !isComposing) {
@@ -260,15 +273,19 @@
                             hidePopover();
                             moveTo(currentRow + 1, currentCol);
                             break;
-                        case "Tab":
-                            e.preventDefault();
-                            hidePopover();
-                            moveTo(currentRow, currentCol + 1);
-                            break;
                         case "Escape":
                             e.preventDefault();
                             input.blur();
                             hidePopover();
+                            break;
+                        case "Tab":
+                            e.preventDefault();
+                            hidePopover();
+                            if (e.shiftKey) {
+                                moveTo(currentRow, currentCol - 1); // Shift + Tab이면 왼쪽으로 이동
+                            } else {
+                                moveTo(currentRow, currentCol + 1);
+                            }
                             break;
                     }
                 } else if (!isEditing) {
@@ -293,6 +310,14 @@
                             e.preventDefault();
                             input.readOnly = false; // 엔터 키로 편집 모드 활성화
                             input.focus();
+                            break;
+                        case "Tab":
+                            e.preventDefault();
+                            if (e.shiftKey) {
+                                moveTo(currentRow, currentCol - 1); // Shift + Tab이면 왼쪽으로 이동
+                            } else {
+                                moveTo(currentRow, currentCol + 1);
+                            }
                             break;
                     }
                 }
