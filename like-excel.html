@@ -105,7 +105,6 @@
                         input.type = "text";
                         input.dataset.row = i;
                         input.dataset.col = j;
-                        // input.disabled = true; // 기본적으로 비활성화
                         input.readOnly = true; // 기본적으로 비활성화
                         cell.appendChild(input);
                         row.appendChild(cell);
@@ -163,25 +162,14 @@
                 });
             }
 
-            function selectCell(cell, editMode = false) {
+            function selectCell(cell) {
                 if (selectedCell) {
                     selectedCell.classList.remove("selected");
-                    // selectedCell.querySelector("input").disabled = true; // 선택 해제 시 비활성화
                     selectedCell.querySelector("input").readOnly = true; // 선택 해제 시 비활성화
                     hidePopover(); // 선택 해제 시 팝오버 숨기기
                 }
                 selectedCell = cell;
                 selectedCell.classList.add("selected");
-                const input = selectedCell.querySelector("input");
-                if (editMode) {
-                    // input.disabled = false; // 편집 모드일 때 활성화
-                    input.readOnly = false; // 편집 모드일 때 활성화
-                    input.focus();
-                } else {
-                    // input.disabled = true;
-                    input.readOnly = true;
-                    input.blur();
-                }
             }
 
             grid.addEventListener("click", (e) => {
@@ -194,7 +182,9 @@
             grid.addEventListener("dblclick", (e) => {
                 const cell = e.target.closest("td");
                 if (cell) {
-                    selectCell(cell, true); // 더블 클릭 시 편집 모드로
+                    const input = cell.querySelector("input");
+                    input.readOnly = false;
+                    input.focus();
                 }
             });
 
@@ -204,6 +194,7 @@
                     console.log(
                         `셀 (${row}, ${col}) 값 변경: ${e.target.value}`
                     );
+                    e.target.readOnly = false; // 입력 시 편집 모드 활성화
 
                     // 입력한 텍스트와 일치하는 식자재 찾기
                     const matches = ingredients.filter((item) =>
@@ -293,10 +284,14 @@
                             break;
                         case "Enter":
                             e.preventDefault();
-                            // input.disabled = false; // 엔터 키로 편집 모드 활성화
                             input.readOnly = false; // 엔터 키로 편집 모드 활성화
                             input.focus();
                             break;
+                        default:
+                            e.preventDefault();
+                            input.readOnly = false;
+                            input.value = e.key;
+                            input.focus();
                     }
                 }
             });
