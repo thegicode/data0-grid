@@ -221,6 +221,7 @@
                 const isEditing = document.activeElement === input;
                 const popover = document.getElementById("popover");
                 const items = popover.querySelectorAll(".popover-item");
+                const isAlphanumeric = (key) => /^[a-zA-Z0-9]$/.test(key);
 
                 if (
                     popover.style.display === "block" &&
@@ -243,6 +244,12 @@
                         return;
                     }
                     highlightPopoverItem(popoverIndex);
+                    return;
+                }
+
+                if (isAlphanumeric(e.key)) {
+                    input.readOnly = false;
+                    input.focus();
                     return;
                 }
 
@@ -287,11 +294,6 @@
                             input.readOnly = false; // 엔터 키로 편집 모드 활성화
                             input.focus();
                             break;
-                        default:
-                            e.preventDefault();
-                            input.readOnly = false;
-                            input.value = e.key;
-                            input.focus();
                     }
                 }
             });
