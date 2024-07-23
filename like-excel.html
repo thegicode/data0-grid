@@ -272,6 +272,11 @@
                             e.preventDefault();
                             hidePopover();
                             moveTo(currentRow + 1, currentCol);
+                            if (e.shiftKey) {
+                                moveTo(currentRow - 1, currentCol);
+                            } else {
+                                moveTo(currentRow + 1, currentCol);
+                            }
                             break;
                         case "Escape":
                             e.preventDefault();
