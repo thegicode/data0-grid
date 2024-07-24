@@ -14,7 +14,6 @@ const ingredients = [
 ];
 let selectedCell = null;
 let isComposing = false;
-let popoverIndex = -1;
 
 function createGrid(rows, cols) {
     for (let i = 0; i < rows; i++) {
@@ -27,7 +26,6 @@ function createGrid(rows, cols) {
             const cell = document.createElement("td");
 
             if (i === 1 && j === 1) {
-                // 특정 셀에 체크박스를 추가
                 const checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
                 checkbox.dataset.row = i;
@@ -38,7 +36,8 @@ function createGrid(rows, cols) {
                 input.type = "text";
                 input.dataset.row = i;
                 input.dataset.col = j;
-                input.readOnly = true; // 기본적으로 비활성화
+                input.readOnly = true;
+                input.setAttribute("list", "ingredientList");
                 cell.appendChild(input);
             }
 
@@ -48,61 +47,22 @@ function createGrid(rows, cols) {
     }
 }
 
-function createPopover() {
-    const popover = document.createElement("div");
-    popover.id = "popover";
-    popover.className = "popover";
-    popover.style.display = "none";
-    document.body.appendChild(popover);
-}
-
-function showPopover(input, matches) {
-    const popover = document.getElementById("popover");
-    if (matches.length === 0) {
-        popover.style.display = "none";
-        return;
-    }
-
-    popover.innerHTML = matches
-        .map((item) => `<div class="popover-item">${item}</div>`)
-        .join("");
-    const rect = input.getBoundingClientRect();
-    popover.style.top = `${rect.bottom + window.scrollY}px`;
-    popover.style.left = `${rect.left + window.scrollX}px`;
-    popover.style.width = `${rect.width}px`;
-    popover.style.display = "block";
-
-    const popoverItems = popover.querySelectorAll(".popover-item");
-    popoverItems.forEach((item, index) => {
-        item.addEventListener("click", () => {
-            input.value = item.textContent;
-            hidePopover();
-            input.focus();
-        });
+function createDatalist() {
+    const datalist = document.createElement("datalist");
+    datalist.id = "ingredientList";
+    ingredients.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item;
+        datalist.appendChild(option);
     });
-    popoverIndex = -1;
-}
-
-function hidePopover() {
-    const popover = document.getElementById("popover");
-    popover.style.display = "none";
-    popoverIndex = -1;
-}
-
-function highlightPopoverItem(index) {
-    const popover = document.getElementById("popover");
-    const items = popover.querySelectorAll(".popover-item");
-    items.forEach((item, i) => {
-        item.classList.toggle("selected", i === index);
-    });
+    document.body.appendChild(datalist);
 }
 
 function selectCell(cell) {
     if (selectedCell) {
         selectedCell.classList.remove("selected");
         const selectedInput = selectedCell.querySelector("input[type='text']");
-        if (selectedInput) selectedInput.readOnly = true; // 선택 해제 시 비활성화
-        hidePopover(); // 선택 해제 시 팝오버 숨기기
+        if (selectedInput) selectedInput.readOnly = true;
     }
     selectedCell = cell;
     selectedCell.classList.add("selected");
@@ -126,26 +86,26 @@ grid.addEventListener("dblclick", (e) => {
     }
 });
 
-grid.addEventListener("input", (e) => {
-    if (e.target.tagName === "INPUT" && e.target.type === "text") {
-        const { row, col } = e.target.dataset;
-        console.log(`셀 (${row}, ${col}) 값 변경: ${e.target.value}`);
-        e.target.readOnly = false; // 입력 시 편집 모드 활성화
-
-        // 입력한 텍스트와 일치하는 식자재 찾기
-        const matches = ingredients.filter((item) =>
-            item.includes(e.target.value)
-        );
-        showPopover(e.target, matches);
-    }
-});
-
 grid.addEventListener("compositionstart", (e) => {
     isComposing = true;
 });
 
 grid.addEventListener("compositionend", (e) => {
     isComposing = false;
+    const input = e.target;
+    input.setAttribute("list", "ingredientList"); // datalist 연결
+});
+
+grid.addEventListener("input", (e) => {
+    if (
+        e.target.tagName === "INPUT" &&
+        e.target.type === "text" &&
+        !isComposing
+    ) {
+        const { row, col } = e.target.dataset;
+        console.log(`셀 (${row}, ${col}) 값 변경: ${e.target.value}`);
+        e.target.readOnly = false;
+    }
 });
 
 document.addEventListener("keydown", (e) => {
@@ -156,8 +116,6 @@ document.addEventListener("keydown", (e) => {
     const currentRow = parseInt(input?.dataset.row || checkbox?.dataset.row);
     const currentCol = parseInt(input?.dataset.col || checkbox?.dataset.col);
     const isEditing = document.activeElement === input;
-    const popover = document.getElementById("popover");
-    const items = popover.querySelectorAll(".popover-item");
 
     const isPrintableKey = (e) => {
         const key = e.key;
@@ -167,27 +125,6 @@ document.addEventListener("keydown", (e) => {
             );
         return isPrintable && !e.ctrlKey && !e.altKey && !e.metaKey;
     };
-
-    if (
-        popover.style.display === "block" &&
-        (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter")
-    ) {
-        e.preventDefault();
-        if (e.key === "ArrowDown") {
-            popoverIndex = (popoverIndex + 1) % items.length;
-        } else if (e.key === "ArrowUp") {
-            popoverIndex = (popoverIndex - 1 + items.length) % items.length;
-        } else if (e.key === "Enter") {
-            if (popoverIndex >= 0) {
-                items[popoverIndex].click();
-            } else {
-                hidePopover();
-            }
-            return;
-        }
-        highlightPopoverItem(popoverIndex);
-        return;
-    }
 
     if (checkbox && e.key === " ") {
         e.preventDefault();
@@ -207,23 +144,26 @@ document.addEventListener("keydown", (e) => {
         switch (e.key) {
             case "Enter":
                 e.preventDefault();
-                hidePopover();
+                input.removeAttribute("list"); // datalist 숨기기
+                setTimeout(
+                    () => input.setAttribute("list", "ingredientList"),
+                    0
+                ); // 다음 이벤트 루프에서 다시 연결
                 if (e.shiftKey) {
                     moveTo(currentRow - 1, currentCol);
                 } else {
                     moveTo(currentRow + 1, currentCol);
                 }
+                input.blur();
                 break;
             case "Escape":
                 e.preventDefault();
                 if (input) {
                     input.blur();
                 }
-                hidePopover();
                 break;
             case "Tab":
                 e.preventDefault();
-                hidePopover();
                 if (e.shiftKey) {
                     moveTo(currentRow, currentCol - 1);
                 } else {
@@ -252,7 +192,7 @@ document.addEventListener("keydown", (e) => {
             case "Enter":
                 e.preventDefault();
                 if (input) {
-                    input.readOnly = false; // 엔터 키로 편집 모드 활성화
+                    input.readOnly = false;
                     input.focus();
                 }
                 break;
@@ -279,5 +219,5 @@ function moveTo(row, col) {
 }
 
 createGrid(10, 3);
-createPopover();
+createDatalist();
 selectCell(tbody.querySelector("td")); // 초기 선택
