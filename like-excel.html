@@ -221,9 +221,9 @@
                 const isEditing = document.activeElement === input;
                 const popover = document.getElementById("popover");
                 const items = popover.querySelectorAll(".popover-item");
-                const isAlphanumeric = (key) => /^[a-zA-Z0-9]$/.test(key);
                 const isPrintableKey = (e) => {
                     const key = e.key;
+                    const isAlphanumeric = (key) => /^[a-zA-Z0-9]$/.test(key);
                     const isPrintable =
                         /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]$/.test(
                             key
@@ -287,7 +287,7 @@
                             e.preventDefault();
                             hidePopover();
                             if (e.shiftKey) {
-                                moveTo(currentRow, currentCol - 1); // Shift + Tab이면 왼쪽으로 이동
+                                moveTo(currentRow, currentCol - 1);
                             } else {
                                 moveTo(currentRow, currentCol + 1);
                             }
@@ -319,7 +319,7 @@
                         case "Tab":
                             e.preventDefault();
                             if (e.shiftKey) {
-                                moveTo(currentRow, currentCol - 1); // Shift + Tab이면 왼쪽으로 이동
+                                moveTo(currentRow, currentCol - 1);
                             } else {
                                 moveTo(currentRow, currentCol + 1);
                             }
