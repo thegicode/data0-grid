@@ -6,9 +6,10 @@ const ingredients = [
     "당근",
     "다시마",
     "계란",
+    "유기농 계란",
     "감자",
     "토마토",
-    "방울 토마토",
+    "미니 토마토",
     "양파",
     "호박",
     "오이",
@@ -49,8 +50,10 @@ function createGrid(rows, cols) {
     }
 }
 
-function createPopover() {
+function createSelect() {
     const popover = document.createElement("div");
+    const select = document.createElement("select");
+    popover.appendChild(select);
     popover.id = "popover";
     popover.className = "popover";
     popover.style.display = "none";
@@ -59,13 +62,14 @@ function createPopover() {
 
 function showPopover(input, matches) {
     const popover = document.getElementById("popover");
+    const select = popover.querySelector("select");
     if (matches.length === 0) {
         popover.style.display = "none";
         return;
     }
 
-    popover.innerHTML = matches
-        .map((item) => `<div class="popover-item">${item}</div>`)
+    select.innerHTML = matches
+        .map((item) => `<option>${item}</option>`)
         .join("");
     const rect = input.getBoundingClientRect();
     popover.style.top = `${rect.bottom + window.scrollY}px`;
@@ -73,9 +77,9 @@ function showPopover(input, matches) {
     popover.style.width = `${rect.width}px`;
     popover.style.display = "block";
 
-    const popoverItems = popover.querySelectorAll(".popover-item");
-    popoverItems.forEach((item, index) => {
-        item.addEventListener("click", () => {
+    const options = popover.querySelectorAll("option");
+    options.forEach((item, index) => {
+        item.addEventListener("change", () => {
             input.value = item.textContent;
             hidePopover();
             input.focus();
@@ -137,6 +141,7 @@ grid.addEventListener("input", (e) => {
         const matches = ingredients.filter((item) =>
             item.includes(e.target.value)
         );
+        console.log(matches);
         showPopover(e.target, matches);
     }
 });
@@ -278,5 +283,5 @@ function moveTo(row, col) {
 }
 
 createGrid(10, 3);
-createPopover();
+createSelect();
 selectCell(tbody.querySelector("td")); // 초기 선택
