@@ -227,6 +227,24 @@ grid.addEventListener("compositionend", (e) => {
     input.setAttribute("list", "ingredientList"); // datalist 연결
 });
 
+grid.addEventListener("focusin", (e) => {
+    if (
+        e.target.tagName === "INPUT" &&
+        e.target.type === "text" &&
+        e.target.value.trim() !== ""
+    ) {
+        e.target.setAttribute("list", "ingredientList");
+    }
+});
+
+grid.addEventListener("focusout", (e) => {
+    if (e.target.tagName === "INPUT" && e.target.type === "text") {
+        setTimeout(() => {
+            e.target.removeAttribute("list");
+        }, 100); // Timeout to allow datalist to work on blur
+    }
+});
+
 grid.addEventListener("input", (e) => {
     if (
         e.target.tagName === "INPUT" &&
