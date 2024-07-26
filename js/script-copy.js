@@ -12,9 +12,11 @@ const ingredients = [
     "호박",
     "오이",
 ];
-let selectedCell = null;
+let selectedCells = new Set();
 let isComposing = false;
-let isDatalistVisible = false;
+let isDragging = false; // 드래그 상태를 저장할 변수
+let dragData = ""; // 드래그 데이터를 저장할 변수
+let startCell = null;
 
 function createGrid(rows, cols) {
     for (let i = 0; i < rows; i++) {
@@ -34,7 +36,7 @@ function createGrid(rows, cols) {
                 cell.appendChild(checkbox);
             } else {
                 const input = document.createElement("input");
-                input.name = "list";
+                input.type = "text";
                 input.dataset.row = i;
                 input.dataset.col = j;
                 input.readOnly = true;
@@ -59,27 +61,155 @@ function createDatalist() {
     document.body.appendChild(datalist);
 }
 
-function selectCell(cell) {
-    if (selectedCell) {
-        selectedCell.classList.remove("selected");
-        const selectedInput = selectedCell.querySelector("input[name='list']");
-        if (selectedInput) selectedInput.readOnly = true;
+function selectCell(cell, add = false) {
+    if (!add) {
+        selectedCells.forEach((selectedCell) => {
+            selectedCell.classList.remove("multiple-selected");
+            const selectedInput =
+                selectedCell.querySelector("input[type='text']");
+            if (selectedInput) selectedInput.readOnly = true;
+        });
+        selectedCells.clear();
     }
-    selectedCell = cell;
-    selectedCell.classList.add("selected");
+    selectedCells.add(cell);
+    cell.classList.add("multiple-selected");
+    const input = cell.querySelector("input[type='text']");
+    if (input) input.readOnly = false;
 }
+
+function selectRange(startCell, endCell) {
+    const startRow = parseInt(
+        startCell.querySelector("input[type='text'], input[type='checkbox']")
+            .dataset.row
+    );
+    const startCol = parseInt(
+        startCell.querySelector("input[type='text'], input[type='checkbox']")
+            .dataset.col
+    );
+    const endRow = parseInt(
+        endCell.querySelector("input[type='text'], input[type='checkbox']")
+            .dataset.row
+    );
+    const endCol = parseInt(
+        endCell.querySelector("input[type='text'], input[type='checkbox']")
+            .dataset.col
+    );
+
+    const minRow = Math.min(startRow, endRow);
+    const maxRow = Math.max(startRow, endRow);
+    const minCol = Math.min(startCol, endCol);
+    const maxCol = Math.max(startCol, endCol);
+
+    for (let row = minRow; row <= maxRow; row++) {
+        for (let col = minCol; col <= maxCol; col++) {
+            const cell = tbody.querySelector(
+                `td:has(input[data-row="${row}"][data-col="${col}"])`
+            );
+            if (cell) selectCell(cell, true);
+        }
+    }
+}
+
+function copyCells() {
+    const clipboardData = [];
+    let currentRow = -1;
+    const sortedCells = Array.from(selectedCells).sort((a, b) => {
+        const aRow = parseInt(
+            a.querySelector("input[type='text']")?.dataset.row ||
+                a.querySelector("input[type='checkbox']")?.dataset.row
+        );
+        const bRow = parseInt(
+            b.querySelector("input[type='text']")?.dataset.row ||
+                b.querySelector("input[type='checkbox']")?.dataset.row
+        );
+        const aCol = parseInt(
+            a.querySelector("input[type='text']")?.dataset.col ||
+                a.querySelector("input[type='checkbox']")?.dataset.col
+        );
+        const bCol = parseInt(
+            b.querySelector("input[type='text']")?.dataset.col ||
+                b.querySelector("input[type='checkbox']")?.dataset.col
+        );
+        return aRow === bRow ? aCol - bCol : aRow - bRow;
+    });
+
+    sortedCells.forEach((cell) => {
+        const input = cell.querySelector("input[type='text']");
+        const checkbox = cell.querySelector("input[type='checkbox']");
+        const row = parseInt(input?.dataset.row || checkbox?.dataset.row);
+        const col = parseInt(input?.dataset.col || checkbox?.dataset.col);
+        if (row !== currentRow) {
+            clipboardData.push([]);
+            currentRow = row;
+        }
+        clipboardData[clipboardData.length - 1].push(
+            input ? input.value : checkbox.checked ? "✔" : "✘"
+        );
+    });
+    return clipboardData.map((row) => row.join("\t")).join("\n");
+}
+
+function pasteCells(clipboardText) {
+    const rows = clipboardText.split("\n");
+    const firstSelectedCell = Array.from(selectedCells)[0];
+    const inputElement = firstSelectedCell.querySelector("input[type='text']");
+    const checkboxElement = firstSelectedCell.querySelector(
+        "input[type='checkbox']"
+    );
+
+    let targetRow = parseInt(
+        inputElement?.dataset.row || checkboxElement?.dataset.row
+    );
+    let targetCol = parseInt(
+        inputElement?.dataset.col || checkboxElement?.dataset.col
+    );
+
+    rows.forEach((row, rowIndex) => {
+        const cells = row.split("\t");
+        cells.forEach((cellData, colIndex) => {
+            const targetCell = tbody.querySelector(
+                `td:has(input[data-row="${targetRow + rowIndex}"][data-col="${
+                    targetCol + colIndex
+                }"]), 
+                td:has(input[type='checkbox'][data-row="${
+                    targetRow + rowIndex
+                }"][data-col="${targetCol + colIndex}"])`
+            );
+            if (targetCell) {
+                const input = targetCell.querySelector("input[type='text']");
+                const checkbox = targetCell.querySelector(
+                    "input[type='checkbox']"
+                );
+                if (input) input.value = cellData;
+                if (checkbox) checkbox.checked = cellData === "✔";
+            }
+        });
+    });
+}
+
+document.addEventListener("copy", (e) => {
+    const clipboardData = copyCells();
+    e.clipboardData.setData("text/plain", clipboardData);
+    e.preventDefault();
+});
+
+document.addEventListener("paste", (e) => {
+    const clipboardText = e.clipboardData.getData("text/plain");
+    pasteCells(clipboardText);
+    e.preventDefault();
+});
 
 grid.addEventListener("click", (e) => {
     const cell = e.target.closest("td");
     if (cell) {
-        selectCell(cell);
+        selectCell(cell, e.shiftKey);
     }
 });
 
 grid.addEventListener("dblclick", (e) => {
     const cell = e.target.closest("td");
     if (cell) {
-        const input = cell.querySelector("input[name='list']");
+        const input = cell.querySelector("input[type='text']");
         if (input) {
             input.readOnly = false;
             input.focus();
@@ -87,7 +217,7 @@ grid.addEventListener("dblclick", (e) => {
     }
 });
 
-grid.addEventListener("compositionstart", (e) => {
+grid.addEventListener("compositionstart", () => {
     isComposing = true;
 });
 
@@ -100,7 +230,7 @@ grid.addEventListener("compositionend", (e) => {
 grid.addEventListener("input", (e) => {
     if (
         e.target.tagName === "INPUT" &&
-        e.target.name === "list" &&
+        e.target.type === "text" &&
         !isComposing
     ) {
         const { row, col } = e.target.dataset;
@@ -113,7 +243,7 @@ grid.addEventListener("input", (e) => {
 grid.addEventListener(
     "blur",
     (e) => {
-        if (e.target.tagName === "INPUT" && e.target.name === "list") {
+        if (e.target.tagName === "INPUT" && e.target.type === "text") {
             isDatalistVisible = false; // datalist가 숨겨짐
         }
     },
@@ -121,10 +251,11 @@ grid.addEventListener(
 );
 
 document.addEventListener("keydown", (e) => {
-    if (!selectedCell) return;
+    if (!selectedCells.size) return;
 
-    const input = selectedCell.querySelector("input[name='list']");
-    const checkbox = selectedCell.querySelector("input[type='checkbox']");
+    const firstSelectedCell = Array.from(selectedCells)[0];
+    const input = firstSelectedCell.querySelector("input[type='text']");
+    const checkbox = firstSelectedCell.querySelector("input[type='checkbox']");
     const currentRow = parseInt(input?.dataset.row || checkbox?.dataset.row);
     const currentCol = parseInt(input?.dataset.col || checkbox?.dataset.col);
     const isEditing =
@@ -225,12 +356,60 @@ document.addEventListener("keydown", (e) => {
 function moveTo(row, col) {
     const nextCell = tbody.querySelector(
         `td:has(input[data-row="${row}"][data-col="${col}"]), 
-         td:has(input[type='checkbox'][data-row="${row}"][data-col="${col}"])`
+        td:has(input[type='checkbox'][data-row="${row}"][data-col="${col}"])`
     );
     if (nextCell) {
         selectCell(nextCell);
     }
 }
+
+// 드래그 앤 드롭 이벤트 핸들러 추가
+grid.addEventListener("mousedown", (e) => {
+    const cell = e.target.closest("td");
+    if (cell) {
+        isDragging = true;
+        startCell = cell;
+        selectCell(cell, false);
+    }
+});
+
+grid.addEventListener("mousemove", (e) => {
+    if (isDragging) {
+        const cell = e.target.closest("td");
+        if (cell) {
+            selectRange(startCell, cell);
+        }
+    }
+});
+
+grid.addEventListener("mouseup", () => {
+    if (isDragging) {
+        isDragging = false;
+        dragData = copyCells();
+    }
+});
+
+grid.addEventListener("dragstart", (e) => {
+    const cell = e.target.closest("td");
+    if (cell && selectedCells.has(cell)) {
+        e.dataTransfer.setData("text/plain", dragData);
+    } else {
+        e.preventDefault();
+    }
+});
+
+grid.addEventListener("dragover", (e) => {
+    e.preventDefault();
+});
+
+grid.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const cell = e.target.closest("td");
+    if (cell) {
+        const clipboardText = e.dataTransfer.getData("text/plain");
+        pasteCells(clipboardText);
+    }
+});
 
 createGrid(10, 3);
 createDatalist();

@@ -53,3 +53,7 @@ input[name="list"] {
     background-color: #007bff;
     color: white;
 }
+
+.multiple-selected {
+    background-color: #d1e7ff;
+}
