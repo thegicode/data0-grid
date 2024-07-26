@@ -74,7 +74,9 @@ function selectCell(cell, add = false) {
     selectedCells.add(cell);
     cell.classList.add("multiple-selected");
     const input = cell.querySelector("input[type='text']");
-    if (input) input.readOnly = false;
+    if (input) {
+        input.readOnly = false;
+    }
 }
 
 function selectRange(startCell, endCell) {
@@ -231,9 +233,11 @@ grid.addEventListener("focusin", (e) => {
     if (
         e.target.tagName === "INPUT" &&
         e.target.type === "text" &&
-        e.target.value.trim() !== ""
+        e.target.value.trim().length > 0
     ) {
         e.target.setAttribute("list", "ingredientList");
+    } else {
+        e.target.removeAttribute("list");
     }
 });
 
@@ -255,6 +259,10 @@ grid.addEventListener("input", (e) => {
         console.log(`셀 (${row}, ${col}) 값 변경: ${e.target.value}`);
         e.target.readOnly = false;
         isDatalistVisible = true; // datalist가 표시됨
+    }
+
+    if (e.target.value.trim().length > 0) {
+        e.target.setAttribute("list", "ingredientList");
     }
 });
 
