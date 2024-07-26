@@ -13,7 +13,9 @@ th {
 td {
     position: relative;
 }
-input[type="text"] {
+input[type="text"],
+input[type="search"],
+input[name="list"] {
     width: 100%;
     height: 100%;
     border: none;

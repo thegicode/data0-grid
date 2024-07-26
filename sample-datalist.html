@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Input with Datalist Example</title>
+    </head>
+    <body>
+        <h1>Input with Datalist Example</h1>
+        <label for="fruit">Choose a fruit:</label>
+        <input
+            list="fruits"
+            id="fruit"
+            name="fruit"
+            placeholder="Start typing a fruit..."
+        />
+        <datalist id="fruits">
+            <option value="Apple"></option>
+            <option value="Banana"></option>
+            <option value="Cherry"></option>
+            <option value="Date"></option>
+            <option value="Fig"></option>
+            <option value="Grape"></option>
+            <option value="Kiwi"></option>
+        </datalist>
+
+        <script>
+            // JavaScript to handle additional functionality if needed
+            document
+                .getElementById("fruit")
+                .addEventListener("input", function () {
+                    console.log("Selected fruit:", this.value);
+                });
+        </script>
+    </body>
+</html>
