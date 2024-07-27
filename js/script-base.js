@@ -26,23 +26,25 @@ function createGrid(rows, cols) {
 
         for (let j = 0; j < cols; j++) {
             const cell = document.createElement("td");
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+
+            const input = document.createElement("input");
 
             if (i === 1 && j === 1) {
                 // 특정 셀에 체크박스를 추가
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.dataset.row = i;
-                checkbox.dataset.col = j;
-                cell.appendChild(checkbox);
+                input.type = "checkbox";
             } else {
-                const input = document.createElement("input");
+                // 테스트 value
                 input.type = "text";
-                input.dataset.row = i;
-                input.dataset.col = j;
-                input.readOnly = true; // 기본적으로 비활성화
-                cell.appendChild(input);
+                if (i < 3 && j < 3) {
+                    input.value = `${i} ${j}`;
+                }
             }
 
+            input.readOnly = true; // 기본적으로 비활성화
+
+            cell.appendChild(input);
             row.appendChild(cell);
         }
         tbody.appendChild(row);
@@ -101,7 +103,7 @@ function highlightPopoverItem(index) {
 function selectCell(cell) {
     if (selectedCell) {
         selectedCell.classList.remove("selected");
-        const selectedInput = selectedCell.querySelector("input[type='text']");
+        const selectedInput = selectedCell.querySelector("input");
         if (selectedInput) selectedInput.readOnly = true; // 선택 해제 시 비활성화
         hidePopover(); // 선택 해제 시 팝오버 숨기기
     }
@@ -129,7 +131,7 @@ grid.addEventListener("dblclick", (e) => {
 
 grid.addEventListener("input", (e) => {
     if (e.target.tagName === "INPUT" && e.target.type === "text") {
-        const { row, col } = e.target.dataset;
+        const { row, col } = e.target.closest("td").dataset;
         console.log(`셀 (${row}, ${col}) 값 변경: ${e.target.value}`);
         e.target.readOnly = false; // 입력 시 편집 모드 활성화
 
@@ -141,7 +143,7 @@ grid.addEventListener("input", (e) => {
     }
 });
 
-grid.addEventListener("compositionstart", (e) => {
+grid.addEventListener("compositionstart", () => {
     isComposing = true;
 });
 
@@ -154,17 +156,12 @@ document.addEventListener("keydown", (e) => {
 
     const input = selectedCell.querySelector("input");
     const checkbox = selectedCell.querySelector("input[type='checkbox']");
-    const currentRow = parseInt(input?.dataset.row || checkbox?.dataset.row);
-    const currentCol = parseInt(input?.dataset.col || checkbox?.dataset.col);
-    const isEditing = document.activeElement === input;
+    const currentRow = parseInt(selectedCell.dataset.row);
+    const currentCol = parseInt(selectedCell.dataset.col);
+    const isEditing =
+        document.activeElement === input && input.readOnly === false;
     const popover = document.getElementById("popover");
     const items = popover.querySelectorAll(".popover-item");
-    const isPrintableKey = (e) => {
-        const key = e.key;
-        const isPrintable =
-            /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]$/.test(key);
-        return isPrintable && !e.ctrlKey && !e.altKey && !e.metaKey;
-    };
 
     if (
         popover.style.display === "block" &&
@@ -193,16 +190,24 @@ document.addEventListener("keydown", (e) => {
         return;
     }
 
-    if (isPrintableKey(e)) {
-        if (input) {
-            input.readOnly = false;
-            input.focus();
-        }
-        return;
-    }
-
     if (isEditing && !isComposing) {
         switch (e.key) {
+            case "ArrowUp":
+                e.preventDefault();
+                moveTo(currentRow - 1, currentCol);
+                break;
+            case "ArrowDown":
+                e.preventDefault();
+                moveTo(currentRow + 1, currentCol);
+                break;
+            case "ArrowLeft":
+                e.preventDefault();
+                moveTo(currentRow, currentCol - 1);
+                break;
+            case "ArrowRight":
+                e.preventDefault();
+                moveTo(currentRow, currentCol + 1);
+                break;
             case "Enter":
                 e.preventDefault();
                 hidePopover();
@@ -268,12 +273,15 @@ document.addEventListener("keydown", (e) => {
 
 function moveTo(row, col) {
     const nextCell = tbody.querySelector(
-        `td:has(input[data-row="${row}"][data-col="${col}"]), 
-         td:has(input[type='checkbox'][data-row="${row}"][data-col="${col}"])`
+        `td[data-row="${row}"][data-col="${col}"]`
     );
-    console.log("nextCell", nextCell);
     if (nextCell) {
         selectCell(nextCell);
+        const input = nextCell.querySelector("input");
+        if (input) {
+            input.focus();
+            input.readOnly = false;
+        }
     }
 }
 
