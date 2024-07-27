@@ -13,6 +13,8 @@ const ingredients = [
     "오이",
 ];
 let selectedCells = new Set();
+let enrichedCells = [];
+let copiedData = [];
 let isComposing = false;
 let isDragging = false; // 드래그 상태를 저장할 변수
 let dragData = ""; // 드래그 데이터를 저장할 변수
@@ -68,18 +70,13 @@ function selectCell(cell, add = false) {
     if (!add) {
         selectedCells.forEach((selectedCell) => {
             selectedCell.classList.remove("multiple-selected");
-            const selectedInput =
-                selectedCell.querySelector("input[type='text']");
+            const selectedInput = selectedCell.querySelector("input");
             if (selectedInput) selectedInput.readOnly = true;
         });
         selectedCells.clear();
     }
     selectedCells.add(cell);
     cell.classList.add("multiple-selected");
-    // const input = cell.querySelector("input");
-    // if (input) {
-    //     input.readOnly = false;
-    // }
 }
 
 function selectRange(startCell, endCell) {
@@ -93,17 +90,24 @@ function selectRange(startCell, endCell) {
     const minCol = Math.min(startCol, endCol);
     const maxCol = Math.max(startCol, endCol);
 
+    let result = [];
     for (let row = minRow; row <= maxRow; row++) {
+        let rows = [];
         for (let col = minCol; col <= maxCol; col++) {
             const cell = tbody.querySelector(
                 `td[data-row="${row}"][data-col="${col}"]:has(input)`
             );
             if (cell) selectCell(cell, true);
+            rows.push(cell.cloneNode(true));
         }
+        result.push(rows);
     }
+    enrichedCells = result;
 }
 
 function copyCells() {
+    copiedData = [...enrichedCells];
+
     const clipboardData = [];
     let currentRow = -1;
     const sortedCells = Array.from(selectedCells).sort((a, b) => {
@@ -122,9 +126,6 @@ function copyCells() {
             clipboardData.push([]);
             currentRow = row;
         }
-        clipboardData[clipboardData.length - 1].push(
-            input ? input.value : checkbox.checked ? "✔" : "✘"
-        );
     });
     return clipboardData.map((row) => row.join("\t")).join("\n");
 }
@@ -132,37 +133,24 @@ function copyCells() {
 function pasteCells(clipboardText) {
     const rows = clipboardText.split("\n");
     const firstSelectedCell = Array.from(selectedCells)[0];
-    const inputElement = firstSelectedCell.querySelector("input[type='text']");
+    const inputElement = firstSelectedCell.querySelector("input");
     const checkboxElement = firstSelectedCell.querySelector(
         "input[type='checkbox']"
     );
 
-    let targetRow = parseInt(
-        inputElement?.dataset.row || checkboxElement?.dataset.row
-    );
-    let targetCol = parseInt(
-        inputElement?.dataset.col || checkboxElement?.dataset.col
-    );
+    let targetRow = parseInt(firstSelectedCell.dataset.row);
+    let targetCol = parseInt(firstSelectedCell.dataset.col);
 
-    rows.forEach((row, rowIndex) => {
-        const cells = row.split("\t");
-        cells.forEach((cellData, colIndex) => {
+    copiedData.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
             const targetCell = tbody.querySelector(
-                `td:has(input[data-row="${targetRow + rowIndex}"][data-col="${
+                `td[data-row="${targetRow + rowIndex}"][data-col="${
                     targetCol + colIndex
-                }"]), 
-                td:has(input[type='checkbox'][data-row="${
-                    targetRow + rowIndex
-                }"][data-col="${targetCol + colIndex}"])`
+                }"]`
             );
-            if (targetCell) {
-                const input = targetCell.querySelector("input[type='text']");
-                const checkbox = targetCell.querySelector(
-                    "input[type='checkbox']"
-                );
-                if (input) input.value = cellData;
-                if (checkbox) checkbox.checked = cellData === "✔";
-            }
+            cell.dataset.row = targetRow + rowIndex;
+            cell.dataset.col = targetCol + colIndex;
+            targetCell.replaceWith(cell);
         });
     });
 }
@@ -375,7 +363,7 @@ grid.addEventListener("mousemove", (e) => {
 grid.addEventListener("mouseup", () => {
     if (isDragging) {
         isDragging = false;
-        dragData = copyCells();
+        // dragData = copyCells();
     }
 });
 
@@ -397,7 +385,7 @@ grid.addEventListener("drop", (e) => {
     const cell = e.target.closest("td");
     if (cell) {
         const clipboardText = e.dataTransfer.getData("text/plain");
-        pasteCells(clipboardText);
+        // pasteCells(clipboardText);
     }
 });
 
