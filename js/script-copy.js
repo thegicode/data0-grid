@@ -27,23 +27,26 @@ function createGrid(rows, cols) {
 
         for (let j = 0; j < cols; j++) {
             const cell = document.createElement("td");
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+
+            const input = document.createElement("input");
 
             if (i === 1 && j === 1) {
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.dataset.row = i;
-                checkbox.dataset.col = j;
-                cell.appendChild(checkbox);
+                // 특정 셀에 체크박스를 추가
+                input.type = "checkbox";
             } else {
-                const input = document.createElement("input");
+                // 테스트 value
                 input.type = "text";
-                input.dataset.row = i;
-                input.dataset.col = j;
-                input.readOnly = true;
                 input.setAttribute("list", "ingredientList");
-                cell.appendChild(input);
+                if (i < 3 && j < 3) {
+                    input.value = `${i} ${j}`;
+                }
             }
 
+            input.readOnly = true; // 기본적으로 비활성화
+
+            cell.appendChild(input);
             row.appendChild(cell);
         }
         tbody.appendChild(row);
@@ -73,29 +76,17 @@ function selectCell(cell, add = false) {
     }
     selectedCells.add(cell);
     cell.classList.add("multiple-selected");
-    const input = cell.querySelector("input[type='text']");
-    if (input) {
-        input.readOnly = false;
-    }
+    // const input = cell.querySelector("input");
+    // if (input) {
+    //     input.readOnly = false;
+    // }
 }
 
 function selectRange(startCell, endCell) {
-    const startRow = parseInt(
-        startCell.querySelector("input[type='text'], input[type='checkbox']")
-            .dataset.row
-    );
-    const startCol = parseInt(
-        startCell.querySelector("input[type='text'], input[type='checkbox']")
-            .dataset.col
-    );
-    const endRow = parseInt(
-        endCell.querySelector("input[type='text'], input[type='checkbox']")
-            .dataset.row
-    );
-    const endCol = parseInt(
-        endCell.querySelector("input[type='text'], input[type='checkbox']")
-            .dataset.col
-    );
+    const startRow = parseInt(startCell.dataset.row);
+    const startCol = parseInt(startCell.dataset.col);
+    const endRow = parseInt(endCell.dataset.row);
+    const endCol = parseInt(endCell.dataset.col);
 
     const minRow = Math.min(startRow, endRow);
     const maxRow = Math.max(startRow, endRow);
@@ -105,7 +96,7 @@ function selectRange(startCell, endCell) {
     for (let row = minRow; row <= maxRow; row++) {
         for (let col = minCol; col <= maxCol; col++) {
             const cell = tbody.querySelector(
-                `td:has(input[data-row="${row}"][data-col="${col}"])`
+                `td[data-row="${row}"][data-col="${col}"]:has(input)`
             );
             if (cell) selectCell(cell, true);
         }
@@ -116,30 +107,17 @@ function copyCells() {
     const clipboardData = [];
     let currentRow = -1;
     const sortedCells = Array.from(selectedCells).sort((a, b) => {
-        const aRow = parseInt(
-            a.querySelector("input[type='text']")?.dataset.row ||
-                a.querySelector("input[type='checkbox']")?.dataset.row
-        );
-        const bRow = parseInt(
-            b.querySelector("input[type='text']")?.dataset.row ||
-                b.querySelector("input[type='checkbox']")?.dataset.row
-        );
-        const aCol = parseInt(
-            a.querySelector("input[type='text']")?.dataset.col ||
-                a.querySelector("input[type='checkbox']")?.dataset.col
-        );
-        const bCol = parseInt(
-            b.querySelector("input[type='text']")?.dataset.col ||
-                b.querySelector("input[type='checkbox']")?.dataset.col
-        );
+        const aRow = parseInt(a.dataset.row);
+        const bRow = parseInt(b.dataset.row);
+        const aCol = parseInt(a.dataset.col);
+        const bCol = parseInt(b.dataset.col);
         return aRow === bRow ? aCol - bCol : aRow - bRow;
     });
 
     sortedCells.forEach((cell) => {
-        const input = cell.querySelector("input[type='text']");
-        const checkbox = cell.querySelector("input[type='checkbox']");
-        const row = parseInt(input?.dataset.row || checkbox?.dataset.row);
-        const col = parseInt(input?.dataset.col || checkbox?.dataset.col);
+        const input = cell.querySelector("input");
+        const row = parseInt(input?.dataset.row);
+        const col = parseInt(input?.dataset.col);
         if (row !== currentRow) {
             clipboardData.push([]);
             currentRow = row;
@@ -280,33 +258,16 @@ document.addEventListener("keydown", (e) => {
     if (!selectedCells.size) return;
 
     const firstSelectedCell = Array.from(selectedCells)[0];
-    const input = firstSelectedCell.querySelector("input[type='text']");
+    const input = firstSelectedCell.querySelector("input");
     const checkbox = firstSelectedCell.querySelector("input[type='checkbox']");
-    const currentRow = parseInt(input?.dataset.row || checkbox?.dataset.row);
-    const currentCol = parseInt(input?.dataset.col || checkbox?.dataset.col);
+    const currentRow = parseInt(firstSelectedCell.dataset.row);
+    const currentCol = parseInt(firstSelectedCell.dataset.col);
     const isEditing =
-        document.activeElement === input || document.activeElement === checkbox;
-
-    const isPrintableKey = (e) => {
-        const key = e.key;
-        const isPrintable =
-            /^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]$/.test(
-                key
-            );
-        return isPrintable && !e.ctrlKey && !e.altKey && !e.metaKey;
-    };
+        document.activeElement === input && input.readOnly === false;
 
     if (checkbox && e.key === " ") {
         e.preventDefault();
         checkbox.checked = !checkbox.checked;
-        return;
-    }
-
-    if (input && input.readOnly === true && isPrintableKey(e)) {
-        if (input) {
-            input.readOnly = false;
-            input.focus();
-        }
         return;
     }
 
@@ -316,21 +277,21 @@ document.addEventListener("keydown", (e) => {
                 e.preventDefault();
                 if (input) {
                     input.removeAttribute("list"); // datalist 숨기기
-                    setTimeout(
-                        () => input.setAttribute("list", "ingredientList"),
-                        0
-                    ); // 다음 이벤트 루프에서 다시 연결
                 }
                 if (e.shiftKey) {
                     moveTo(currentRow - 1, currentCol);
                 } else {
                     moveTo(currentRow + 1, currentCol);
                 }
-                (input || checkbox).blur();
+                const nextCell = Array.from(selectedCells)[0];
+                const nextInput = nextCell.querySelector("input");
+                nextInput.readOnly = false;
+                nextInput.focus();
+                nextInput.setAttribute("list", "ingredientList");
                 break;
             case "Escape":
                 e.preventDefault();
-                (input || checkbox).blur();
+                input.blur();
                 break;
             case "Tab":
                 e.preventDefault();
@@ -361,10 +322,9 @@ document.addEventListener("keydown", (e) => {
                 break;
             case "Enter":
                 e.preventDefault();
-                const inputEl = input || checkbox;
-                if (inputEl) {
-                    inputEl.readOnly = false;
-                    inputEl.focus();
+                if (input) {
+                    input.readOnly = false;
+                    input.focus();
                 }
                 break;
             case "Tab":
@@ -381,11 +341,15 @@ document.addEventListener("keydown", (e) => {
 
 function moveTo(row, col) {
     const nextCell = tbody.querySelector(
-        `td:has(input[data-row="${row}"][data-col="${col}"]), 
-        td:has(input[type='checkbox'][data-row="${row}"][data-col="${col}"])`
+        `td[data-row="${row}"][data-col="${col}"]`
     );
     if (nextCell) {
         selectCell(nextCell);
+        const input = nextCell.querySelector("input");
+        if (input) {
+            // input.focus();
+            // input.readOnly = false;
+        }
     }
 }
 
