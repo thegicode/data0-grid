@@ -32,6 +32,13 @@ input[name="list"] {
 .selected {
     outline: 2px solid #007bff;
 }
+.startCell {
+    outline: 2px solid #007bff;
+}
+.clonedCell {
+    outline: 1px dashed #007bff;
+}
+
 .popover {
     position: absolute;
     background-color: white;

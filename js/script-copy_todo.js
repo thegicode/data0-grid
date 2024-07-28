@@ -12,12 +12,12 @@ const ingredients = [
     "호박",
     "오이",
 ];
+let startCell = null;
 let selectedCells = new Set();
 let selectedRangeCells = [];
-let copiedData = [];
+let willCopyCells = [];
 let isComposing = false;
 let isDragging = false; // 드래그 상태를 저장할 변수
-let startCell = null;
 // let isDatalistVisible = false;
 
 function createGrid(rows, cols) {
@@ -73,7 +73,6 @@ function selectCell(cell, add = false) {
             const selectedInput = selectedCell.querySelector("input");
             if (selectedInput) selectedInput.readOnly = true;
         });
-        selectedCells.clear();
     }
     selectedCells.add(cell);
     cell.classList.add("multiple-selected");
@@ -98,7 +97,8 @@ function selectRange(startCell, endCell) {
                 `td[data-row="${row}"][data-col="${col}"]:has(input)`
             );
             if (cell) selectCell(cell, true);
-            rows.push(cell.cloneNode(true));
+            rows.push(cell);
+            // rows.push(cell.cloneNode(true));
         }
         result.push(rows);
     }
@@ -106,15 +106,38 @@ function selectRange(startCell, endCell) {
 }
 
 function copyCells() {
-    copiedData = [...selectedRangeCells];
+    if (selectedRangeCells.length === 0) {
+        willCopyCells = startCell;
+    }
+
+    selectedRangeCells.forEach((row) => {
+        row.forEach((cell) => {
+            cell.classList.add("clonedCell");
+        });
+    });
+
+    // willCopyCells = [...selectedRangeCells];
+    willCopyCells = selectedRangeCells;
 }
 
-function pasteCells(clipboardText) {
-    const firstSelectedCell = Array.from(selectedCells)[0];
+function pasteCells() {
+    if (willCopyCells.length === 0) {
+        willCopyCells.push([]);
+        willCopyCells[0].push(startCell);
+    }
+
+    const clonedCells = willCopyCells.map((row) => {
+        return row.map((cell) => {
+            cell.classList.remove("clonedCell");
+            return cell.cloneNode(true);
+        });
+    });
+
+    const firstSelectedCell = startCell;
     let targetRow = parseInt(firstSelectedCell.dataset.row);
     let targetCol = parseInt(firstSelectedCell.dataset.col);
 
-    copiedData.forEach((row, rowIndex) => {
+    clonedCells.forEach((row, rowIndex) => {
         row.forEach((cell, colIndex) => {
             const targetCell = tbody.querySelector(
                 `td[data-row="${targetRow + rowIndex}"][data-col="${
@@ -135,7 +158,7 @@ function pasteCells(clipboardText) {
 
 document.addEventListener("copy", (e) => {
     copyCells();
-    e.clipboardData.setData("text/plain", "copied");
+    // e.clipboardData.setData("text/plain", "copied");
     e.preventDefault();
 });
 
@@ -145,14 +168,23 @@ document.addEventListener("paste", (e) => {
 });
 
 grid.addEventListener("click", (e) => {
+    console.log("click", selectedCells);
+
     const cell = e.target.closest("td");
     if (cell) {
-        if (e.shiftKey && selectedCells.size > 0) {
+        if (startCell) {
+            startCell.classList.remove("startCell");
+        }
+        startCell = cell;
+        cell.classList.add("startCell");
+
+        if (e.shiftKey && selectedCells.size > 1) {
             selectRange(Array.from(selectedCells)[0], cell);
         } else {
             selectCell(cell, e.shiftKey);
         }
     }
+    console.log("click2", selectedCells);
 });
 
 grid.addEventListener("dblclick", (e) => {
@@ -308,21 +340,39 @@ function moveTo(row, col) {
 }
 
 grid.addEventListener("mousedown", (e) => {
+    console.log("mousedown1 ", selectedCells);
+
     const cell = e.target.closest("td");
+
     if (cell) {
         isDragging = true;
-        startCell = cell;
-        selectCell(cell, e.shiftKey);
+
+        // if (startCell) {
+        //     startCell.classList.remove("startCell");
+        // }
+        // startCell = cell;
+        // cell.classList.add("startCell");
+
+        // console.log("startCell", startCell);
+
+        // selectCell(cell, e.shiftKey);
     }
+    console.log("mousedown2 ", selectedCells);
 });
 
 grid.addEventListener("mousemove", (e) => {
     if (isDragging) {
+        console.log("mosemove1 , isDragging", selectedCells);
+
+        // console.log("mousemove selectedCells", selectedCells);
+
         const cell = e.target.closest("td");
-        if (cell) {
+        if (cell && selectedCells.size > 0) {
             selectRange(startCell, cell);
+            // selectRange(Array.from(selectedCells)[0], cell);
         }
     }
+    console.log("mosemove2 , isDragging", selectedCells);
 });
 
 grid.addEventListener("mouseup", () => {
