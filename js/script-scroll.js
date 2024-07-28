@@ -38,7 +38,7 @@ function createGrid(rows, cols) {
             } else {
                 input.type = "text";
                 input.setAttribute("list", "ingredientList");
-                if (i < 3 && j < 3) {
+                if (i < 3 && j < cols) {
                     input.value = `${i} ${j}`;
                 }
             }
@@ -379,6 +379,6 @@ grid.addEventListener("drop", (e) => {
     }
 });
 
-createGrid(10, 3);
+createGrid(10, 10);
 createDatalist();
 selectCell(tbody.querySelector("td")); // 초기 선택
