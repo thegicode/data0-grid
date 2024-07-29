@@ -72,7 +72,8 @@ select[aria-readonly="true"] {
 input:focus:not([readonly]),
 /* input[type="checkbox"]:focus:not([aria-readonly="true"]), */
 select:focus:not([aria-readonly="true"]) {
-    color: red;
+    color: rgb(115, 4, 219);
+    font-weight: bold;
 }
 
 .selected {
