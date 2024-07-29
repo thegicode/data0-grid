@@ -19,6 +19,7 @@ td {
     border: 1px solid #ddd;
     padding: 8px;
     min-width: 100px;
+    user-select: none;
 }
 
 th {
@@ -30,6 +31,10 @@ tbody th {
     position: sticky;
     left: 0;
     z-index: 2;
+}
+
+thead th {
+    cursor: pointer;
 }
 
 td {
@@ -72,6 +77,10 @@ select:focus:not([aria-readonly="true"]) {
 
 .selected {
     background-color: #d1e7ff;
+}
+
+.selected-th {
+    background-color: #d0d0d0;
 }
 
 /* .selected {
