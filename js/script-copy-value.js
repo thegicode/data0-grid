@@ -31,25 +31,21 @@ function createGrid(rows, cols) {
             cell.dataset.row = i;
             cell.dataset.col = j;
 
-            let content = document.createElement("input");
+            let input = document.createElement("input");
 
             switch (j) {
-                // case 0:
-                //     content.type = "text";
-                //     content.value = `${i}${j}`;
-                //     break;
                 case 1:
-                    content.type = "number";
-                    content.value = i + j;
+                    input.type = "number";
+                    input.value = i + j;
                     break;
                 case 2:
-                    content.type = "text";
-                    content.setAttribute("list", "ingredientList");
-                    content.value = ingredients[i];
+                    input.type = "text";
+                    input.setAttribute("list", "ingredientList");
+                    input.value = ingredients[i];
                     break;
                 case 3:
-                    content = document.createElement("select");
-                    content.name = "select-list";
+                    input = document.createElement("select");
+                    input.name = "select-list";
                     ingredients
                         .map((name, index) => {
                             const option = document.createElement("option");
@@ -59,27 +55,25 @@ function createGrid(rows, cols) {
                             return option;
                         })
                         .forEach((el) => {
-                            content.appendChild(el);
+                            input.appendChild(el);
                         });
-                    content.ariaReadOnly = true;
+                    input.ariaReadOnly = true;
                     break;
                 case 4:
-                    content.type = "checkbox";
-                    if (i % 2 === 0) content.checked = true;
-                    content.ariaReadOnly = true;
+                    input.type = "checkbox";
+                    if (i % 2 === 0) input.checked = true;
+                    input.ariaReadOnly = true;
                     break;
                 default:
-                    content.type = "text";
-                    content.value = `s-${i}${j}`;
+                    input.type = "text";
+                    input.value = `s-${i}${j}`;
                     break;
             }
 
             // 기본적으로 비활성화
-            if (!content.hasAttribute("aria-readonly")) {
-                content.readOnly = true;
-            }
+            if (!input.hasAttribute("aria-readonly")) input.readOnly = true;
 
-            cell.appendChild(content);
+            cell.appendChild(input);
             row.appendChild(cell);
         }
         tbody.appendChild(row);
@@ -145,29 +139,11 @@ function selectRange(dragStartCell, endCell) {
 }
 
 function copyCells() {
-    console.log(currentSelectionRange);
     clipboardData = currentSelectionRange.map((row) =>
         row.map((cell) => {
             const inputElement =
                 cell.querySelector("input") || cell.querySelector("select");
             return inputElement.value;
-            // let cellHTML = cell.outerHTML;
-            // if (input) {
-            //     if (input.type === "checkbox") {
-            //         // 수동으로 checkbox의 상태 포함
-            //         cellHTML = cellHTML.replace(
-            //             /<input /,
-            //             `<input ${input.checked ? 'checked="checked"' : ""} `
-            //         );
-            //     } else {
-            //         // 수동으로 input의 value 포함
-            //         cellHTML = cellHTML.replace(
-            //             /<input /,
-            //             `<input value="${input.value}" `
-            //         );
-            //     }
-            // }
-            // return cellHTML;
         })
     );
     const clipboardText = clipboardData.map((row) => row.join("\t")).join("\n");
