@@ -70,7 +70,7 @@ function createGrid(rows, cols) {
                     break;
                 default:
                     content.type = "text";
-                    content.value = `${i}${j}`;
+                    content.value = `s-${i}${j}`;
                     break;
             }
 
@@ -133,10 +133,11 @@ function selectRange(dragStartCell, endCell) {
         let rows = [];
         for (let col = minCol; col <= maxCol; col++) {
             const cell = tbody.querySelector(
-                `td[data-row="${row}"][data-col="${col}"]:has(input)`
+                `td[data-row="${row}"][data-col="${col}"]`
             );
             if (cell) selectCell(cell, true);
-            rows.push(cell.cloneNode(true));
+            // rows.push(cell.cloneNode(true));
+            rows.push(cell);
         }
         result.push(rows);
     }
@@ -144,26 +145,29 @@ function selectRange(dragStartCell, endCell) {
 }
 
 function copyCells() {
+    console.log(currentSelectionRange);
     clipboardData = currentSelectionRange.map((row) =>
         row.map((cell) => {
-            const input = cell.querySelector("input");
-            let cellHTML = cell.outerHTML;
-            if (input) {
-                if (input.type === "checkbox") {
-                    // 수동으로 checkbox의 상태 포함
-                    cellHTML = cellHTML.replace(
-                        /<input /,
-                        `<input ${input.checked ? 'checked="checked"' : ""} `
-                    );
-                } else {
-                    // 수동으로 input의 value 포함
-                    cellHTML = cellHTML.replace(
-                        /<input /,
-                        `<input value="${input.value}" `
-                    );
-                }
-            }
-            return cellHTML;
+            const inputElement =
+                cell.querySelector("input") || cell.querySelector("select");
+            return inputElement.value;
+            // let cellHTML = cell.outerHTML;
+            // if (input) {
+            //     if (input.type === "checkbox") {
+            //         // 수동으로 checkbox의 상태 포함
+            //         cellHTML = cellHTML.replace(
+            //             /<input /,
+            //             `<input ${input.checked ? 'checked="checked"' : ""} `
+            //         );
+            //     } else {
+            //         // 수동으로 input의 value 포함
+            //         cellHTML = cellHTML.replace(
+            //             /<input /,
+            //             `<input value="${input.value}" `
+            //         );
+            //     }
+            // }
+            // return cellHTML;
         })
     );
     const clipboardText = clipboardData.map((row) => row.join("\t")).join("\n");
@@ -187,20 +191,25 @@ function pasteCells() {
                         targetRow + rowIndex
                     }"][data-col="${targetCol + colIndex}"]`;
                     let targetCell = tbody.querySelector(targetCellSelector);
-                    if (targetCell) {
-                        targetCell.innerHTML = value;
-                        const input = targetCell.querySelector("input");
-                        if (input) {
-                            if (input.type === "checkbox") {
-                                input.checked = input.hasAttribute("checked");
-                            }
-                            if (input.type === "text") {
-                                input.value = input.getAttribute("value");
-                            }
-                        }
-                        selectedCells.add(targetCell);
-                        targetCell.classList.add("selected");
+                    if (!targetCell) return;
+
+                    const input =
+                        targetCell.querySelector("input") ||
+                        targetCell.querySelector("select");
+                    if (!input) return;
+
+                    switch (input.type) {
+                        case "checkbox":
+                            input.checked = Boolean(value);
+                        case "number":
+                            input.value = parseInt(value);
+                            break;
+                        default:
+                            input.value = value;
                     }
+
+                    selectedCells.add(targetCell);
+                    targetCell.classList.add("selected");
                 });
             });
         })
@@ -407,7 +416,7 @@ grid.addEventListener("mousedown", (e) => {
 grid.addEventListener("mousemove", (e) => {
     if (isDragging) {
         const cell = e.target.closest("td");
-        if (cell) {
+        if (cell && startCell !== cell) {
             selectRange(startCell, cell);
         }
     }
