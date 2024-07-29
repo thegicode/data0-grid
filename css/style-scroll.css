@@ -59,9 +59,24 @@ select[name="select-list"] {
     box-sizing: border-box;
 }
 
-.selected {
-    outline: 2px solid #007bff;
+input[aria-readonly="true"],
+select[aria-readonly="true"] {
+    pointer-events: none;
 }
+
+input:focus:not([readonly]),
+/* input[type="checkbox"]:focus:not([aria-readonly="true"]), */
+select:focus:not([aria-readonly="true"]) {
+    color: red;
+}
+
+.selected {
+    background-color: #d1e7ff;
+}
+
+/* .selected {
+    outline: 2px solid #007bff;
+} */
 
 .startCell {
     outline: 2px solid #007bff;
@@ -93,8 +108,4 @@ select[name="select-list"] {
 .popover-item.selected {
     background-color: #007bff;
     color: white;
-}
-
-.multiple-selected {
-    background-color: #d1e7ff;
 }

@@ -34,10 +34,10 @@ function createGrid(rows, cols) {
             let content = document.createElement("input");
 
             switch (j) {
-                case 0:
-                    content.type = "text";
-                    content.value = `${i}${j}`;
-                    break;
+                // case 0:
+                //     content.type = "text";
+                //     content.value = `${i}${j}`;
+                //     break;
                 case 1:
                     content.type = "number";
                     content.value = i + j;
@@ -56,22 +56,28 @@ function createGrid(rows, cols) {
                             option.value = name;
                             option.textContent = name;
                             if (i === index) option.selected = true;
-
                             return option;
                         })
                         .forEach((el) => {
                             content.appendChild(el);
                         });
+                    content.ariaReadOnly = true;
                     break;
                 case 4:
                     content.type = "checkbox";
                     if (i % 2 === 0) content.checked = true;
+                    content.ariaReadOnly = true;
                     break;
                 default:
-                    content = document.createElement("div");
+                    content.type = "text";
+                    content.value = `${i}${j}`;
+                    break;
             }
 
-            content.readOnly = true; // 기본적으로 비활성화
+            // 기본적으로 비활성화
+            if (!content.hasAttribute("aria-readonly")) {
+                content.readOnly = true;
+            }
 
             cell.appendChild(content);
             row.appendChild(cell);
@@ -94,14 +100,21 @@ function createDatalist() {
 function selectCell(cell, add = false) {
     if (!add) {
         selectedCells.forEach((selectedCell) => {
-            selectedCell.classList.remove("multiple-selected");
-            const selectedInput = selectedCell.querySelector("input");
-            if (selectedInput) selectedInput.readOnly = true;
+            selectedCell.classList.remove("selected");
+            const inputElement =
+                selectedCell.querySelector("input") ||
+                selectedCell.querySelector("select");
+            if (inputElement.ariaReadOnly === "false") {
+                inputElement.ariaReadOnly = "true";
+            } else {
+                inputElement.readOnly = true;
+            }
         });
         selectedCells.clear();
     }
+
     selectedCells.add(cell);
-    cell.classList.add("multiple-selected");
+    cell.classList.add("selected");
 }
 
 function selectRange(dragStartCell, endCell) {
@@ -186,7 +199,7 @@ function pasteCells() {
                             }
                         }
                         selectedCells.add(targetCell);
-                        targetCell.classList.add("multiple-selected");
+                        targetCell.classList.add("selected");
                     }
                 });
             });
@@ -196,18 +209,18 @@ function pasteCells() {
         });
 }
 
-document.addEventListener("copy", (e) => {
-    copyCells();
-    e.preventDefault();
-});
-
-document.addEventListener("paste", (e) => {
-    pasteCells();
-    e.preventDefault();
-});
+function moveTo(row, col) {
+    const nextCell = tbody.querySelector(
+        `td[data-row="${row}"][data-col="${col}"]`
+    );
+    if (nextCell) {
+        selectCell(nextCell);
+    }
+}
 
 grid.addEventListener("click", (e) => {
     const cell = e.target.closest("td");
+
     if (cell) {
         if (e.shiftKey && selectedCells.size > 0) {
             selectRange(Array.from(selectedCells)[0], cell);
@@ -220,9 +233,14 @@ grid.addEventListener("click", (e) => {
 grid.addEventListener("dblclick", (e) => {
     const cell = e.target.closest("td");
     if (cell) {
-        const input = cell.querySelector("input[type='text']");
+        const input =
+            cell.querySelector("input") || cell.querySelector("select");
         if (input) {
-            input.readOnly = false;
+            if (input.ariaReadOnly === "true") {
+                input.ariaReadOnly = "false";
+            } else {
+                input.readOnly = false;
+            }
             input.focus();
         }
     }
@@ -276,13 +294,16 @@ document.addEventListener("keydown", (e) => {
     if (!selectedCells.size) return;
 
     const firstSelectedCell = Array.from(selectedCells)[0];
-    const input = firstSelectedCell.querySelector("input");
+    const input =
+        firstSelectedCell.querySelector("input") ||
+        firstSelectedCell.querySelector("select");
     const checkbox = firstSelectedCell.querySelector("input[type='checkbox']");
     const currentRow = parseInt(firstSelectedCell.dataset.row);
     const currentCol = parseInt(firstSelectedCell.dataset.col);
     const isEditing =
-        document.activeElement === input && input.readOnly === false;
+        input.readOnly === false || input.ariaReadOnly === "false";
 
+    // checkbox spacebar
     if (checkbox && e.key === " ") {
         e.preventDefault();
         checkbox.checked = !checkbox.checked;
@@ -299,16 +320,33 @@ document.addEventListener("keydown", (e) => {
                     moveTo(currentRow + 1, currentCol);
                 }
                 const nextCell = Array.from(selectedCells)[0];
-                const nextInput = nextCell.querySelector("input");
-                nextInput.readOnly = false;
+                const nextInput =
+                    nextCell.querySelector("input") ||
+                    nextCell.querySelector("select");
+                if (nextInput.ariaReadOnly === "true") {
+                    nextInput.ariaReadOnly = "false";
+                } else {
+                    nextInput.readOnly = false;
+                }
                 nextInput.focus();
                 break;
             case "Escape":
                 e.preventDefault();
                 input.blur();
+                if (input.ariaReadOnly === "false") {
+                    input.ariaReadOnly = "true";
+                } else {
+                    input.readOnly = true;
+                }
                 break;
             case "Tab":
                 e.preventDefault();
+                input.blur();
+                if (input.ariaReadOnly === "false") {
+                    input.ariaReadOnly = "true";
+                } else {
+                    input.readOnly = true;
+                }
                 if (e.shiftKey) {
                     moveTo(currentRow, currentCol - 1);
                 } else {
@@ -336,10 +374,14 @@ document.addEventListener("keydown", (e) => {
                 break;
             case "Enter":
                 e.preventDefault();
-                if (input) {
+                if (!input) return;
+
+                if (input.ariaReadOnly === "true") {
+                    input.ariaReadOnly = "false";
+                } else {
                     input.readOnly = false;
-                    input.focus();
                 }
+                input.focus();
                 break;
             case "Tab":
                 e.preventDefault();
@@ -352,15 +394,6 @@ document.addEventListener("keydown", (e) => {
         }
     }
 });
-
-function moveTo(row, col) {
-    const nextCell = tbody.querySelector(
-        `td[data-row="${row}"][data-col="${col}"]`
-    );
-    if (nextCell) {
-        selectCell(nextCell);
-    }
-}
 
 grid.addEventListener("mousedown", (e) => {
     const cell = e.target.closest("td");
@@ -405,6 +438,16 @@ grid.addEventListener("drop", (e) => {
     if (cell) {
         pasteCells();
     }
+});
+
+document.addEventListener("copy", (e) => {
+    copyCells();
+    e.preventDefault();
+});
+
+document.addEventListener("paste", (e) => {
+    pasteCells();
+    e.preventDefault();
 });
 
 createGrid(10, 10);
