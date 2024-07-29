@@ -31,19 +31,47 @@ function createGrid(rows, cols) {
             cell.dataset.row = i;
             cell.dataset.col = j;
 
-            const input = document.createElement("input");
+            let input = document.createElement("input");
 
-            if (i === 1 && j === 1) {
-                input.type = "checkbox";
-            } else {
-                input.type = "text";
-                input.setAttribute("list", "ingredientList");
-                if (i < 3 && j < cols) {
-                    input.value = `${i} ${j}`;
-                }
+            switch (j) {
+                case 1:
+                    input.type = "number";
+                    input.value = i + j;
+                    break;
+                case 2:
+                    input.type = "text";
+                    input.setAttribute("list", "ingredientList");
+                    input.value = ingredients[i];
+                    break;
+                case 3:
+                    input = document.createElement("select");
+                    input.name = "select-list";
+                    ingredients
+                        .map((name, index) => {
+                            const option = document.createElement("option");
+                            option.value = name;
+                            option.textContent = name;
+                            if (i === index) option.selected = true;
+                            return option;
+                        })
+                        .forEach((el) => {
+                            input.appendChild(el);
+                        });
+                    input.ariaReadOnly = true;
+                    break;
+                case 4:
+                    input.type = "checkbox";
+                    if (i % 2 === 0) input.checked = true;
+                    input.ariaReadOnly = true;
+                    break;
+                default:
+                    input.type = "text";
+                    input.value = `s-${i}${j}`;
+                    break;
             }
 
-            input.readOnly = true; // 기본적으로 비활성화
+            // 기본적으로 비활성화
+            if (!input.hasAttribute("aria-readonly")) input.readOnly = true;
 
             cell.appendChild(input);
             row.appendChild(cell);
@@ -66,14 +94,21 @@ function createDatalist() {
 function selectCell(cell, add = false) {
     if (!add) {
         selectedCells.forEach((selectedCell) => {
-            selectedCell.classList.remove("multiple-selected");
-            const selectedInput = selectedCell.querySelector("input");
-            if (selectedInput) selectedInput.readOnly = true;
+            selectedCell.classList.remove("selected");
+            const inputElement =
+                selectedCell.querySelector("input") ||
+                selectedCell.querySelector("select");
+            if (inputElement.ariaReadOnly === "false") {
+                inputElement.ariaReadOnly = "true";
+            } else {
+                inputElement.readOnly = true;
+            }
         });
         selectedCells.clear();
     }
+
     selectedCells.add(cell);
-    cell.classList.add("multiple-selected");
+    cell.classList.add("selected");
 }
 
 function selectRange(dragStartCell, endCell) {
@@ -92,10 +127,11 @@ function selectRange(dragStartCell, endCell) {
         let rows = [];
         for (let col = minCol; col <= maxCol; col++) {
             const cell = tbody.querySelector(
-                `td[data-row="${row}"][data-col="${col}"]:has(input)`
+                `td[data-row="${row}"][data-col="${col}"]`
             );
             if (cell) selectCell(cell, true);
-            rows.push(cell.cloneNode(true));
+            // rows.push(cell.cloneNode(true));
+            rows.push(cell);
         }
         result.push(rows);
     }
@@ -103,29 +139,29 @@ function selectRange(dragStartCell, endCell) {
 }
 
 function copyCells() {
-    clipboardData = currentSelectionRange.map((row) =>
-        row.map((cell) => {
-            const input = cell.querySelector("input");
-            let cellHTML = cell.outerHTML;
-            if (input) {
-                if (input.type === "checkbox") {
-                    // 수동으로 checkbox의 상태 포함
-                    cellHTML = cellHTML.replace(
-                        /<input /,
-                        `<input ${input.checked ? 'checked="checked"' : ""} `
-                    );
-                } else {
-                    // 수동으로 input의 value 포함
-                    cellHTML = cellHTML.replace(
-                        /<input /,
-                        `<input value="${input.value}" `
-                    );
-                }
-            }
-            return cellHTML;
-        })
-    );
-    const clipboardText = clipboardData.map((row) => row.join("\t")).join("\n");
+    const getInputValue = (cell) => {
+        const inputElement =
+            cell.querySelector("input") || cell.querySelector("select");
+        if (inputElement.type === "checkbox") {
+            result = inputElement.checked;
+        } else {
+            result = inputElement.value;
+        }
+
+        return result;
+    };
+
+    let clipboardText;
+    if (selectedCells.size === 1) {
+        const cell = [...selectedCells][0];
+        clipboardText = getInputValue(cell);
+    } else {
+        clipboardData = currentSelectionRange.map((row) =>
+            row.map((cell) => getInputValue(cell))
+        );
+        clipboardText = clipboardData.map((row) => row.join("\t")).join("\n");
+    }
+
     navigator.clipboard.writeText(clipboardText).then(() => {
         console.log("Data copied to clipboard");
     });
@@ -140,26 +176,32 @@ function pasteCells() {
             let targetCol = parseInt(firstSelectedCell.dataset.col);
 
             const data = text.split("\n").map((row) => row.split("\t"));
+
             data.forEach((row, rowIndex) => {
                 row.forEach((value, colIndex) => {
                     const targetCellSelector = `td[data-row="${
                         targetRow + rowIndex
                     }"][data-col="${targetCol + colIndex}"]`;
                     let targetCell = tbody.querySelector(targetCellSelector);
-                    if (targetCell) {
-                        targetCell.innerHTML = value;
-                        const input = targetCell.querySelector("input");
-                        if (input) {
-                            if (input.type === "checkbox") {
-                                input.checked = input.hasAttribute("checked");
-                            }
-                            if (input.type === "text") {
-                                input.value = input.getAttribute("value");
-                            }
-                        }
-                        selectedCells.add(targetCell);
-                        targetCell.classList.add("multiple-selected");
+                    if (!targetCell) return;
+
+                    const input =
+                        targetCell.querySelector("input") ||
+                        targetCell.querySelector("select");
+                    if (!input) return;
+
+                    switch (input.type) {
+                        case "checkbox":
+                            input.checked = Boolean(value === "true");
+                        case "number":
+                            input.value = parseInt(value);
+                            break;
+                        default:
+                            input.value = value;
                     }
+
+                    selectedCells.add(targetCell);
+                    targetCell.classList.add("selected");
                 });
             });
         })
@@ -168,18 +210,18 @@ function pasteCells() {
         });
 }
 
-document.addEventListener("copy", (e) => {
-    copyCells();
-    e.preventDefault();
-});
-
-document.addEventListener("paste", (e) => {
-    pasteCells();
-    e.preventDefault();
-});
+function moveTo(row, col) {
+    const nextCell = tbody.querySelector(
+        `td[data-row="${row}"][data-col="${col}"]`
+    );
+    if (nextCell) {
+        selectCell(nextCell);
+    }
+}
 
 grid.addEventListener("click", (e) => {
     const cell = e.target.closest("td");
+
     if (cell) {
         if (e.shiftKey && selectedCells.size > 0) {
             selectRange(Array.from(selectedCells)[0], cell);
@@ -192,9 +234,14 @@ grid.addEventListener("click", (e) => {
 grid.addEventListener("dblclick", (e) => {
     const cell = e.target.closest("td");
     if (cell) {
-        const input = cell.querySelector("input[type='text']");
+        const input =
+            cell.querySelector("input") || cell.querySelector("select");
         if (input) {
-            input.readOnly = false;
+            if (input.ariaReadOnly === "true") {
+                input.ariaReadOnly = "false";
+            } else {
+                input.readOnly = false;
+            }
             input.focus();
         }
     }
@@ -239,22 +286,25 @@ grid.addEventListener("input", (e) => {
         e.target.readOnly = false;
     }
 
-    if (e.target.value.trim().length > 0) {
-        // e.target.setAttribute("list", "ingredientList");
-    }
+    // if (e.target.value.trim().length > 0) {
+    // e.target.setAttribute("list", "ingredientList");
+    // }
 });
 
 document.addEventListener("keydown", (e) => {
     if (!selectedCells.size) return;
 
     const firstSelectedCell = Array.from(selectedCells)[0];
-    const input = firstSelectedCell.querySelector("input");
+    const input =
+        firstSelectedCell.querySelector("input") ||
+        firstSelectedCell.querySelector("select");
     const checkbox = firstSelectedCell.querySelector("input[type='checkbox']");
     const currentRow = parseInt(firstSelectedCell.dataset.row);
     const currentCol = parseInt(firstSelectedCell.dataset.col);
     const isEditing =
-        document.activeElement === input && input.readOnly === false;
+        input.readOnly === false || input.ariaReadOnly === "false";
 
+    // checkbox spacebar
     if (checkbox && e.key === " ") {
         e.preventDefault();
         checkbox.checked = !checkbox.checked;
@@ -271,16 +321,33 @@ document.addEventListener("keydown", (e) => {
                     moveTo(currentRow + 1, currentCol);
                 }
                 const nextCell = Array.from(selectedCells)[0];
-                const nextInput = nextCell.querySelector("input");
-                nextInput.readOnly = false;
+                const nextInput =
+                    nextCell.querySelector("input") ||
+                    nextCell.querySelector("select");
+                if (nextInput.ariaReadOnly === "true") {
+                    nextInput.ariaReadOnly = "false";
+                } else {
+                    nextInput.readOnly = false;
+                }
                 nextInput.focus();
                 break;
             case "Escape":
                 e.preventDefault();
                 input.blur();
+                if (input.ariaReadOnly === "false") {
+                    input.ariaReadOnly = "true";
+                } else {
+                    input.readOnly = true;
+                }
                 break;
             case "Tab":
                 e.preventDefault();
+                input.blur();
+                if (input.ariaReadOnly === "false") {
+                    input.ariaReadOnly = "true";
+                } else {
+                    input.readOnly = true;
+                }
                 if (e.shiftKey) {
                     moveTo(currentRow, currentCol - 1);
                 } else {
@@ -308,10 +375,14 @@ document.addEventListener("keydown", (e) => {
                 break;
             case "Enter":
                 e.preventDefault();
-                if (input) {
+                if (!input) return;
+
+                if (input.ariaReadOnly === "true") {
+                    input.ariaReadOnly = "false";
+                } else {
                     input.readOnly = false;
-                    input.focus();
                 }
+                input.focus();
                 break;
             case "Tab":
                 e.preventDefault();
@@ -325,15 +396,6 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-function moveTo(row, col) {
-    const nextCell = tbody.querySelector(
-        `td[data-row="${row}"][data-col="${col}"]`
-    );
-    if (nextCell) {
-        selectCell(nextCell);
-    }
-}
-
 grid.addEventListener("mousedown", (e) => {
     const cell = e.target.closest("td");
     if (cell) {
@@ -346,7 +408,7 @@ grid.addEventListener("mousedown", (e) => {
 grid.addEventListener("mousemove", (e) => {
     if (isDragging) {
         const cell = e.target.closest("td");
-        if (cell) {
+        if (cell && startCell !== cell) {
             selectRange(startCell, cell);
         }
     }
@@ -377,6 +439,16 @@ grid.addEventListener("drop", (e) => {
     if (cell) {
         pasteCells();
     }
+});
+
+document.addEventListener("copy", (e) => {
+    copyCells();
+    e.preventDefault();
+});
+
+document.addEventListener("paste", (e) => {
+    pasteCells();
+    e.preventDefault();
 });
 
 createGrid(10, 10);
