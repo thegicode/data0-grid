@@ -19,73 +19,50 @@ td {
     border: 1px solid #ddd;
     padding: 8px;
     min-width: 100px;
-    user-select: none;
 }
 
-th {
-    background-color: #f2f2f2;
-}
-
-thead th:first-child,
+thead th,
 tbody th {
     position: sticky;
     left: 0;
     z-index: 2;
+    background-color: #f2f2f2;
 }
 
-thead th {
-    cursor: pointer;
+thead th:first-child {
+    top: 0;
+    z-index: 3; /* thead th의 z-index를 tbody th보다 높게 설정 */
+}
+
+tbody th {
+    z-index: 1;
+    background-color: #f2f2f2;
 }
 
 td {
     position: relative;
 }
 
-tbody td {
-    text-align: center;
-}
-
 input[type="text"],
-input[type="number"],
 input[type="search"],
-input[name="list"],
-select[name="select-list"] {
+input[name="list"] {
     width: 100%;
     height: 100%;
     border: none;
     outline: none;
     background: transparent;
-    /* position: absolute;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    padding: 8px; */
+    padding: 8px;
     box-sizing: border-box;
 }
 
-input[aria-readonly="true"],
-select[aria-readonly="true"] {
-    pointer-events: none;
-}
-
-input:focus:not([readonly]),
-/* input[type="checkbox"]:focus:not([aria-readonly="true"]), */
-select:focus:not([aria-readonly="true"]) {
-    color: red;
-}
-
 .selected {
-    background-color: #d1e7ff;
-}
-
-.selected-th {
-    background-color: #d0d0d0;
-}
-
-/* .selected {
     outline: 2px solid #007bff;
-} */
+}
 
 .startCell {
     outline: 2px solid #007bff;
@@ -117,4 +94,8 @@ select:focus:not([aria-readonly="true"]) {
 .popover-item.selected {
     background-color: #007bff;
     color: white;
+}
+
+.multiple-selected {
+    background-color: #d1e7ff;
 }
