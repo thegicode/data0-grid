@@ -40,3 +40,7 @@ uuid, product*name, price, 전단행사*여부, 적립\_금액
 페이징
 
 반응형
+
+input-string 입력, input-number 입력, input-datalist string, select, checkbox boolean, - input datetime
+
+선택 영역 csv 파일로 저장하기 -> 마지막
