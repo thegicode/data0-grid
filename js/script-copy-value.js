@@ -139,14 +139,29 @@ function selectRange(dragStartCell, endCell) {
 }
 
 function copyCells() {
-    clipboardData = currentSelectionRange.map((row) =>
-        row.map((cell) => {
-            const inputElement =
-                cell.querySelector("input") || cell.querySelector("select");
-            return inputElement.value;
-        })
-    );
-    const clipboardText = clipboardData.map((row) => row.join("\t")).join("\n");
+    const getInputValue = (cell) => {
+        const inputElement =
+            cell.querySelector("input") || cell.querySelector("select");
+        if (inputElement.type === "checkbox") {
+            result = inputElement.checked;
+        } else {
+            result = inputElement.value;
+        }
+
+        return result;
+    };
+
+    let clipboardText;
+    if (selectedCells.size === 1) {
+        const cell = [...selectedCells][0];
+        clipboardText = getInputValue(cell);
+    } else {
+        clipboardData = currentSelectionRange.map((row) =>
+            row.map((cell) => getInputValue(cell))
+        );
+        clipboardText = clipboardData.map((row) => row.join("\t")).join("\n");
+    }
+
     navigator.clipboard.writeText(clipboardText).then(() => {
         console.log("Data copied to clipboard");
     });
@@ -161,6 +176,7 @@ function pasteCells() {
             let targetCol = parseInt(firstSelectedCell.dataset.col);
 
             const data = text.split("\n").map((row) => row.split("\t"));
+
             data.forEach((row, rowIndex) => {
                 row.forEach((value, colIndex) => {
                     const targetCellSelector = `td[data-row="${
@@ -176,7 +192,7 @@ function pasteCells() {
 
                     switch (input.type) {
                         case "checkbox":
-                            input.checked = Boolean(value);
+                            input.checked = Boolean(value === "true");
                         case "number":
                             input.value = parseInt(value);
                             break;
@@ -270,9 +286,9 @@ grid.addEventListener("input", (e) => {
         e.target.readOnly = false;
     }
 
-    if (e.target.value.trim().length > 0) {
-        // e.target.setAttribute("list", "ingredientList");
-    }
+    // if (e.target.value.trim().length > 0) {
+    // e.target.setAttribute("list", "ingredientList");
+    // }
 });
 
 document.addEventListener("keydown", (e) => {
