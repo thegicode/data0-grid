@@ -194,7 +194,7 @@ function pasteCells() {
                         case "checkbox":
                             input.checked = Boolean(value === "true");
                         case "number":
-                            input.value = parseInt(value);
+                            input.value = parseInt(value) || "";
                             break;
                         default:
                             input.value = value;
