@@ -18,6 +18,7 @@ let clipboardData = [];
 let isComposing = false;
 let isDragging = false; // 드래그 상태를 저장할 변수
 let startCell = null;
+let draggingColumn = null;
 
 function createGrid(rows, cols) {
     for (let i = 0; i < rows; i++) {
@@ -37,11 +38,13 @@ function createGrid(rows, cols) {
                 case 1:
                     input.type = "number";
                     input.value = i + j;
+                    input.readOnly = true;
                     break;
                 case 2:
                     input.type = "text";
                     input.setAttribute("list", "ingredientList");
                     input.value = ingredients[i];
+                    input.readOnly = true;
                     break;
                 case 3:
                     input = document.createElement("select");
@@ -67,11 +70,12 @@ function createGrid(rows, cols) {
                 default:
                     input.type = "text";
                     input.value = `s-${i}${j}`;
+                    input.readOnly = true;
                     break;
             }
 
             // 기본적으로 비활성화
-            if (!input.hasAttribute("aria-readonly")) input.readOnly = true;
+            // if (!input.hasAttribute("aria-readonly")) input.readOnly = true;
 
             cell.appendChild(input);
             row.appendChild(cell);
@@ -95,14 +99,17 @@ function selectCell(cell, add = false) {
     if (!add) {
         selectedCells.forEach((selectedCell) => {
             selectedCell.classList.remove("selected");
-            const inputElement =
+            const input =
                 selectedCell.querySelector("input") ||
                 selectedCell.querySelector("select");
-            if (inputElement.ariaReadOnly === "false") {
-                inputElement.ariaReadOnly = "true";
-            } else {
-                inputElement.readOnly = true;
-            }
+
+            // console.log(input.hasAttribute("aria-readOnly"));
+
+            // if (input.ariaReadOnly === "false") {
+            //     input.ariaReadOnly = "true";
+            // } else {
+            //     input.readOnly = true;
+            // }
         });
         selectedCells.clear();
     }
@@ -130,7 +137,6 @@ function selectRange(dragStartCell, endCell) {
                 `td[data-row="${row}"][data-col="${col}"]`
             );
             if (cell) selectCell(cell, true);
-            // rows.push(cell.cloneNode(true));
             rows.push(cell);
         }
         result.push(rows);
@@ -193,6 +199,7 @@ function pasteCells() {
                     switch (input.type) {
                         case "checkbox":
                             input.checked = Boolean(value === "true");
+                            break;
                         case "number":
                             input.value = parseInt(value) || "";
                             break;
@@ -219,10 +226,46 @@ function moveTo(row, col) {
     }
 }
 
+function selectColumn(col) {
+    const cells = tbody.querySelectorAll(`td[data-col="${col}"]`);
+    cells.forEach((cell) => selectCell(cell, true));
+
+    // Add class to the selected th
+    const th = grid.querySelector(`thead th:nth-child(${col + 2})`); // +2 to account for row header and 0-index
+    if (th) {
+        th.classList.add("selected-th");
+    }
+}
+
+function moveColumn(from, to) {
+    const rows = tbody.querySelectorAll("tr");
+    rows.forEach((row) => {
+        const cells = Array.from(row.children);
+        const fromCell = cells[from + 1]; // +1 to account for row header
+        const toCell = cells[to + 1];
+        row.insertBefore(fromCell, to < from ? toCell : toCell.nextSibling);
+        fromCell.dataset.col = to;
+        toCell.dataset.col = from;
+    });
+
+    // Move column header
+    const headers = grid.querySelectorAll("thead th");
+    const fromHeader = headers[from + 1];
+    const toHeader = headers[to + 1];
+    grid.querySelector("thead tr").insertBefore(
+        fromHeader,
+        to < from ? toHeader : toHeader.nextSibling
+    );
+}
+
 grid.addEventListener("click", (e) => {
     const cell = e.target.closest("td");
 
     if (cell) {
+        // Clear previous selection including th
+        const ths = grid.querySelectorAll("thead th");
+        ths.forEach((th) => th.classList.remove("selected-th"));
+
         if (e.shiftKey && selectedCells.size > 0) {
             selectRange(Array.from(selectedCells)[0], cell);
         } else {
@@ -298,18 +341,11 @@ document.addEventListener("keydown", (e) => {
     const input =
         firstSelectedCell.querySelector("input") ||
         firstSelectedCell.querySelector("select");
-    const checkbox = firstSelectedCell.querySelector("input[type='checkbox']");
     const currentRow = parseInt(firstSelectedCell.dataset.row);
     const currentCol = parseInt(firstSelectedCell.dataset.col);
-    const isEditing =
-        input.readOnly === false || input.ariaReadOnly === "false";
-
-    // checkbox spacebar
-    if (checkbox && e.key === " ") {
-        e.preventDefault();
-        checkbox.checked = !checkbox.checked;
-        return;
-    }
+    let isEditing = input.hasAttribute("aria-readonly")
+        ? input.ariaReadOnly === "false"
+        : input.readOnly === false;
 
     if (isEditing && !isComposing) {
         switch (e.key) {
@@ -392,6 +428,63 @@ document.addEventListener("keydown", (e) => {
                     moveTo(currentRow, currentCol + 1);
                 }
                 break;
+        }
+    }
+});
+
+function clearSelection() {
+    selectedCells.forEach((selectedCell) => {
+        selectedCell.classList.remove("selected");
+        const inputElement =
+            selectedCell.querySelector("input") ||
+            selectedCell.querySelector("select");
+        if (inputElement.ariaReadOnly === "false") {
+            inputElement.ariaReadOnly = "true";
+        } else {
+            inputElement.readOnly = true;
+        }
+    });
+    selectedCells.clear();
+
+    // Clear th selection
+    const ths = grid.querySelectorAll("thead th");
+    ths.forEach((th) => th.classList.remove("selected-th"));
+}
+
+grid.querySelector("thead").addEventListener("mousedown", (e) => {
+    const th = e.target.closest("th");
+    if (th) {
+        clearSelection();
+        const colIndex = Array.from(th.parentNode.children).indexOf(th) - 1; // -1 to account for row header
+        if (colIndex >= 0) {
+            isDragging = true;
+            draggingColumn = colIndex;
+            selectColumn(colIndex);
+            th.classList.add("dragging");
+        }
+    }
+});
+
+grid.querySelector("thead").addEventListener("mouseup", (e) => {
+    const th = e.target.closest("th");
+    if (isDragging && draggingColumn !== null) {
+        isDragging = false;
+        draggingColumn = null;
+        if (th) {
+            th.classList.remove("dragging");
+        }
+    }
+});
+
+grid.querySelector("thead").addEventListener("mousemove", (e) => {
+    if (isDragging && draggingColumn !== null) {
+        const th = e.target.closest("th");
+        if (th) {
+            const colIndex = Array.from(th.parentNode.children).indexOf(th) - 1; // -1 to account for row header
+            if (colIndex >= 0 && colIndex !== draggingColumn) {
+                moveColumn(draggingColumn, colIndex);
+                draggingColumn = colIndex;
+            }
         }
     }
 });
