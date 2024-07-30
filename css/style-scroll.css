@@ -37,6 +37,12 @@ thead th {
     cursor: pointer;
 }
 
+thead th span,
+thead th .sort-button {
+    display: inline-block;
+    vertical-align: middle;
+}
+
 td {
     position: relative;
 }
@@ -94,6 +100,30 @@ select:focus:not([aria-readonly="true"]) {
 
 .clonedCell {
     outline: 1px dashed #007bff;
+}
+
+.sort-button {
+    width: 20px; /* SVG의 크기에 맞게 너비와 높이 설정 */
+    height: 20px;
+    border-radius: 50%;
+    background: url("data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTcuNDEgOC41OUwxMiAxMy4xN2w0LjU5LTQuNThMMTggMTBsLTYgNi02LTZ6Ij48L3BhdGg+PC9zdmc+");
+    background-size: cover; /* 이미지를 전체 버튼 크기에 맞추기 */
+    background-repeat: no-repeat; /* 이미지 반복 방지 */
+    background-position: center; /* 이미지 위치 가운데 정렬 */
+    border: none; /* 버튼의 테두리 제거 */
+    cursor: pointer; /* 마우스 커서 모양 변경 */
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    background-color: #fff;
+    margin-left: 20px;
+}
+.sort-button[data-ascending=""] {
+    background-position: -10000rem;
+}
+.sort-button[data-ascending="true"] {
+    transform: rotate(0);
+}
+.sort-button[data-ascending="false"] {
+    transform: rotate(180deg);
 }
 
 .popover {
