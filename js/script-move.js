@@ -38,11 +38,13 @@ function createGrid(rows, cols) {
                 case 1:
                     input.type = "number";
                     input.value = i + j;
+                    input.readOnly = true;
                     break;
                 case 2:
                     input.type = "text";
                     input.setAttribute("list", "ingredientList");
                     input.value = ingredients[i];
+                    input.readOnly = true;
                     break;
                 case 3:
                     input = document.createElement("select");
@@ -68,11 +70,12 @@ function createGrid(rows, cols) {
                 default:
                     input.type = "text";
                     input.value = `s-${i}${j}`;
+                    input.readOnly = true;
                     break;
             }
 
             // 기본적으로 비활성화
-            if (!input.hasAttribute("aria-readonly")) input.readOnly = true;
+            // if (!input.hasAttribute("aria-readonly")) input.readOnly = true;
 
             cell.appendChild(input);
             row.appendChild(cell);
@@ -96,14 +99,17 @@ function selectCell(cell, add = false) {
     if (!add) {
         selectedCells.forEach((selectedCell) => {
             selectedCell.classList.remove("selected");
-            const inputElement =
+            const input =
                 selectedCell.querySelector("input") ||
                 selectedCell.querySelector("select");
-            if (inputElement.ariaReadOnly === "false") {
-                inputElement.ariaReadOnly = "true";
-            } else {
-                inputElement.readOnly = true;
-            }
+
+            // console.log(input.hasAttribute("aria-readOnly"));
+
+            // if (input.ariaReadOnly === "false") {
+            //     input.ariaReadOnly = "true";
+            // } else {
+            //     input.readOnly = true;
+            // }
         });
         selectedCells.clear();
     }
@@ -331,18 +337,11 @@ document.addEventListener("keydown", (e) => {
     const input =
         firstSelectedCell.querySelector("input") ||
         firstSelectedCell.querySelector("select");
-    const checkbox = firstSelectedCell.querySelector("input[type='checkbox']");
     const currentRow = parseInt(firstSelectedCell.dataset.row);
     const currentCol = parseInt(firstSelectedCell.dataset.col);
-    const isEditing =
-        input.readOnly === false || input.ariaReadOnly === "false";
-
-    // checkbox spacebar
-    if (checkbox && e.key === " ") {
-        e.preventDefault();
-        checkbox.checked = !checkbox.checked;
-        return;
-    }
+    let isEditing = input.hasAttribute("aria-readonly")
+        ? input.ariaReadOnly === "false"
+        : input.readOnly === false;
 
     if (isEditing && !isComposing) {
         switch (e.key) {
