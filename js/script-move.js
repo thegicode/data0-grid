@@ -262,6 +262,10 @@ grid.addEventListener("click", (e) => {
     const cell = e.target.closest("td");
 
     if (cell) {
+        // Clear previous selection including th
+        const ths = grid.querySelectorAll("thead th");
+        ths.forEach((th) => th.classList.remove("selected-th"));
+
         if (e.shiftKey && selectedCells.size > 0) {
             selectRange(Array.from(selectedCells)[0], cell);
         } else {
