@@ -22,12 +22,19 @@ let draggingColumn = null;
 
 const csvButton = document.querySelector(".csv-button");
 
+let originalData = [];
+let currentSortOrder = "none";
+let lastSortedColumn = null;
+
 function createGrid(rows, cols) {
+    originalData = [];
     for (let i = 0; i < rows; i++) {
         const row = document.createElement("tr");
         const rowHeader = document.createElement("th");
         rowHeader.textContent = i + 1;
         row.appendChild(rowHeader);
+
+        let rowData = { index: i + 1 };
 
         for (let j = 0; j < cols; j++) {
             const cell = document.createElement("td");
@@ -41,12 +48,14 @@ function createGrid(rows, cols) {
                     input.type = "number";
                     input.value = i + j;
                     input.readOnly = true;
+                    rowData["col" + j] = input.value;
                     break;
                 case 2:
                     input.type = "text";
                     input.setAttribute("list", "ingredientList");
                     input.value = ingredients[i];
                     input.readOnly = true;
+                    rowData["col" + j] = input.value;
                     break;
                 case 3:
                     input = document.createElement("select");
@@ -63,25 +72,26 @@ function createGrid(rows, cols) {
                             input.appendChild(el);
                         });
                     input.ariaReadOnly = true;
+                    rowData["col" + j] = input.value;
                     break;
                 case 4:
                     input.type = "checkbox";
                     if (i % 2 === 0) input.checked = true;
                     input.ariaReadOnly = true;
+                    rowData["col" + j] = input.checked;
                     break;
                 default:
                     input.type = "text";
                     input.value = `s-${i}${j}`;
                     input.readOnly = true;
+                    rowData["col" + j] = input.value;
                     break;
             }
-
-            // 기본적으로 비활성화
-            // if (!input.hasAttribute("aria-readonly")) input.readOnly = true;
 
             cell.appendChild(input);
             row.appendChild(cell);
         }
+        originalData.push(rowData);
         tbody.appendChild(row);
     }
 }
@@ -97,6 +107,59 @@ function createDatalist() {
     document.body.appendChild(datalist);
 }
 
+function renderTable(data) {
+    tbody.innerHTML = "";
+    data.forEach((row, rowIndex) => {
+        const tr = document.createElement("tr");
+        const rowHeader = document.createElement("th");
+        rowHeader.textContent = row.index;
+        tr.appendChild(rowHeader);
+
+        let colIndex = 0;
+        for (let key in row) {
+            if (key !== "index") {
+                const cell = document.createElement("td");
+                const input = document.createElement("input");
+
+                if (typeof row[key] === "boolean") {
+                    input.type = "checkbox";
+                    input.checked = row[key];
+                } else {
+                    input.type = "text";
+                    input.value = row[key];
+                }
+
+                input.readOnly = true;
+                cell.dataset.row = rowIndex;
+                cell.dataset.col = colIndex;
+                cell.appendChild(input);
+                tr.appendChild(cell);
+
+                colIndex++;
+            }
+        }
+        tbody.appendChild(tr);
+    });
+}
+
+function sortTable(columnIndex, order) {
+    let data = [...originalData];
+    if (order === "ascending") {
+        data.sort((a, b) => {
+            if (a["col" + columnIndex] < b["col" + columnIndex]) return -1;
+            if (a["col" + columnIndex] > b["col" + columnIndex]) return 1;
+            return 0;
+        });
+    } else if (order === "descending") {
+        data.sort((a, b) => {
+            if (a["col" + columnIndex] < b["col" + columnIndex]) return 1;
+            if (a["col" + columnIndex] > b["col" + columnIndex]) return -1;
+            return 0;
+        });
+    }
+    renderTable(data);
+}
+
 function selectCell(cell, add = false) {
     if (!add) {
         selectedCells.forEach((selectedCell) => {
@@ -104,14 +167,6 @@ function selectCell(cell, add = false) {
             const input =
                 selectedCell.querySelector("input") ||
                 selectedCell.querySelector("select");
-
-            // console.log(input.hasAttribute("aria-readOnly"));
-
-            // if (input.ariaReadOnly === "false") {
-            //     input.ariaReadOnly = "true";
-            // } else {
-            //     input.readOnly = true;
-            // }
         });
         selectedCells.clear();
     }
@@ -476,20 +531,30 @@ grid.querySelector("thead").addEventListener("click", (e) => {
     if (e.target.classList.contains("sort-button")) {
         // sort-button 클릭 시 이벤트 핸들러입니다.
         const th = e.target.closest("th");
-        console.log("Sort button clicked in column:", th.textContent.trim());
-        // 여기서 추가 이벤트 로직을 구현합니다.
+        const colIndex = Array.from(th.parentNode.children).indexOf(th) - 1; // -1 to account for row header
         const button = e.target;
 
-        // 현재 상태를 확인하고 다음 상태로 변경합니다.
-        if (button.dataset.ascending === "true") {
-            button.dataset.ascending = "false";
-        } else if (button.dataset.ascending === "false") {
-            button.dataset.ascending = "";
-        } else {
-            button.dataset.ascending = "true";
+        if (lastSortedColumn !== colIndex) {
+            currentSortOrder = "none";
         }
 
-        console.log("New dataset.ascending:", button.dataset.ascending);
+        if (currentSortOrder === "none") {
+            currentSortOrder = "ascending";
+        } else if (currentSortOrder === "ascending") {
+            currentSortOrder = "descending";
+        } else {
+            currentSortOrder = "none";
+        }
+
+        button.dataset.sort = currentSortOrder;
+
+        if (currentSortOrder === "none") {
+            renderTable(originalData);
+        } else {
+            sortTable(colIndex, currentSortOrder);
+        }
+
+        lastSortedColumn = colIndex;
     }
 });
 

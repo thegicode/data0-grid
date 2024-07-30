@@ -116,13 +116,13 @@ select:focus:not([aria-readonly="true"]) {
     background-color: #fff;
     margin-left: 20px;
 }
-.sort-button[data-ascending=""] {
+.sort-button[data-sort="none"] {
     background-position: -10000rem;
 }
-.sort-button[data-ascending="true"] {
+.sort-button[data-sort="ascending"] {
     transform: rotate(0);
 }
-.sort-button[data-ascending="false"] {
+.sort-button[data-sort="descending"] {
     transform: rotate(180deg);
 }
 
