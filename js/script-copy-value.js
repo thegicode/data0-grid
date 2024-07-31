@@ -617,6 +617,9 @@ grid.querySelector("thead").addEventListener("mousemove", (e) => {
 
 grid.addEventListener("mousedown", (e) => {
     const cell = e.target.closest("td");
+
+    if (e.shiftKey) return;
+
     if (cell) {
         isSelecting = true;
         selectionStart = cell;
