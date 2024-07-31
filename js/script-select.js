@@ -6,147 +6,352 @@ const ingredients = [
     "당근",
     "다시마",
     "계란",
-    "유기농 계란",
     "감자",
     "토마토",
-    "미니 토마토",
     "양파",
     "호박",
     "오이",
 ];
-let selectedCell = null;
+let selectedCells = new Set();
+let currentSelectionRange = [];
+let clipboardData = [];
 let isComposing = false;
-let popoverIndex = -1;
+let isDragging = false; // 드래그 상태를 저장할 변수
+let startCell = null;
+let draggingColumn = null;
+
+const csvButton = document.querySelector(".csv-button");
+
+let originalData = [];
+let currentSortOrder = "none";
+let lastSortedColumn = null;
 
 function createGrid(rows, cols) {
+    originalData = [];
     for (let i = 0; i < rows; i++) {
         const row = document.createElement("tr");
         const rowHeader = document.createElement("th");
         rowHeader.textContent = i + 1;
         row.appendChild(rowHeader);
 
+        let rowData = { index: i + 1 };
+
         for (let j = 0; j < cols; j++) {
             const cell = document.createElement("td");
+            cell.dataset.row = i;
+            cell.dataset.col = j;
 
-            if (i === 1 && j === 1) {
-                // 특정 셀에 체크박스를 추가
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.dataset.row = i;
-                checkbox.dataset.col = j;
-                cell.appendChild(checkbox);
-            } else {
-                const input = document.createElement("input");
-                input.type = "text";
-                input.dataset.row = i;
-                input.dataset.col = j;
-                input.readOnly = true; // 기본적으로 비활성화
-                cell.appendChild(input);
+            let input = document.createElement("input");
+
+            switch (j) {
+                case 1:
+                    input.type = "number";
+                    input.value = i + j;
+                    input.readOnly = true;
+                    rowData["col" + j] = input.value;
+                    break;
+                case 2:
+                    input.type = "text";
+                    input.setAttribute("list", "ingredientList");
+                    input.value = ingredients[i];
+                    input.readOnly = true;
+                    rowData["col" + j] = input.value;
+                    break;
+                case 3:
+                    input = document.createElement("select");
+                    input.name = "select-list";
+                    ingredients
+                        .map((name, index) => {
+                            const option = document.createElement("option");
+                            option.value = name;
+                            option.textContent = name;
+                            if (i === index) option.selected = true;
+                            return option;
+                        })
+                        .forEach((el) => {
+                            input.appendChild(el);
+                        });
+                    // input.ariaReadOnly = true;
+                    rowData["col" + j] = input.value;
+                    break;
+                case 4:
+                    input.type = "checkbox";
+                    if (i % 2 === 0) input.checked = true;
+                    // input.ariaReadOnly = true;
+                    rowData["col" + j] = input.checked;
+                    break;
+                default:
+                    input.type = "text";
+                    input.value = `s-${i}${j}`;
+                    input.readOnly = true;
+                    rowData["col" + j] = input.value;
+                    break;
             }
 
+            cell.appendChild(input);
             row.appendChild(cell);
         }
+        originalData.push(rowData);
         tbody.appendChild(row);
     }
 }
 
-function createSelect() {
-    const popover = document.createElement("div");
-    const select = document.createElement("select");
-    popover.appendChild(select);
-    popover.id = "popover";
-    popover.className = "popover";
-    popover.style.display = "none";
-    document.body.appendChild(popover);
+function createDatalist() {
+    const datalist = document.createElement("datalist");
+    datalist.id = "ingredientList";
+    ingredients.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item;
+        datalist.appendChild(option);
+    });
+    document.body.appendChild(datalist);
 }
 
-function showPopover(input, matches) {
-    const popover = document.getElementById("popover");
-    const select = popover.querySelector("select");
-    if (matches.length === 0) {
-        popover.style.display = "none";
-        return;
-    }
+function renderTable(data) {
+    tbody.innerHTML = "";
+    data.forEach((row, rowIndex) => {
+        const tr = document.createElement("tr");
+        const rowHeader = document.createElement("th");
+        rowHeader.textContent = row.index;
+        tr.appendChild(rowHeader);
 
-    select.innerHTML = matches
-        .map((item) => `<option>${item}</option>`)
-        .join("");
-    const rect = input.getBoundingClientRect();
-    popover.style.top = `${rect.bottom + window.scrollY}px`;
-    popover.style.left = `${rect.left + window.scrollX}px`;
-    popover.style.width = `${rect.width}px`;
-    popover.style.display = "block";
+        let colIndex = 0;
+        for (let key in row) {
+            if (key !== "index") {
+                const cell = document.createElement("td");
+                const input = document.createElement("input");
 
-    const options = popover.querySelectorAll("option");
-    options.forEach((item, index) => {
-        item.addEventListener("change", () => {
-            input.value = item.textContent;
-            hidePopover();
-            input.focus();
+                if (typeof row[key] === "boolean") {
+                    input.type = "checkbox";
+                    input.checked = row[key];
+                } else {
+                    input.type = "text";
+                    input.value = row[key];
+                }
+
+                input.readOnly = true;
+                cell.dataset.row = rowIndex;
+                cell.dataset.col = colIndex;
+                cell.appendChild(input);
+                tr.appendChild(cell);
+
+                colIndex++;
+            }
+        }
+        tbody.appendChild(tr);
+    });
+}
+
+function sortTable(columnIndex, order) {
+    let data = [...originalData];
+    if (order === "ascending") {
+        data.sort((a, b) => {
+            if (a["col" + columnIndex] < b["col" + columnIndex]) return -1;
+            if (a["col" + columnIndex] > b["col" + columnIndex]) return 1;
+            return 0;
         });
-    });
-    popoverIndex = -1;
-}
-
-function hidePopover() {
-    const popover = document.getElementById("popover");
-    popover.style.display = "none";
-    popoverIndex = -1;
-}
-
-function highlightPopoverItem(index) {
-    const popover = document.getElementById("popover");
-    const items = popover.querySelectorAll(".popover-item");
-    items.forEach((item, i) => {
-        item.classList.toggle("selected", i === index);
-    });
-}
-
-function selectCell(cell) {
-    if (selectedCell) {
-        selectedCell.classList.remove("selected");
-        const selectedInput = selectedCell.querySelector("input[type='text']");
-        if (selectedInput) selectedInput.readOnly = true; // 선택 해제 시 비활성화
-        hidePopover(); // 선택 해제 시 팝오버 숨기기
+    } else if (order === "descending") {
+        data.sort((a, b) => {
+            if (a["col" + columnIndex] < b["col" + columnIndex]) return 1;
+            if (a["col" + columnIndex] > b["col" + columnIndex]) return -1;
+            return 0;
+        });
     }
-    selectedCell = cell;
-    selectedCell.classList.add("selected");
+    renderTable(data);
+}
+
+function selectCell(cell, add = false) {
+    if (!add) {
+        selectedCells.forEach((selectedCell) => {
+            selectedCell.classList.remove("selected");
+            const input =
+                selectedCell.querySelector("input") ||
+                selectedCell.querySelector("select");
+        });
+        selectedCells.clear();
+    }
+
+    selectedCells.add(cell);
+    cell.classList.add("selected");
+}
+
+function selectRange(dragStartCell, endCell) {
+    const startRow = parseInt(dragStartCell.dataset.row);
+    const startCol = parseInt(dragStartCell.dataset.col);
+    const endRow = parseInt(endCell.dataset.row);
+    const endCol = parseInt(endCell.dataset.col);
+
+    const minRow = Math.min(startRow, endRow);
+    const maxRow = Math.max(startRow, endRow);
+    const minCol = Math.min(startCol, endCol);
+    const maxCol = Math.max(startCol, endCol);
+
+    let result = [];
+    for (let row = minRow; row <= maxRow; row++) {
+        let rows = [];
+        for (let col = minCol; col <= maxCol; col++) {
+            const cell = tbody.querySelector(
+                `td[data-row="${row}"][data-col="${col}"]`
+            );
+            if (cell) selectCell(cell, true);
+            rows.push(cell);
+        }
+        result.push(rows);
+    }
+    currentSelectionRange = result;
+
+    csvButton.hidden = false;
+}
+
+function copyCells() {
+    const getInputValue = (cell) => {
+        const inputElement =
+            cell.querySelector("input") || cell.querySelector("select");
+        if (inputElement.type === "checkbox") {
+            result = inputElement.checked;
+        } else {
+            result = inputElement.value;
+        }
+
+        return result;
+    };
+
+    let clipboardText;
+    if (selectedCells.size === 1) {
+        const cell = [...selectedCells][0];
+        clipboardText = getInputValue(cell);
+    } else {
+        clipboardData = currentSelectionRange.map((row) =>
+            row.map((cell) => getInputValue(cell))
+        );
+        clipboardText = clipboardData.map((row) => row.join("\t")).join("\n");
+    }
+
+    navigator.clipboard.writeText(clipboardText).then(() => {
+        console.log("Data copied to clipboard");
+    });
+}
+
+function pasteCells() {
+    navigator.clipboard
+        .readText()
+        .then((text) => {
+            const firstSelectedCell = Array.from(selectedCells)[0];
+            let targetRow = parseInt(firstSelectedCell.dataset.row);
+            let targetCol = parseInt(firstSelectedCell.dataset.col);
+
+            const data = text.split("\n").map((row) => row.split("\t"));
+
+            data.forEach((row, rowIndex) => {
+                row.forEach((value, colIndex) => {
+                    const targetCellSelector = `td[data-row="${
+                        targetRow + rowIndex
+                    }"][data-col="${targetCol + colIndex}"]`;
+                    let targetCell = tbody.querySelector(targetCellSelector);
+                    if (!targetCell) return;
+
+                    const input =
+                        targetCell.querySelector("input") ||
+                        targetCell.querySelector("select");
+                    if (!input) return;
+
+                    switch (input.type) {
+                        case "checkbox":
+                            input.checked = Boolean(value === "true");
+                            break;
+                        case "number":
+                            input.value = parseInt(value) || "";
+                            break;
+                        default:
+                            input.value = value;
+                    }
+
+                    selectedCells.add(targetCell);
+                    targetCell.classList.add("selected");
+                });
+            });
+        })
+        .catch((err) => {
+            console.error("Failed to read clipboard contents: ", err);
+        });
+}
+
+function moveTo(row, col) {
+    const nextCell = tbody.querySelector(
+        `td[data-row="${row}"][data-col="${col}"]`
+    );
+    if (nextCell) {
+        selectCell(nextCell);
+    }
+}
+
+function selectColumn(col) {
+    const cells = tbody.querySelectorAll(`td[data-col="${col}"]`);
+    cells.forEach((cell) => selectCell(cell, true));
+
+    // Add class to the selected th
+    const th = grid.querySelector(`thead th:nth-child(${col + 2})`); // +2 to account for row header and 0-index
+    if (th) {
+        th.classList.add("selected-th");
+    }
+}
+
+function moveColumn(from, to) {
+    const rows = tbody.querySelectorAll("tr");
+    rows.forEach((row) => {
+        const cells = Array.from(row.children);
+        const fromCell = cells[from + 1]; // +1 to account for row header
+        const toCell = cells[to + 1];
+        row.insertBefore(fromCell, to < from ? toCell : toCell.nextSibling);
+        fromCell.dataset.col = to;
+        toCell.dataset.col = from;
+    });
+
+    // Move column header
+    const headers = grid.querySelectorAll("thead th");
+    const fromHeader = headers[from + 1];
+    const toHeader = headers[to + 1];
+    grid.querySelector("thead tr").insertBefore(
+        fromHeader,
+        to < from ? toHeader : toHeader.nextSibling
+    );
 }
 
 grid.addEventListener("click", (e) => {
     const cell = e.target.closest("td");
+
     if (cell) {
-        selectCell(cell);
+        // Clear previous selection including th
+        const ths = grid.querySelectorAll("thead th");
+        ths.forEach((th) => th.classList.remove("selected-th"));
+
+        csvButton.hidden = true;
+
+        if (e.shiftKey && selectedCells.size > 0) {
+            selectRange(Array.from(selectedCells)[0], cell);
+        } else {
+            selectCell(cell, e.shiftKey);
+        }
     }
 });
 
 grid.addEventListener("dblclick", (e) => {
     const cell = e.target.closest("td");
     if (cell) {
-        const input = cell.querySelector("input[type='text']");
+        const input =
+            cell.querySelector("input") || cell.querySelector("select");
         if (input) {
-            input.readOnly = false;
+            if (input.ariaReadOnly === "true") {
+                input.ariaReadOnly = "false";
+            } else {
+                input.readOnly = false;
+            }
             input.focus();
         }
     }
 });
 
-grid.addEventListener("input", (e) => {
-    if (e.target.tagName === "INPUT" && e.target.type === "text") {
-        const { row, col } = e.target.dataset;
-        console.log(`셀 (${row}, ${col}) 값 변경: ${e.target.value}`);
-        e.target.readOnly = false; // 입력 시 편집 모드 활성화
-
-        // 입력한 텍스트와 일치하는 식자재 찾기
-        const matches = ingredients.filter((item) =>
-            item.includes(e.target.value)
-        );
-        console.log(matches);
-        showPopover(e.target, matches);
-    }
-});
-
-grid.addEventListener("compositionstart", (e) => {
+grid.addEventListener("compositionstart", () => {
     isComposing = true;
 });
 
@@ -154,79 +359,112 @@ grid.addEventListener("compositionend", (e) => {
     isComposing = false;
 });
 
-document.addEventListener("keydown", (e) => {
-    if (!selectedCell) return;
-
-    const input = selectedCell.querySelector("input");
-    const checkbox = selectedCell.querySelector("input[type='checkbox']");
-    const currentRow = parseInt(input?.dataset.row || checkbox?.dataset.row);
-    const currentCol = parseInt(input?.dataset.col || checkbox?.dataset.col);
-    const isEditing = document.activeElement === input;
-    const popover = document.getElementById("popover");
-    const items = popover.querySelectorAll(".popover-item");
-    const isPrintableKey = (e) => {
-        const key = e.key;
-        const isPrintable =
-            /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]$/.test(key);
-        return isPrintable && !e.ctrlKey && !e.altKey && !e.metaKey;
-    };
-
+grid.addEventListener("focusin", (e) => {
     if (
-        popover.style.display === "block" &&
-        (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter")
+        e.target.tagName === "INPUT" &&
+        e.target.type === "text" &&
+        e.target.value.trim().length > 0
     ) {
+        // e.target.setAttribute("list", "ingredientList");
+    } else {
+        // e.target.removeAttribute("list");
+    }
+});
+
+grid.addEventListener("focusout", (e) => {
+    if (e.target.tagName === "INPUT" && e.target.type === "text") {
+        setTimeout(() => {
+            // e.target.removeAttribute("list");
+        }, 100); // Timeout to allow datalist to work on blur
+    }
+});
+
+grid.addEventListener("input", (e) => {
+    if (
+        e.target.tagName === "INPUT" &&
+        e.target.type === "text" &&
+        !isComposing
+    ) {
+        const { row, col } = e.target.closest("td").dataset;
+        console.log(`셀 (${row}, ${col}) 값 변경: ${e.target.value}`);
+        e.target.readOnly = false;
+    }
+
+    // if (e.target.value.trim().length > 0) {
+    // e.target.setAttribute("list", "ingredientList");
+    // }
+});
+
+document.addEventListener("keydown", (e) => {
+    if (!selectedCells.size) return;
+
+    const firstSelectedCell = Array.from(selectedCells)[0];
+    const input =
+        firstSelectedCell.querySelector("input") ||
+        firstSelectedCell.querySelector("select");
+    const currentRow = parseInt(firstSelectedCell.dataset.row);
+    const currentCol = parseInt(firstSelectedCell.dataset.col);
+    let isEditing = input.hasAttribute("aria-readonly")
+        ? input.ariaReadOnly === "false"
+        : input.readOnly === false;
+
+    // Check if the selected cell contains a checkbox and handle space key
+    if (input && input.type === "checkbox" && e.key === " ") {
         e.preventDefault();
-        if (e.key === "ArrowDown") {
-            popoverIndex = (popoverIndex + 1) % items.length;
-        } else if (e.key === "ArrowUp") {
-            popoverIndex = (popoverIndex - 1 + items.length) % items.length;
-        } else if (e.key === "Enter") {
-            if (popoverIndex >= 0) {
-                items[popoverIndex].click();
-            } else {
-                hidePopover();
-            }
+        input.focus();
+        input.checked = !input.checked;
+        return;
+    }
+
+    if (input) {
+        if (input.type === "checkbox" && e.key === " ") {
+            e.preventDefault();
+            input.focus();
+            input.checked = !input.checked;
+            return;
+        } else if (input.tagName === "SELECT" && e.key === " ") {
+            input.focus();
             return;
         }
-        highlightPopoverItem(popoverIndex);
-        return;
-    }
-
-    if (checkbox && e.key === " ") {
-        e.preventDefault();
-        checkbox.checked = !checkbox.checked;
-        return;
-    }
-
-    if (isPrintableKey(e)) {
-        if (input) {
-            input.readOnly = false;
-            input.focus();
-        }
-        return;
     }
 
     if (isEditing && !isComposing) {
         switch (e.key) {
             case "Enter":
                 e.preventDefault();
-                hidePopover();
                 if (e.shiftKey) {
                     moveTo(currentRow - 1, currentCol);
                 } else {
                     moveTo(currentRow + 1, currentCol);
                 }
+                const nextCell = Array.from(selectedCells)[0];
+                const nextInput =
+                    nextCell.querySelector("input") ||
+                    nextCell.querySelector("select");
+                if (nextInput.ariaReadOnly === "true") {
+                    nextInput.ariaReadOnly = "false";
+                } else {
+                    nextInput.readOnly = false;
+                }
+                nextInput.focus();
                 break;
             case "Escape":
                 e.preventDefault();
-                if (input) {
-                    input.blur();
+                input.blur();
+                if (input.ariaReadOnly === "false") {
+                    input.ariaReadOnly = "true";
+                } else {
+                    input.readOnly = true;
                 }
-                hidePopover();
                 break;
             case "Tab":
                 e.preventDefault();
-                hidePopover();
+                input.blur();
+                if (input.ariaReadOnly === "false") {
+                    input.ariaReadOnly = "true";
+                } else {
+                    input.readOnly = true;
+                }
                 if (e.shiftKey) {
                     moveTo(currentRow, currentCol - 1);
                 } else {
@@ -254,10 +492,14 @@ document.addEventListener("keydown", (e) => {
                 break;
             case "Enter":
                 e.preventDefault();
-                if (input) {
-                    input.readOnly = false; // 엔터 키로 편집 모드 활성화
-                    input.focus();
+                if (!input) return;
+
+                if (input.ariaReadOnly === "true") {
+                    input.ariaReadOnly = "false";
+                } else {
+                    input.readOnly = false;
                 }
+                input.focus();
                 break;
             case "Tab":
                 e.preventDefault();
@@ -271,17 +513,237 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-function moveTo(row, col) {
-    const nextCell = tbody.querySelector(
-        `td:has(input[data-row="${row}"][data-col="${col}"]), 
-         td:has(input[type='checkbox'][data-row="${row}"][data-col="${col}"])`
-    );
-    console.log("nextCell", nextCell);
-    if (nextCell) {
-        selectCell(nextCell);
-    }
+function clearSelection() {
+    selectedCells.forEach((selectedCell) => {
+        selectedCell.classList.remove("selected");
+        const inputElement =
+            selectedCell.querySelector("input") ||
+            selectedCell.querySelector("select");
+        if (inputElement.ariaReadOnly === "false") {
+            inputElement.ariaReadOnly = "true";
+        } else {
+            inputElement.readOnly = true;
+        }
+    });
+    selectedCells.clear();
+
+    // Clear th selection
+    const ths = grid.querySelectorAll("thead th");
+    ths.forEach((th) => th.classList.remove("selected-th"));
 }
 
-createGrid(10, 3);
-createSelect();
+grid.querySelector("thead").addEventListener("mousedown", (e) => {
+    const th = e.target.closest("th");
+    if (th) {
+        clearSelection();
+        const colIndex = Array.from(th.parentNode.children).indexOf(th) - 1; // -1 to account for row header
+        if (colIndex >= 0) {
+            isDragging = true;
+            draggingColumn = colIndex;
+            selectColumn(colIndex);
+            th.classList.add("dragging");
+        }
+    }
+});
+
+// sort-button 클릭 이벤트는 th 안의 버튼에 적용됩니다.
+grid.querySelector("thead").addEventListener("click", (e) => {
+    if (e.target.classList.contains("sort-button")) {
+        // sort-button 클릭 시 이벤트 핸들러입니다.
+        const th = e.target.closest("th");
+        const colIndex = Array.from(th.parentNode.children).indexOf(th) - 1; // -1 to account for row header
+        const button = e.target;
+
+        if (lastSortedColumn !== colIndex) {
+            currentSortOrder = "none";
+        }
+
+        if (currentSortOrder === "none") {
+            currentSortOrder = "ascending";
+        } else if (currentSortOrder === "ascending") {
+            currentSortOrder = "descending";
+        } else {
+            currentSortOrder = "none";
+        }
+
+        button.dataset.sort = currentSortOrder;
+
+        if (currentSortOrder === "none") {
+            renderTable(originalData);
+        } else {
+            sortTable(colIndex, currentSortOrder);
+        }
+
+        lastSortedColumn = colIndex;
+    }
+});
+
+grid.querySelector("thead").addEventListener("mouseup", (e) => {
+    const th = e.target.closest("th");
+    if (isDragging && draggingColumn !== null) {
+        isDragging = false;
+        draggingColumn = null;
+        if (th) {
+            th.classList.remove("dragging");
+        }
+    }
+});
+
+grid.querySelector("thead").addEventListener("mousemove", (e) => {
+    if (isDragging && draggingColumn !== null) {
+        const th = e.target.closest("th");
+        if (th) {
+            const colIndex = Array.from(th.parentNode.children).indexOf(th) - 1; // -1 to account for row header
+            if (colIndex >= 0 && colIndex !== draggingColumn) {
+                moveColumn(draggingColumn, colIndex);
+                draggingColumn = colIndex;
+            }
+        }
+    }
+});
+
+grid.addEventListener("mousedown", (e) => {
+    const cell = e.target.closest("td");
+    if (cell) {
+        isDragging = true;
+        startCell = cell;
+        selectCell(cell, e.shiftKey);
+    }
+});
+
+grid.addEventListener("mousemove", (e) => {
+    if (isDragging) {
+        const cell = e.target.closest("td");
+        if (cell && startCell !== cell) {
+            selectRange(startCell, cell);
+        }
+    }
+});
+
+grid.addEventListener("mouseup", () => {
+    if (isDragging) {
+        isDragging = false;
+    }
+});
+
+grid.addEventListener("dragstart", (e) => {
+    const cell = e.target.closest("td");
+    if (cell && selectedCells.has(cell)) {
+        // handle drag start
+    } else {
+        e.preventDefault();
+    }
+});
+
+grid.addEventListener("dragover", (e) => {
+    e.preventDefault();
+});
+
+grid.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const cell = e.target.closest("td");
+    if (cell) {
+        pasteCells();
+    }
+});
+
+document.addEventListener("copy", (e) => {
+    copyCells();
+    e.preventDefault();
+});
+
+document.addEventListener("paste", (e) => {
+    pasteCells();
+    e.preventDefault();
+});
+
+csvButton.addEventListener("click", (e) => {
+    const getInputValue = (cell) => {
+        const inputElement =
+            cell.querySelector("input") || cell.querySelector("select");
+        if (inputElement.type === "checkbox") {
+            return inputElement.checked ? "true" : "false";
+        } else {
+            return inputElement.value;
+        }
+    };
+
+    // Convert selectedCells to an array and sort by row and column
+    const sortedCells = [...selectedCells].sort((a, b) => {
+        const aRow = parseInt(a.dataset.row);
+        const aCol = parseInt(a.dataset.col);
+        const bRow = parseInt(b.dataset.row);
+        const bCol = parseInt(b.dataset.col);
+
+        if (aRow === bRow) {
+            return aCol - bCol;
+        }
+        return aRow - bRow;
+    });
+
+    // Create a 2D array to store the clipboard data and keep track of non-empty columns
+    const rows = [];
+    const selectedCols = new Set();
+    sortedCells.forEach((cell) => {
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+        const value = getInputValue(cell);
+
+        if (!rows[row]) {
+            rows[row] = [];
+        }
+
+        if (value !== "") {
+            rows[row][col] = value;
+            selectedCols.add(col);
+        }
+    });
+
+    // Filter out empty rows
+    const filteredRows = rows.filter(
+        (row) => row !== undefined && row.some((cell) => cell !== undefined)
+    );
+
+    // Convert the 2D array to CSV text and include row header numbers
+    const csvRows = filteredRows.map((row, rowIndex) =>
+        [
+            rowIndex + 1,
+            ...Array.from(selectedCols)
+                .sort((a, b) => a - b)
+                .map((col) => row[col] || ""),
+        ].join(",")
+    );
+
+    // Add headers to CSV text based on selected columns
+    const headers = Array.from(grid.querySelectorAll("thead th")).map(
+        (th) => th.textContent
+    );
+    const selectedHeaders = [
+        "Row Number",
+        ...Array.from(selectedCols)
+            .sort((a, b) => a - b)
+            .map((colIndex) => headers[colIndex + 1]),
+    ]; // +1 to account for row header
+    const csvText = [selectedHeaders.join(","), ...csvRows].join("\n");
+
+    downloadCSV(csvText, "data.csv");
+
+    csvButton.hidden = true;
+});
+
+function downloadCSV(csv, filename) {
+    const csvFile = new Blob([csv], { type: "text/csv" });
+    const downloadLink = document.createElement("a");
+
+    downloadLink.download = filename;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+
+createGrid(10, 10);
+createDatalist();
 selectCell(tbody.querySelector("td")); // 초기 선택
