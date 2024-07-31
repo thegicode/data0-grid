@@ -7,6 +7,7 @@
     -   [x]  tab, shift+tab 이동
     -   [x]  shift+enter 로 위 row 로 이동
     -   [x]  enter 로 수정하면 다음 row 는 focus 인 상태로 값을 바로 입력할 수 있다.
+    -   [ ]  셀 이동시 페이지 아웃하면 스크롤 자동 이동
 
 ### input
 
