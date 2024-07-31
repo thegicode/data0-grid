@@ -256,11 +256,16 @@ function pasteCells() {
                     if (!input) return;
 
                     switch (input.type) {
-                        case "checkbox":
-                            input.checked = Boolean(value === "true");
-                            break;
                         case "number":
-                            input.value = parseInt(value) || "";
+                            if (parseInt(value)) input.value = parseInt(value);
+                            break;
+                        case "checkbox":
+                            if (value === "true" || value === "false")
+                                input.checked = Boolean(value === "true");
+                            break;
+                        case "select-one":
+                            if (ingredients.includes(value))
+                                input.value = value;
                             break;
                         default:
                             input.value = value;
