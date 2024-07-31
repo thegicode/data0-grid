@@ -208,7 +208,7 @@ function selectRange(dragStartCell, endCell) {
     }
     currentSelectionRange = result;
 
-    csvButton.hidden = false;
+    if (selectedCells.size > 1) csvButton.hidden = false;
 }
 
 function copyCells() {
@@ -330,7 +330,30 @@ function moveColumn(from, to) {
     );
 }
 
+// 검색 기능 추가
+function highlightSearchResults(searchText) {
+    clearHighlights();
+
+    const cells = tbody.querySelectorAll("td");
+    cells.forEach((cell) => {
+        const input =
+            cell.querySelector("input") || cell.querySelector("select");
+        if (input && input.value.includes(searchText)) {
+            cell.classList.add("highlight");
+        }
+    });
+}
+
+function clearHighlights() {
+    const highlightedCells = tbody.querySelectorAll(".highlight");
+    highlightedCells.forEach((cell) => {
+        cell.classList.remove("highlight");
+    });
+}
+
 grid.addEventListener("click", (e) => {
+    clearHighlights();
+
     const cell = e.target.closest("td");
 
     if (cell) {
@@ -511,6 +534,15 @@ document.addEventListener("keydown", (e) => {
                     moveTo(currentRow, currentCol + 1);
                 }
                 break;
+        }
+    }
+
+    // cmd + f 또는 ctrl + f 로 검색을 활성화하는 부분 추가
+    if (e.key === "f" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        const searchText = prompt("Enter text to search:");
+        if (searchText) {
+            highlightSearchResults(searchText);
         }
     }
 });
