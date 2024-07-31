@@ -539,9 +539,15 @@ tbody.addEventListener("change", (e) => {
 });
 
 function clearSelection() {
+    const selctedTh = grid.querySelector(".selected-th");
+    if (selctedTh) {
+        selctedTh.classList.remove("selected-th");
+    }
+
     selectedCells.forEach((selectedCell) => {
         selectedCell.classList.remove("selected");
     });
+
     selectedCells.clear();
 }
 
