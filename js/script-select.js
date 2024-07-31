@@ -19,6 +19,7 @@ let isComposing = false;
 let isDragging = false; // 드래그 상태를 저장할 변수
 let startCell = null;
 let draggingColumn = null;
+let originalValue = ""; // 원래의 값을 저장할 변수
 
 const csvButton = document.querySelector(".csv-button");
 
@@ -365,14 +366,9 @@ grid.addEventListener("compositionend", (e) => {
 });
 
 grid.addEventListener("focusin", (e) => {
-    if (
-        e.target.tagName === "INPUT" &&
-        e.target.type === "text" &&
-        e.target.value.trim().length > 0
-    ) {
-        // e.target.setAttribute("list", "ingredientList");
-    } else {
-        // e.target.removeAttribute("list");
+    if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") {
+        // 포커스가 인풋이나 셀렉트로 들어오면 원래 값을 저장
+        originalValue = e.target.value;
     }
 });
 
@@ -448,6 +444,7 @@ document.addEventListener("keydown", (e) => {
                 break;
             case "Escape":
                 e.preventDefault();
+                input.value = originalValue;
                 input.blur();
                 if (input.ariaReadOnly === "false") {
                     input.ariaReadOnly = "true";
