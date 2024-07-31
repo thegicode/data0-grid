@@ -19,7 +19,6 @@ let isComposing = false;
 let isDragging = false; // 드래그 상태를 저장할 변수
 let startCell = null;
 let draggingColumn = null;
-let originalValue = ""; // 원래의 값을 저장할 변수
 
 const csvButton = document.querySelector(".csv-button");
 
@@ -257,16 +256,11 @@ function pasteCells() {
                     if (!input) return;
 
                     switch (input.type) {
-                        case "number":
-                            if (parseInt(value)) input.value = parseInt(value);
-                            break;
                         case "checkbox":
-                            if (value === "true" || value === "false")
-                                input.checked = Boolean(value === "true");
+                            input.checked = Boolean(value === "true");
                             break;
-                        case "select-one":
-                            if (ingredients.includes(value))
-                                input.value = value;
+                        case "number":
+                            input.value = parseInt(value) || "";
                             break;
                         default:
                             input.value = value;
@@ -366,9 +360,14 @@ grid.addEventListener("compositionend", (e) => {
 });
 
 grid.addEventListener("focusin", (e) => {
-    if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") {
-        // 포커스가 인풋이나 셀렉트로 들어오면 원래 값을 저장
-        originalValue = e.target.value;
+    if (
+        e.target.tagName === "INPUT" &&
+        e.target.type === "text" &&
+        e.target.value.trim().length > 0
+    ) {
+        // e.target.setAttribute("list", "ingredientList");
+    } else {
+        // e.target.removeAttribute("list");
     }
 });
 
@@ -409,19 +408,6 @@ document.addEventListener("keydown", (e) => {
         ? input.ariaReadOnly === "false"
         : input.readOnly === false;
 
-    if (input && e.key === " ") {
-        if (input.type === "checkbox") {
-            e.preventDefault();
-            input.focus();
-            input.checked = !input.checked;
-            return;
-        } else if (input.tagName === "SELECT") {
-            input.focus();
-            input.ariaReadOnly = "false";
-            return;
-        }
-    }
-
     if (isEditing && !isComposing) {
         switch (e.key) {
             case "Enter":
@@ -444,7 +430,6 @@ document.addEventListener("keydown", (e) => {
                 break;
             case "Escape":
                 e.preventDefault();
-                input.value = originalValue;
                 input.blur();
                 if (input.ariaReadOnly === "false") {
                     input.ariaReadOnly = "true";
@@ -467,7 +452,7 @@ document.addEventListener("keydown", (e) => {
                 }
                 break;
         }
-    } else {
+    } else if (!isEditing) {
         switch (e.key) {
             case "ArrowUp":
                 e.preventDefault();
@@ -504,29 +489,6 @@ document.addEventListener("keydown", (e) => {
                     moveTo(currentRow, currentCol + 1);
                 }
                 break;
-        }
-    }
-});
-
-// Add change event listener for all select elements
-tbody.addEventListener("change", (e) => {
-    if (e.target.tagName === "SELECT") {
-        const currentCell = e.target.closest("td");
-        const currentRow = parseInt(currentCell.dataset.row);
-        const currentCol = parseInt(currentCell.dataset.col);
-
-        currentCell.ariaReadOnly = "true";
-
-        // Move to the next select element
-        moveTo(currentRow + 1, currentCol);
-        const nextCell = tbody.querySelector(
-            `td[data-row="${currentRow + 1}"][data-col="${currentCol}"]`
-        );
-        if (nextCell) {
-            const nextSelect = nextCell.querySelector("select");
-            if (nextSelect) {
-                nextSelect.focus();
-            }
         }
     }
 });
