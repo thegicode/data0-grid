@@ -20,12 +20,13 @@ let isDragging = false; // 드래그 상태를 저장할 변수
 let startCell = null;
 let draggingColumn = null;
 let originalValue = ""; // 원래의 값을 저장할 변수
-
-const csvButton = document.querySelector(".csv-button");
-
 let originalData = [];
 let currentSortOrder = "none";
 let lastSortedColumn = null;
+let isSelecting = false;
+let selectionStart = null;
+let selectionEnd = null;
+const csvButton = document.querySelector(".csv-button");
 
 function createGrid(rows, cols) {
     originalData = [];
@@ -186,6 +187,12 @@ function selectRange(dragStartCell, endCell) {
     const maxRow = Math.max(startRow, endRow);
     const minCol = Math.min(startCol, endCol);
     const maxCol = Math.max(startCol, endCol);
+
+    // Clear previous selection
+    selectedCells.forEach((cell) => {
+        cell.classList.remove("selected");
+    });
+    selectedCells.clear();
 
     let result = [];
     for (let row = minRow; row <= maxRow; row++) {
@@ -534,20 +541,8 @@ tbody.addEventListener("change", (e) => {
 function clearSelection() {
     selectedCells.forEach((selectedCell) => {
         selectedCell.classList.remove("selected");
-        const inputElement =
-            selectedCell.querySelector("input") ||
-            selectedCell.querySelector("select");
-        if (inputElement.ariaReadOnly === "false") {
-            inputElement.ariaReadOnly = "true";
-        } else {
-            inputElement.readOnly = true;
-        }
     });
     selectedCells.clear();
-
-    // Clear th selection
-    const ths = grid.querySelectorAll("thead th");
-    ths.forEach((th) => th.classList.remove("selected-th"));
 }
 
 grid.querySelector("thead").addEventListener("mousedown", (e) => {
@@ -623,25 +618,24 @@ grid.querySelector("thead").addEventListener("mousemove", (e) => {
 grid.addEventListener("mousedown", (e) => {
     const cell = e.target.closest("td");
     if (cell) {
-        isDragging = true;
-        startCell = cell;
-        selectCell(cell, e.shiftKey);
+        isSelecting = true;
+        selectionStart = cell;
+        clearSelection();
+        selectCell(cell);
     }
 });
 
 grid.addEventListener("mousemove", (e) => {
-    if (isDragging) {
+    if (isSelecting) {
         const cell = e.target.closest("td");
-        if (cell && startCell !== cell) {
-            selectRange(startCell, cell);
+        if (cell) {
+            selectRange(selectionStart, cell);
         }
     }
 });
 
 grid.addEventListener("mouseup", () => {
-    if (isDragging) {
-        isDragging = false;
-    }
+    isSelecting = false;
 });
 
 grid.addEventListener("dragstart", (e) => {
@@ -740,8 +734,9 @@ csvButton.addEventListener("click", (e) => {
         "Row Number",
         ...Array.from(selectedCols)
             .sort((a, b) => a - b)
-            .map((colIndex) => headers[colIndex + 1]),
+            .map((colIndex) => headers[colIndex]),
     ]; // +1 to account for row header
+
     const csvText = [selectedHeaders.join(","), ...csvRows].join("\n");
 
     downloadCSV(csvText, "data.csv");
