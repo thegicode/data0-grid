@@ -12,7 +12,7 @@
 ### input
 
     -   [x]  enter로 편집 모드 시작
-    -   [ ]  포커스 된 상태에서 입력하다가 esc 누르면 value 취소
+    -   [x]  포커스 된 상태에서 입력하다가 esc 누르면 value 취소
 
 ### checkbox
 
