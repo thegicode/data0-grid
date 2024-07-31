@@ -71,13 +71,13 @@ function createGrid(rows, cols) {
                         .forEach((el) => {
                             input.appendChild(el);
                         });
-                    // input.ariaReadOnly = true;
+                    input.ariaReadOnly = true;
                     rowData["col" + j] = input.value;
                     break;
                 case 4:
                     input.type = "checkbox";
                     if (i % 2 === 0) input.checked = true;
-                    // input.ariaReadOnly = true;
+                    input.ariaReadOnly = true;
                     rowData["col" + j] = input.checked;
                     break;
                 default:
@@ -408,22 +408,15 @@ document.addEventListener("keydown", (e) => {
         ? input.ariaReadOnly === "false"
         : input.readOnly === false;
 
-    // Check if the selected cell contains a checkbox and handle space key
-    if (input && input.type === "checkbox" && e.key === " ") {
-        e.preventDefault();
-        input.focus();
-        input.checked = !input.checked;
-        return;
-    }
-
-    if (input) {
-        if (input.type === "checkbox" && e.key === " ") {
+    if (input && e.key === " ") {
+        if (input.type === "checkbox") {
             e.preventDefault();
             input.focus();
             input.checked = !input.checked;
             return;
-        } else if (input.tagName === "SELECT" && e.key === " ") {
+        } else if (input.tagName === "SELECT") {
             input.focus();
+            input.ariaReadOnly = "false";
             return;
         }
     }
@@ -472,7 +465,7 @@ document.addEventListener("keydown", (e) => {
                 }
                 break;
         }
-    } else if (!isEditing) {
+    } else {
         switch (e.key) {
             case "ArrowUp":
                 e.preventDefault();
@@ -509,6 +502,29 @@ document.addEventListener("keydown", (e) => {
                     moveTo(currentRow, currentCol + 1);
                 }
                 break;
+        }
+    }
+});
+
+// Add change event listener for all select elements
+tbody.addEventListener("change", (e) => {
+    if (e.target.tagName === "SELECT") {
+        const currentCell = e.target.closest("td");
+        const currentRow = parseInt(currentCell.dataset.row);
+        const currentCol = parseInt(currentCell.dataset.col);
+
+        currentCell.ariaReadOnly = "true";
+
+        // Move to the next select element
+        moveTo(currentRow + 1, currentCol);
+        const nextCell = tbody.querySelector(
+            `td[data-row="${currentRow + 1}"][data-col="${currentCol}"]`
+        );
+        if (nextCell) {
+            const nextSelect = nextCell.querySelector("select");
+            if (nextSelect) {
+                nextSelect.focus();
+            }
         }
     }
 });
