@@ -153,3 +153,7 @@ select:focus:not([aria-readonly="true"]) {
 .csv-button {
     cursor: pointer;
 }
+
+.highlight {
+    background-color: yellow;
+}

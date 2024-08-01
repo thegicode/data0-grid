@@ -19,15 +19,24 @@ let isComposing = false;
 let isDragging = false; // 드래그 상태를 저장할 변수
 let startCell = null;
 let draggingColumn = null;
-
+let originalValue = ""; // 원래의 값을 저장할 변수
+let originalData = [];
+let currentSortOrder = "none";
+let lastSortedColumn = null;
+let isSelecting = false;
+let selectionStart = null;
+let selectionEnd = null;
 const csvButton = document.querySelector(".csv-button");
 
 function createGrid(rows, cols) {
+    originalData = [];
     for (let i = 0; i < rows; i++) {
         const row = document.createElement("tr");
         const rowHeader = document.createElement("th");
         rowHeader.textContent = i + 1;
         row.appendChild(rowHeader);
+
+        let rowData = { index: i + 1 };
 
         for (let j = 0; j < cols; j++) {
             const cell = document.createElement("td");
@@ -41,12 +50,14 @@ function createGrid(rows, cols) {
                     input.type = "number";
                     input.value = i + j;
                     input.readOnly = true;
+                    rowData["col" + j] = input.value;
                     break;
                 case 2:
                     input.type = "text";
                     input.setAttribute("list", "ingredientList");
                     input.value = ingredients[i];
                     input.readOnly = true;
+                    rowData["col" + j] = input.value;
                     break;
                 case 3:
                     input = document.createElement("select");
@@ -63,25 +74,26 @@ function createGrid(rows, cols) {
                             input.appendChild(el);
                         });
                     input.ariaReadOnly = true;
+                    rowData["col" + j] = input.value;
                     break;
                 case 4:
                     input.type = "checkbox";
                     if (i % 2 === 0) input.checked = true;
                     input.ariaReadOnly = true;
+                    rowData["col" + j] = input.checked;
                     break;
                 default:
                     input.type = "text";
                     input.value = `s-${i}${j}`;
                     input.readOnly = true;
+                    rowData["col" + j] = input.value;
                     break;
             }
-
-            // 기본적으로 비활성화
-            // if (!input.hasAttribute("aria-readonly")) input.readOnly = true;
 
             cell.appendChild(input);
             row.appendChild(cell);
         }
+        originalData.push(rowData);
         tbody.appendChild(row);
     }
 }
@@ -97,6 +109,59 @@ function createDatalist() {
     document.body.appendChild(datalist);
 }
 
+function renderTable(data) {
+    tbody.innerHTML = "";
+    data.forEach((row, rowIndex) => {
+        const tr = document.createElement("tr");
+        const rowHeader = document.createElement("th");
+        rowHeader.textContent = row.index;
+        tr.appendChild(rowHeader);
+
+        let colIndex = 0;
+        for (let key in row) {
+            if (key !== "index") {
+                const cell = document.createElement("td");
+                const input = document.createElement("input");
+
+                if (typeof row[key] === "boolean") {
+                    input.type = "checkbox";
+                    input.checked = row[key];
+                } else {
+                    input.type = "text";
+                    input.value = row[key];
+                }
+
+                input.readOnly = true;
+                cell.dataset.row = rowIndex;
+                cell.dataset.col = colIndex;
+                cell.appendChild(input);
+                tr.appendChild(cell);
+
+                colIndex++;
+            }
+        }
+        tbody.appendChild(tr);
+    });
+}
+
+function sortTable(columnIndex, order) {
+    let data = [...originalData];
+    if (order === "ascending") {
+        data.sort((a, b) => {
+            if (a["col" + columnIndex] < b["col" + columnIndex]) return -1;
+            if (a["col" + columnIndex] > b["col" + columnIndex]) return 1;
+            return 0;
+        });
+    } else if (order === "descending") {
+        data.sort((a, b) => {
+            if (a["col" + columnIndex] < b["col" + columnIndex]) return 1;
+            if (a["col" + columnIndex] > b["col" + columnIndex]) return -1;
+            return 0;
+        });
+    }
+    renderTable(data);
+}
+
 function selectCell(cell, add = false) {
     if (!add) {
         selectedCells.forEach((selectedCell) => {
@@ -104,14 +169,6 @@ function selectCell(cell, add = false) {
             const input =
                 selectedCell.querySelector("input") ||
                 selectedCell.querySelector("select");
-
-            // console.log(input.hasAttribute("aria-readOnly"));
-
-            // if (input.ariaReadOnly === "false") {
-            //     input.ariaReadOnly = "true";
-            // } else {
-            //     input.readOnly = true;
-            // }
         });
         selectedCells.clear();
     }
@@ -131,6 +188,12 @@ function selectRange(dragStartCell, endCell) {
     const minCol = Math.min(startCol, endCol);
     const maxCol = Math.max(startCol, endCol);
 
+    // Clear previous selection
+    selectedCells.forEach((cell) => {
+        cell.classList.remove("selected");
+    });
+    selectedCells.clear();
+
     let result = [];
     for (let row = minRow; row <= maxRow; row++) {
         let rows = [];
@@ -145,7 +208,7 @@ function selectRange(dragStartCell, endCell) {
     }
     currentSelectionRange = result;
 
-    csvButton.hidden = false;
+    if (selectedCells.size > 1) csvButton.hidden = false;
 }
 
 function copyCells() {
@@ -201,11 +264,16 @@ function pasteCells() {
                     if (!input) return;
 
                     switch (input.type) {
-                        case "checkbox":
-                            input.checked = Boolean(value === "true");
-                            break;
                         case "number":
-                            input.value = parseInt(value) || "";
+                            if (parseInt(value)) input.value = parseInt(value);
+                            break;
+                        case "checkbox":
+                            if (value === "true" || value === "false")
+                                input.checked = Boolean(value === "true");
+                            break;
+                        case "select-one":
+                            if (ingredients.includes(value))
+                                input.value = value;
                             break;
                         default:
                             input.value = value;
@@ -227,6 +295,11 @@ function moveTo(row, col) {
     );
     if (nextCell) {
         selectCell(nextCell);
+        nextCell.scrollIntoView({
+            behavior: "smooth",
+            block: "center", // 수직 정렬을 지정
+            inline: "end", // 수평 정렬을 지정
+        });
     }
 }
 
@@ -262,7 +335,30 @@ function moveColumn(from, to) {
     );
 }
 
+// 검색 기능 추가
+function highlightSearchResults(searchText) {
+    clearHighlights();
+
+    const cells = tbody.querySelectorAll("td");
+    cells.forEach((cell) => {
+        const input =
+            cell.querySelector("input") || cell.querySelector("select");
+        if (input && input.value.includes(searchText)) {
+            cell.classList.add("highlight");
+        }
+    });
+}
+
+function clearHighlights() {
+    const highlightedCells = tbody.querySelectorAll(".highlight");
+    highlightedCells.forEach((cell) => {
+        cell.classList.remove("highlight");
+    });
+}
+
 grid.addEventListener("click", (e) => {
+    clearHighlights();
+
     const cell = e.target.closest("td");
 
     if (cell) {
@@ -305,14 +401,9 @@ grid.addEventListener("compositionend", (e) => {
 });
 
 grid.addEventListener("focusin", (e) => {
-    if (
-        e.target.tagName === "INPUT" &&
-        e.target.type === "text" &&
-        e.target.value.trim().length > 0
-    ) {
-        // e.target.setAttribute("list", "ingredientList");
-    } else {
-        // e.target.removeAttribute("list");
+    if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") {
+        // 포커스가 인풋이나 셀렉트로 들어오면 원래 값을 저장
+        originalValue = e.target.value;
     }
 });
 
@@ -353,6 +444,19 @@ document.addEventListener("keydown", (e) => {
         ? input.ariaReadOnly === "false"
         : input.readOnly === false;
 
+    if (input && e.key === " ") {
+        if (input.type === "checkbox") {
+            e.preventDefault();
+            input.focus();
+            input.checked = !input.checked;
+            return;
+        } else if (input.tagName === "SELECT") {
+            input.focus();
+            input.ariaReadOnly = "false";
+            return;
+        }
+    }
+
     if (isEditing && !isComposing) {
         switch (e.key) {
             case "Enter":
@@ -375,6 +479,7 @@ document.addEventListener("keydown", (e) => {
                 break;
             case "Escape":
                 e.preventDefault();
+                input.value = originalValue;
                 input.blur();
                 if (input.ariaReadOnly === "false") {
                     input.ariaReadOnly = "true";
@@ -397,7 +502,7 @@ document.addEventListener("keydown", (e) => {
                 }
                 break;
         }
-    } else if (!isEditing) {
+    } else {
         switch (e.key) {
             case "ArrowUp":
                 e.preventDefault();
@@ -436,25 +541,51 @@ document.addEventListener("keydown", (e) => {
                 break;
         }
     }
+
+    // cmd + f 또는 ctrl + f 로 검색을 활성화하는 부분 추가
+    if (e.key === "f" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        const searchText = prompt("Enter text to search:");
+        if (searchText) {
+            highlightSearchResults(searchText);
+        }
+    }
+});
+
+// Add change event listener for all select elements
+tbody.addEventListener("change", (e) => {
+    if (e.target.tagName === "SELECT") {
+        const currentCell = e.target.closest("td");
+        const currentRow = parseInt(currentCell.dataset.row);
+        const currentCol = parseInt(currentCell.dataset.col);
+
+        currentCell.ariaReadOnly = "true";
+
+        // Move to the next select element
+        moveTo(currentRow + 1, currentCol);
+        const nextCell = tbody.querySelector(
+            `td[data-row="${currentRow + 1}"][data-col="${currentCol}"]`
+        );
+        if (nextCell) {
+            const nextSelect = nextCell.querySelector("select");
+            if (nextSelect) {
+                nextSelect.focus();
+            }
+        }
+    }
 });
 
 function clearSelection() {
+    const selctedTh = grid.querySelector(".selected-th");
+    if (selctedTh) {
+        selctedTh.classList.remove("selected-th");
+    }
+
     selectedCells.forEach((selectedCell) => {
         selectedCell.classList.remove("selected");
-        const inputElement =
-            selectedCell.querySelector("input") ||
-            selectedCell.querySelector("select");
-        if (inputElement.ariaReadOnly === "false") {
-            inputElement.ariaReadOnly = "true";
-        } else {
-            inputElement.readOnly = true;
-        }
     });
-    selectedCells.clear();
 
-    // Clear th selection
-    const ths = grid.querySelectorAll("thead th");
-    ths.forEach((th) => th.classList.remove("selected-th"));
+    selectedCells.clear();
 }
 
 grid.querySelector("thead").addEventListener("mousedown", (e) => {
@@ -468,6 +599,38 @@ grid.querySelector("thead").addEventListener("mousedown", (e) => {
             selectColumn(colIndex);
             th.classList.add("dragging");
         }
+    }
+});
+
+// sort-button 클릭 이벤트는 th 안의 버튼에 적용됩니다.
+grid.querySelector("thead").addEventListener("click", (e) => {
+    if (e.target.classList.contains("sort-button")) {
+        // sort-button 클릭 시 이벤트 핸들러입니다.
+        const th = e.target.closest("th");
+        const colIndex = Array.from(th.parentNode.children).indexOf(th) - 1; // -1 to account for row header
+        const button = e.target;
+
+        if (lastSortedColumn !== colIndex) {
+            currentSortOrder = "none";
+        }
+
+        if (currentSortOrder === "none") {
+            currentSortOrder = "ascending";
+        } else if (currentSortOrder === "ascending") {
+            currentSortOrder = "descending";
+        } else {
+            currentSortOrder = "none";
+        }
+
+        button.dataset.sort = currentSortOrder;
+
+        if (currentSortOrder === "none") {
+            renderTable(originalData);
+        } else {
+            sortTable(colIndex, currentSortOrder);
+        }
+
+        lastSortedColumn = colIndex;
     }
 });
 
@@ -497,26 +660,28 @@ grid.querySelector("thead").addEventListener("mousemove", (e) => {
 
 grid.addEventListener("mousedown", (e) => {
     const cell = e.target.closest("td");
+
+    if (e.shiftKey) return;
+
     if (cell) {
-        isDragging = true;
-        startCell = cell;
-        selectCell(cell, e.shiftKey);
+        isSelecting = true;
+        selectionStart = cell;
+        clearSelection();
+        selectCell(cell);
     }
 });
 
 grid.addEventListener("mousemove", (e) => {
-    if (isDragging) {
+    if (isSelecting) {
         const cell = e.target.closest("td");
-        if (cell && startCell !== cell) {
-            selectRange(startCell, cell);
+        if (cell) {
+            selectRange(selectionStart, cell);
         }
     }
 });
 
 grid.addEventListener("mouseup", () => {
-    if (isDragging) {
-        isDragging = false;
-    }
+    isSelecting = false;
 });
 
 grid.addEventListener("dragstart", (e) => {
@@ -608,15 +773,16 @@ csvButton.addEventListener("click", (e) => {
     );
 
     // Add headers to CSV text based on selected columns
-    const headers = Array.from(grid.querySelectorAll("thead th")).map(
+    const headers = Array.from(grid.querySelectorAll("thead th .name")).map(
         (th) => th.textContent
     );
     const selectedHeaders = [
         "Row Number",
         ...Array.from(selectedCols)
             .sort((a, b) => a - b)
-            .map((colIndex) => headers[colIndex + 1]),
+            .map((colIndex) => headers[colIndex]),
     ]; // +1 to account for row header
+
     const csvText = [selectedHeaders.join(","), ...csvRows].join("\n");
 
     downloadCSV(csvText, "data.csv");
