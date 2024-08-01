@@ -298,7 +298,7 @@ function moveTo(row, col) {
         nextCell.scrollIntoView({
             behavior: "smooth",
             block: "center", // 수직 정렬을 지정
-            inline: "end", // 수평 정렬을 지정
+            inline: "center", // 수평 정렬을 지정
         });
     }
 }
@@ -382,11 +382,11 @@ grid.addEventListener("dblclick", (e) => {
         const input =
             cell.querySelector("input") || cell.querySelector("select");
         if (input) {
-            if (input.ariaReadOnly === "true") {
-                input.ariaReadOnly = "false";
-            } else {
-                input.readOnly = false;
-            }
+            // if (input.ariaReadOnly === "true") {
+            //     input.ariaReadOnly = "false";
+            // } else {
+            input.readOnly = false;
+            // }
             input.focus();
         }
     }
@@ -452,7 +452,7 @@ document.addEventListener("keydown", (e) => {
             return;
         } else if (input.tagName === "SELECT") {
             input.focus();
-            input.ariaReadOnly = "false";
+            // input.ariaReadOnly = "false";
             return;
         }
     }
@@ -523,7 +523,6 @@ document.addEventListener("keydown", (e) => {
             case "Enter":
                 e.preventDefault();
                 if (!input) return;
-
                 if (input.ariaReadOnly === "true") {
                     input.ariaReadOnly = "false";
                 } else {
