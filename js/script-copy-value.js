@@ -295,6 +295,11 @@ function moveTo(row, col) {
     );
     if (nextCell) {
         selectCell(nextCell);
+        nextCell.scrollIntoView({
+            behavior: "smooth",
+            block: "center", // 수직 정렬을 지정
+            inline: "end", // 수평 정렬을 지정
+        });
     }
 }
 
