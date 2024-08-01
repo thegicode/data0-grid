@@ -298,7 +298,7 @@ function moveTo(row, col) {
         nextCell.scrollIntoView({
             behavior: "smooth",
             block: "center", // 수직 정렬을 지정
-            inline: "center", // 수평 정렬을 지정
+            inline: "end", // 수평 정렬을 지정
         });
     }
 }
