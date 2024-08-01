@@ -70,10 +70,10 @@ select[name="select-list"] {
     box-sizing: border-box;
 }
 
-input[aria-readonly="true"],
+/* input[aria-readonly="true"],
 select[aria-readonly="true"] {
     pointer-events: none;
-}
+} */
 
 input:focus:not([readonly]),
 /* input[type="checkbox"]:focus:not([aria-readonly="true"]), */
