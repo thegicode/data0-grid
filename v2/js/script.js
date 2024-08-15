@@ -507,18 +507,22 @@ document.addEventListener("keydown", (e) => {
             case "ArrowUp":
                 e.preventDefault();
                 moveTo(currentRow - 1, currentCol);
+                if (input.type === "checkbox") input.blur();
                 break;
             case "ArrowDown":
                 e.preventDefault();
                 moveTo(currentRow + 1, currentCol);
+                if (input.type === "checkbox") input.blur();
                 break;
             case "ArrowLeft":
                 e.preventDefault();
                 moveTo(currentRow, currentCol - 1);
+                if (input.type === "checkbox") input.blur();
                 break;
             case "ArrowRight":
                 e.preventDefault();
                 moveTo(currentRow, currentCol + 1);
+                if (input.type === "checkbox") input.blur();
                 break;
             case "Enter":
                 e.preventDefault();
