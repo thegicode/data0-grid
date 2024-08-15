@@ -1,26 +1,26 @@
 const grid = document.getElementById("dataGrid");
 const tbody = grid.querySelector("tbody");
-const ingredients = [
-    "사과",
-    "바나나",
-    "당근",
-    "다시마",
-    "계란",
-    "감자",
-    "토마토",
-    "양파",
-    "호박",
-    "오이",
-];
-let selectedCells = new Set();
-let currentSelectionRange = [];
-let clipboardData = [];
+// const ingredients = [
+//     "사과",
+//     "바나나",
+//     "당근",
+//     "다시마",
+//     "계란",
+//     "감자",
+//     "토마토",
+//     "양파",
+//     "호박",
+//     "오이",
+// ];
+// let selectedCells = new Set();
+// let currentSelectionRange = [];
+// let clipboardData = [];
 let isComposing = false;
 let isDragging = false; // 드래그 상태를 저장할 변수
 let startCell = null;
 let draggingColumn = null;
 let originalValue = ""; // 원래의 값을 저장할 변수
-let originalData = [];
+// let originalData = [];
 let currentSortOrder = "none";
 let lastSortedColumn = null;
 let isSelecting = false;
@@ -28,7 +28,7 @@ let selectionStart = null;
 let selectionEnd = null;
 const csvButton = document.querySelector(".csv-button");
 
-function createGrid(rows, cols) {
+/* function createGrid(rows, cols) {
     originalData = [];
     for (let i = 0; i < rows; i++) {
         const row = document.createElement("tr");
@@ -97,19 +97,20 @@ function createGrid(rows, cols) {
         tbody.appendChild(row);
     }
 }
+ */
 
-function createDatalist() {
-    const datalist = document.createElement("datalist");
-    datalist.id = "ingredientList";
-    ingredients.forEach((item) => {
-        const option = document.createElement("option");
-        option.value = item;
-        datalist.appendChild(option);
-    });
-    document.body.appendChild(datalist);
-}
+// function createDatalist() {
+//     const datalist = document.createElement("datalist");
+//     datalist.id = "ingredientList";
+//     ingredients.forEach((item) => {
+//         const option = document.createElement("option");
+//         option.value = item;
+//         datalist.appendChild(option);
+//     });
+//     document.body.appendChild(datalist);
+// }
 
-function renderTable(data) {
+/* function renderTable(data) {
     tbody.innerHTML = "";
     data.forEach((row, rowIndex) => {
         const tr = document.createElement("tr");
@@ -142,7 +143,7 @@ function renderTable(data) {
         }
         tbody.appendChild(tr);
     });
-}
+} */
 
 function sortTable(columnIndex, order) {
     let data = [...originalData];
@@ -162,7 +163,7 @@ function sortTable(columnIndex, order) {
     renderTable(data);
 }
 
-function selectCell(cell, add = false) {
+/* function selectCell(cell, add = false) {
     if (!add) {
         selectedCells.forEach((selectedCell) => {
             selectedCell.classList.remove("selected");
@@ -175,9 +176,9 @@ function selectCell(cell, add = false) {
 
     selectedCells.add(cell);
     cell.classList.add("selected");
-}
+} */
 
-function selectRange(dragStartCell, endCell) {
+/* function selectRange(dragStartCell, endCell) {
     const startRow = parseInt(dragStartCell.dataset.row);
     const startCol = parseInt(dragStartCell.dataset.col);
     const endRow = parseInt(endCell.dataset.row);
@@ -209,9 +210,9 @@ function selectRange(dragStartCell, endCell) {
     currentSelectionRange = result;
 
     if (selectedCells.size > 1) csvButton.hidden = false;
-}
+} */
 
-function copyCells() {
+/* function copyCells() {
     const getInputValue = (cell) => {
         const inputElement =
             cell.querySelector("input") || cell.querySelector("select");
@@ -238,9 +239,9 @@ function copyCells() {
     navigator.clipboard.writeText(clipboardText).then(() => {
         console.log("Data copied to clipboard");
     });
-}
+} */
 
-function pasteCells() {
+/* function pasteCells() {
     navigator.clipboard
         .readText()
         .then((text) => {
@@ -288,6 +289,7 @@ function pasteCells() {
             console.error("Failed to read clipboard contents: ", err);
         });
 }
+ */
 
 function moveTo(row, col) {
     const nextCell = tbody.querySelector(
