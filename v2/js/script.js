@@ -15,18 +15,18 @@ const tbody = grid.querySelector("tbody");
 // let selectedCells = new Set();
 // let currentSelectionRange = [];
 // let clipboardData = [];
-let isComposing = false;
+// let isComposing = false;
 let isDragging = false; // 드래그 상태를 저장할 변수
 let startCell = null;
 let draggingColumn = null;
-let originalValue = ""; // 원래의 값을 저장할 변수
+// let originalValue = ""; // 원래의 값을 저장할 변수
 // let originalData = [];
-let currentSortOrder = "none";
-let lastSortedColumn = null;
+// let currentSortOrder = "none";
+// let lastSortedColumn = null;
 let isSelecting = false;
 let selectionStart = null;
 let selectionEnd = null;
-const csvButton = document.querySelector(".csv-button");
+// const csvButton = document.querySelector(".csv-button");
 
 /* function createGrid(rows, cols) {
     originalData = [];
@@ -144,7 +144,7 @@ const csvButton = document.querySelector(".csv-button");
         tbody.appendChild(tr);
     });
 } */
-
+/* 
 function sortTable(columnIndex, order) {
     let data = [...originalData];
     if (order === "ascending") {
@@ -161,7 +161,7 @@ function sortTable(columnIndex, order) {
         });
     }
     renderTable(data);
-}
+} */
 
 /* function selectCell(cell, add = false) {
     if (!add) {
@@ -291,7 +291,7 @@ function sortTable(columnIndex, order) {
 }
  */
 
-function moveTo(row, col) {
+/* function moveTo(row, col) {
     const nextCell = tbody.querySelector(
         `td[data-row="${row}"][data-col="${col}"]`
     );
@@ -303,8 +303,8 @@ function moveTo(row, col) {
             inline: "end", // 수평 정렬을 지정
         });
     }
-}
-
+} */
+/* 
 function selectColumn(col) {
     const cells = tbody.querySelectorAll(`td[data-col="${col}"]`);
     cells.forEach((cell) => selectCell(cell, true));
@@ -336,8 +336,9 @@ function moveColumn(from, to) {
         to < from ? toHeader : toHeader.nextSibling
     );
 }
+ */
 
-// 검색 기능 추가
+/* // 검색 기능 추가
 function highlightSearchResults(searchText) {
     clearHighlights();
 
@@ -349,16 +350,16 @@ function highlightSearchResults(searchText) {
             cell.classList.add("highlight");
         }
     });
-}
+} */
 
-function clearHighlights() {
+/* function clearHighlights() {
     const highlightedCells = tbody.querySelectorAll(".highlight");
     highlightedCells.forEach((cell) => {
         cell.classList.remove("highlight");
     });
-}
+} */
 
-grid.addEventListener("click", (e) => {
+/* grid.addEventListener("click", (e) => {
     clearHighlights();
 
     const cell = e.target.closest("td");
@@ -376,9 +377,9 @@ grid.addEventListener("click", (e) => {
             selectCell(cell, e.shiftKey);
         }
     }
-});
+}); */
 
-grid.addEventListener("dblclick", (e) => {
+/* grid.addEventListener("dblclick", (e) => {
     const cell = e.target.closest("td");
     if (cell) {
         const input =
@@ -392,17 +393,17 @@ grid.addEventListener("dblclick", (e) => {
             input.focus();
         }
     }
-});
+}); */
 
-grid.addEventListener("compositionstart", () => {
+/* grid.addEventListener("compositionstart", () => {
     isComposing = true;
 });
 
 grid.addEventListener("compositionend", (e) => {
     isComposing = false;
-});
+}); */
 
-grid.addEventListener("focusin", (e) => {
+/* grid.addEventListener("focusin", (e) => {
     if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") {
         // 포커스가 인풋이나 셀렉트로 들어오면 원래 값을 저장
         originalValue = e.target.value;
@@ -416,8 +417,8 @@ grid.addEventListener("focusout", (e) => {
         }, 100); // Timeout to allow datalist to work on blur
     }
 });
-
-grid.addEventListener("input", (e) => {
+ */
+/* grid.addEventListener("input", (e) => {
     if (
         e.target.tagName === "INPUT" &&
         e.target.type === "text" &&
@@ -432,8 +433,9 @@ grid.addEventListener("input", (e) => {
     // e.target.setAttribute("list", "ingredientList");
     // }
 });
+ */
 
-document.addEventListener("keydown", (e) => {
+/* document.addEventListener("keydown", (e) => {
     if (!selectedCells.size) return;
 
     const firstSelectedCell = Array.from(selectedCells)[0];
@@ -555,10 +557,10 @@ document.addEventListener("keydown", (e) => {
             highlightSearchResults(searchText);
         }
     }
-});
+}); */
 
 // Add change event listener for all select elements
-tbody.addEventListener("change", (e) => {
+/* tbody.addEventListener("change", (e) => {
     if (e.target.tagName === "SELECT") {
         const currentCell = e.target.closest("td");
         const currentRow = parseInt(currentCell.dataset.row);
@@ -578,9 +580,9 @@ tbody.addEventListener("change", (e) => {
             }
         }
     }
-});
+}); */
 
-function clearSelection() {
+/* function clearSelection() {
     const selctedTh = grid.querySelector(".selected-th");
     if (selctedTh) {
         selctedTh.classList.remove("selected-th");
@@ -591,7 +593,7 @@ function clearSelection() {
     });
 
     selectedCells.clear();
-}
+} */
 
 grid.querySelector("thead").addEventListener("mousedown", (e) => {
     const th = e.target.closest("th");
@@ -608,7 +610,7 @@ grid.querySelector("thead").addEventListener("mousedown", (e) => {
 });
 
 // sort-button 클릭 이벤트는 th 안의 버튼에 적용됩니다.
-grid.querySelector("thead").addEventListener("click", (e) => {
+/* grid.querySelector("thead").addEventListener("click", (e) => {
     if (e.target.classList.contains("sort-button")) {
         // sort-button 클릭 시 이벤트 핸들러입니다.
         const th = e.target.closest("th");
@@ -637,7 +639,7 @@ grid.querySelector("thead").addEventListener("click", (e) => {
 
         lastSortedColumn = colIndex;
     }
-});
+}); */
 
 grid.querySelector("thead").addEventListener("mouseup", (e) => {
     const th = e.target.closest("th");
@@ -808,6 +810,6 @@ function downloadCSV(csv, filename) {
     document.body.removeChild(downloadLink);
 }
 
-createGrid(10, 10);
-createDatalist();
-selectCell(tbody.querySelector("td")); // 초기 선택
+// createGrid(10, 10);
+// createDatalist();
+// selectCell(tbody.querySelector("td")); // 초기 선택

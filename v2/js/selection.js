@@ -5,9 +5,9 @@ export function selectCell(cell, add = false) {
     if (!add) {
         selectedCells.forEach((selectedCell) => {
             selectedCell.classList.remove("selected");
-            const input =
-                selectedCell.querySelector("input") ||
-                selectedCell.querySelector("select");
+            // const input =
+            //     selectedCell.querySelector("input") ||
+            //     selectedCell.querySelector("select");
         });
         selectedCells.clear();
     }
@@ -16,7 +16,7 @@ export function selectCell(cell, add = false) {
     cell.classList.add("selected");
 }
 
-export function selectRange(dragStartCell, endCell) {
+export function selectRange(tbody, dragStartCell, endCell, csvButton) {
     const startRow = parseInt(dragStartCell.dataset.row);
     const startCol = parseInt(dragStartCell.dataset.col);
     const endRow = parseInt(endCell.dataset.row);
@@ -48,4 +48,38 @@ export function selectRange(dragStartCell, endCell) {
     currentSelectionRange = result;
 
     if (selectedCells.size > 1) csvButton.hidden = false;
+}
+
+export function clearSelection() {
+    const selctedTh = grid.querySelector(".selected-th");
+    if (selctedTh) {
+        selctedTh.classList.remove("selected-th");
+    }
+
+    selectedCells.forEach((selectedCell) => {
+        selectedCell.classList.remove("selected");
+    });
+
+    selectedCells.clear();
+}
+
+export function clearHighlights(tbody) {
+    const highlightedCells = tbody.querySelectorAll(".highlight");
+    highlightedCells.forEach((cell) => {
+        cell.classList.remove("highlight");
+    });
+}
+
+export function moveTo(tbody, selectCell, row, col) {
+    const nextCell = tbody.querySelector(
+        `td[data-row="${row}"][data-col="${col}"]`
+    );
+    if (nextCell) {
+        selectCell(nextCell);
+        nextCell.scrollIntoView({
+            behavior: "smooth",
+            block: "center", // 수직 정렬을 지정
+            inline: "end", // 수평 정렬을 지정
+        });
+    }
 }
