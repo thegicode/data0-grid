@@ -50,8 +50,8 @@ export function selectRange(tbody, dragStartCell, endCell, csvButton) {
     if (selectedCells.size > 1) csvButton.hidden = false;
 }
 
-export function clearSelection() {
-    const selctedTh = grid.querySelector(".selected-th");
+export function clearSelection(gridElement) {
+    const selctedTh = gridElement.querySelector(".selected-th");
     if (selctedTh) {
         selctedTh.classList.remove("selected-th");
     }

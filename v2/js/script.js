@@ -16,15 +16,15 @@ const tbody = grid.querySelector("tbody");
 // let currentSelectionRange = [];
 // let clipboardData = [];
 // let isComposing = false;
-let isDragging = false; // 드래그 상태를 저장할 변수
+// let isDragging = false; // 드래그 상태를 저장할 변수
 let startCell = null;
-let draggingColumn = null;
+// let draggingColumn = null;
 // let originalValue = ""; // 원래의 값을 저장할 변수
 // let originalData = [];
 // let currentSortOrder = "none";
 // let lastSortedColumn = null;
-let isSelecting = false;
-let selectionStart = null;
+// let isSelecting = false;
+// let selectionStart = null;
 let selectionEnd = null;
 // const csvButton = document.querySelector(".csv-button");
 
@@ -594,7 +594,7 @@ grid.addEventListener("focusout", (e) => {
 
     selectedCells.clear();
 } */
-
+/* 
 grid.querySelector("thead").addEventListener("mousedown", (e) => {
     const th = e.target.closest("th");
     if (th) {
@@ -608,7 +608,7 @@ grid.querySelector("thead").addEventListener("mousedown", (e) => {
         }
     }
 });
-
+ */
 // sort-button 클릭 이벤트는 th 안의 버튼에 적용됩니다.
 /* grid.querySelector("thead").addEventListener("click", (e) => {
     if (e.target.classList.contains("sort-button")) {
@@ -641,7 +641,7 @@ grid.querySelector("thead").addEventListener("mousedown", (e) => {
     }
 }); */
 
-grid.querySelector("thead").addEventListener("mouseup", (e) => {
+/* grid.querySelector("thead").addEventListener("mouseup", (e) => {
     const th = e.target.closest("th");
     if (isDragging && draggingColumn !== null) {
         isDragging = false;
@@ -650,9 +650,9 @@ grid.querySelector("thead").addEventListener("mouseup", (e) => {
             th.classList.remove("dragging");
         }
     }
-});
+}); */
 
-grid.querySelector("thead").addEventListener("mousemove", (e) => {
+/* grid.querySelector("thead").addEventListener("mousemove", (e) => {
     if (isDragging && draggingColumn !== null) {
         const th = e.target.closest("th");
         if (th) {
@@ -664,8 +664,8 @@ grid.querySelector("thead").addEventListener("mousemove", (e) => {
         }
     }
 });
-
-grid.addEventListener("mousedown", (e) => {
+ */
+/* grid.addEventListener("mousedown", (e) => {
     const cell = e.target.closest("td");
 
     if (e.shiftKey) return;
@@ -677,8 +677,8 @@ grid.addEventListener("mousedown", (e) => {
         selectCell(cell);
     }
 });
-
-grid.addEventListener("mousemove", (e) => {
+ */
+/* grid.addEventListener("mousemove", (e) => {
     if (isSelecting) {
         const cell = e.target.closest("td");
         if (cell) {
@@ -689,9 +689,9 @@ grid.addEventListener("mousemove", (e) => {
 
 grid.addEventListener("mouseup", () => {
     isSelecting = false;
-});
+}); */
 
-grid.addEventListener("dragstart", (e) => {
+/* grid.addEventListener("dragstart", (e) => {
     const cell = e.target.closest("td");
     if (cell && selectedCells.has(cell)) {
         // handle drag start
@@ -710,9 +710,9 @@ grid.addEventListener("drop", (e) => {
     if (cell) {
         pasteCells();
     }
-});
+}); */
 
-document.addEventListener("copy", (e) => {
+/* document.addEventListener("copy", (e) => {
     copyCells();
     e.preventDefault();
 });
@@ -721,8 +721,9 @@ document.addEventListener("paste", (e) => {
     pasteCells();
     e.preventDefault();
 });
+ */
 
-csvButton.addEventListener("click", (e) => {
+/* csvButton.addEventListener("click", (e) => {
     const getInputValue = (cell) => {
         const inputElement =
             cell.querySelector("input") || cell.querySelector("select");
@@ -808,7 +809,7 @@ function downloadCSV(csv, filename) {
 
     downloadLink.click();
     document.body.removeChild(downloadLink);
-}
+} */
 
 // createGrid(10, 10);
 // createDatalist();

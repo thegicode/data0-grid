@@ -1,15 +1,15 @@
-export function selectColumn(col) {
+export function selectColumn(col, tbody, selectCell, gridElement) {
     const cells = tbody.querySelectorAll(`td[data-col="${col}"]`);
     cells.forEach((cell) => selectCell(cell, true));
 
     // Add class to the selected th
-    const th = grid.querySelector(`thead th:nth-child(${col + 2})`); // +2 to account for row header and 0-index
+    const th = gridElement.querySelector(`thead th:nth-child(${col + 2})`); // +2 to account for row header and 0-index
     if (th) {
         th.classList.add("selected-th");
     }
 }
 
-export function moveColumn(from, to) {
+export function moveColumn(from, to, tbody, gridElement) {
     const rows = tbody.querySelectorAll("tr");
     rows.forEach((row) => {
         const cells = Array.from(row.children);
@@ -21,11 +21,10 @@ export function moveColumn(from, to) {
     });
 
     // Move column header
-    const headers = grid.querySelectorAll("thead th");
+    const headers = gridElement.querySelectorAll("thead th");
     const fromHeader = headers[from + 1];
     const toHeader = headers[to + 1];
-    grid.querySelector("thead tr").insertBefore(
-        fromHeader,
-        to < from ? toHeader : toHeader.nextSibling
-    );
+    gridElement
+        .querySelector("thead tr")
+        .insertBefore(fromHeader, to < from ? toHeader : toHeader.nextSibling);
 }

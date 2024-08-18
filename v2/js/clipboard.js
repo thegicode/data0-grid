@@ -1,20 +1,6 @@
-import { selectedCells, currentSelectionRange } from "./selection.js";
-
 let clipboardData = [];
 
-export function copyCells() {
-    const getInputValue = (cell) => {
-        const inputElement =
-            cell.querySelector("input") || cell.querySelector("select");
-        if (inputElement.type === "checkbox") {
-            result = inputElement.checked;
-        } else {
-            result = inputElement.value;
-        }
-
-        return result;
-    };
-
+export function copyCells(selectedCells, currentSelectionRange) {
     let clipboardText;
     if (selectedCells.size === 1) {
         const cell = [...selectedCells][0];
@@ -31,7 +17,7 @@ export function copyCells() {
     });
 }
 
-export function pasteCells() {
+export function pasteCells(selectedCells, tbody, ingredients) {
     navigator.clipboard
         .readText()
         .then((text) => {
@@ -79,3 +65,12 @@ export function pasteCells() {
             console.error("Failed to read clipboard contents: ", err);
         });
 }
+
+const getInputValue = (cell) => {
+    const inputElement =
+        cell.querySelector("input") || cell.querySelector("select");
+
+    return inputElement.type === "checkbox"
+        ? inputElement.checked
+        : inputElement.value;
+};

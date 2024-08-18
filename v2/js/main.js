@@ -3,6 +3,7 @@
 import { originalData, ingredients, createGrid, renderTable } from "./grid.js";
 import {
     selectedCells,
+    currentSelectionRange,
     selectCell,
     selectRange,
     clearSelection,
@@ -14,6 +15,7 @@ import { createDatalist } from "./datalist.js";
 import { selectColumn, moveColumn } from "./column.js";
 import { highlightSearchResults } from "./search.js";
 import { sortTable } from "./sort.js";
+import { onCsvButtonClick } from "./handleCsvButton.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const gridElement = document.getElementById("dataGrid");
@@ -24,16 +26,24 @@ document.addEventListener("DOMContentLoaded", () => {
     createDatalist(ingredients);
     selectCell(tbody.querySelector("td")); // 초기 선택
 
-    addEvents(gridElement, tbody, csvButton);
+    addEvents(gridElement, tbody, csvButton, ingredients);
 });
 
-function addEvents(gridElement, tbody, csvButton) {
+function addEvents(gridElement, tbody, csvButton, ingredients) {
     const theadElement = gridElement.querySelector("thead");
 
     let isComposing = false;
+
     let originalValue = ""; // 원래의 값을 저장할 변수
     let lastSortedColumn = null;
+
     let currentSortOrder = "none";
+
+    let isDragging = false; // 드래그 상태를 저장할 변수
+    let draggingColumn = null;
+
+    let isSelecting = false;
+    let selectionStart = null;
 
     /** TD Cell */
     gridElement.addEventListener("click", (e) => {
@@ -257,8 +267,30 @@ function addEvents(gridElement, tbody, csvButton) {
         }
     });
 
-    /** THEAD */
-    // sort button(th 안의 버튼)
+    /** Selecting */
+    gridElement.addEventListener("mousedown", (e) => {
+        if (e.shiftKey) return;
+        const cell = e.target.closest("td");
+        if (cell) {
+            isSelecting = true;
+            selectionStart = cell;
+            clearSelection(gridElement);
+            selectCell(cell);
+        }
+    });
+    gridElement.addEventListener("mousemove", (e) => {
+        if (isSelecting) {
+            const cell = e.target.closest("td");
+            if (cell) {
+                selectRange(tbody, selectionStart, cell, csvButton);
+            }
+        }
+    });
+    gridElement.addEventListener("mouseup", () => {
+        isSelecting = false;
+    });
+
+    /** Sort button(th 안의 버튼) */
     theadElement.addEventListener("click", (e) => {
         if (e.target.classList.contains("sort-button")) {
             // sort-button 클릭 시 이벤트 핸들러입니다.
@@ -296,12 +328,88 @@ function addEvents(gridElement, tbody, csvButton) {
         }
     });
 
-    /** ETC */
+    /** THEAD */
+    gridElement.querySelector("thead").addEventListener("mousedown", (e) => {
+        const th = e.target.closest("th");
+        if (th) {
+            clearSelection(gridElement);
+            const colIndex = Array.from(th.parentNode.children).indexOf(th) - 1; // -1 to account for row header
+            if (colIndex >= 0) {
+                isDragging = true;
+                draggingColumn = colIndex;
+                selectColumn(colIndex, tbody, selectCell, gridElement);
+                th.classList.add("dragging");
+            }
+        }
+    });
+    theadElement.addEventListener("mouseup", (e) => {
+        const th = e.target.closest("th");
+        if (isDragging && draggingColumn !== null) {
+            isDragging = false;
+            draggingColumn = null;
+            if (th) {
+                th.classList.remove("dragging");
+            }
+        }
+    });
+    theadElement.addEventListener("mousemove", (e) => {
+        if (isDragging && draggingColumn !== null) {
+            const th = e.target.closest("th");
+            if (th) {
+                const colIndex =
+                    Array.from(th.parentNode.children).indexOf(th) - 1; // -1 to account for row header
+                if (colIndex >= 0 && colIndex !== draggingColumn) {
+                    moveColumn(draggingColumn, colIndex, tbody, gridElement);
+                    draggingColumn = colIndex;
+                }
+            }
+        }
+    });
+
+    /** isComposing */
     gridElement.addEventListener("compositionstart", () => {
         isComposing = true;
     });
 
     gridElement.addEventListener("compositionend", (e) => {
         isComposing = false;
+    });
+
+    /* drag */
+    /*  gridElement.addEventListener("dragstart", (e) => {
+        const cell = e.target.closest("td");
+        if (cell && selectedCells.has(cell)) {
+            // handle drag start
+        } else {
+            e.preventDefault();
+        }
+    });
+
+    gridElement.addEventListener("dragover", (e) => {
+        e.preventDefault();
+    });
+
+    gridElement.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const cell = e.target.closest("td");
+        if (cell) {
+            pasteCells();
+        }
+    }); */
+
+    /** copy and paste */
+    document.addEventListener("copy", (e) => {
+        copyCells(selectedCells, currentSelectionRange);
+        e.preventDefault();
+    });
+
+    document.addEventListener("paste", (e) => {
+        pasteCells(selectedCells, tbody, ingredients);
+        e.preventDefault();
+    });
+
+    /** csvButton */
+    csvButton.addEventListener("click", (e) => {
+        onCsvButtonClick(selectedCells, gridElement, csvButton);
     });
 }
