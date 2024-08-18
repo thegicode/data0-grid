@@ -36,6 +36,7 @@ tbody th {
 
 thead th {
     cursor: pointer;
+    text-transform: capitalize;
 }
 
 thead th span,
