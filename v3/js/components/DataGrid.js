@@ -1,5 +1,5 @@
-import { data } from "./data.js";
-import { dataForms } from "./dataForms.js";
+import { data } from "../data/data.js";
+import { dataForms } from "../data/dataForms.js";
 import CreateGrid from "./CreateGrid.js";
 
 export default class DataGrid extends HTMLElement {
