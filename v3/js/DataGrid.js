@@ -11,7 +11,7 @@ export default class DataGrid extends HTMLElement {
         this.tbody = this.querySelector("tbody");
 
         this.data = data;
-        this.tableForms = dataForms;
+        this.dataForms = dataForms;
 
         // this.foodDataList = this.data.map((item) => item.food);
         // this.selectListData = this.data.map((item) => item.select);
@@ -33,7 +33,7 @@ export default class DataGrid extends HTMLElement {
     //     const th = document.createElement("th");
     //     fragment.appendChild(th);
 
-    //     this.tableForms.forEach((aDataType) => {
+    //     this.dataForms.forEach((aDataType) => {
     //         const th = document.createElement("th");
     //         th.textContent = aDataType.title;
     //         fragment.appendChild(th);
@@ -53,7 +53,7 @@ export default class DataGrid extends HTMLElement {
 
     //         let rowData = { index: i + 1 };
 
-    //         for (let j = 0; j < this.tableForms.length; j++) {
+    //         for (let j = 0; j < this.dataForms.length; j++) {
     //             const { cell, cellRowData } = this.createCell(i, j, rowData);
     //             rowData = cellRowData;
     //             row.appendChild(cell);
@@ -71,9 +71,9 @@ export default class DataGrid extends HTMLElement {
     //     cell.dataset.col = j;
 
     //     let input = document.createElement("input");
-    //     const dataType = this.tableForms[j].type;
+    //     const dataType = this.dataForms[j].type;
 
-    //     const dataValue = this.data[i][this.tableForms[j].title];
+    //     const dataValue = this.data[i][this.dataForms[j].title];
 
     //     switch (dataType) {
     //         case "number":

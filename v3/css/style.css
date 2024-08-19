@@ -53,11 +53,10 @@ tbody td {
     text-align: center;
 }
 
-input[type="text"],
+td input[type="text"],
 input[type="number"],
 input[type="search"],
-input[name="list"],
-select[name="select-list"] {
+td select {
     width: 100%;
     height: 100%;
     border: none;

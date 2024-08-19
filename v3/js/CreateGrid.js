@@ -2,12 +2,14 @@ export default class CreateGrid {
     constructor(dataGrid) {
         this.dataGrid = dataGrid;
 
-        this.foodDataList = dataGrid.data.map((item) => item.food);
-        this.selectListData = dataGrid.data.map((item) => item.select);
+        // select 엘리먼트 생성하여 반환
+        this.selectObject = this.checkAndCreateSelects();
+
+        // datalist dom에 생성
+        this.checkAndCreateDatalists();
 
         this.createThead();
         this.createTbody();
-        this.createDataList();
     }
 
     createThead() {
@@ -15,7 +17,7 @@ export default class CreateGrid {
         const th = document.createElement("th");
         fragment.appendChild(th);
 
-        this.dataGrid.tableForms.forEach((aDataType) => {
+        this.dataGrid.dataForms.forEach((aDataType) => {
             const th = document.createElement("th");
             th.textContent = aDataType.title;
             fragment.appendChild(th);
@@ -35,7 +37,7 @@ export default class CreateGrid {
 
             let rowData = { index: i + 1 };
 
-            for (let j = 0; j < this.dataGrid.tableForms.length; j++) {
+            for (let j = 0; j < this.dataGrid.dataForms.length; j++) {
                 const { cell, cellRowData } = this.createCell(i, j, rowData);
                 rowData = cellRowData;
                 row.appendChild(cell);
@@ -48,17 +50,16 @@ export default class CreateGrid {
     }
 
     createCell(i, j, rowData) {
+        // rowData 필요없을 것 같음 -> 삭제
         const cell = document.createElement("td");
         cell.dataset.row = i;
         cell.dataset.col = j;
 
+        const currentDataForm = this.dataGrid.dataForms[j];
+        const dataValue = this.dataGrid.data[i][currentDataForm.title];
+
         let input = document.createElement("input");
-        const dataType = this.dataGrid.tableForms[j].type;
-
-        const dataValue =
-            this.dataGrid.data[i][this.dataGrid.tableForms[j].title];
-
-        switch (dataType) {
+        switch (currentDataForm.type) {
             case "number":
                 input.type = "number";
                 input.value = dataValue;
@@ -67,13 +68,17 @@ export default class CreateGrid {
                 break;
             case "datalist":
                 input.type = "text";
-                input.setAttribute("list", "foodDataList");
+                input.setAttribute(
+                    "list",
+                    this.datalistId(currentDataForm.title)
+                );
                 input.value = dataValue;
                 input.readOnly = true;
                 rowData["col" + j] = input.value;
                 break;
             case "select":
-                input = this.getSelectElement(i);
+                const select = this.selectObject[currentDataForm.title];
+                input = select.cloneNode(true);
                 input.value = dataValue;
                 input.ariaReadOnly = true;
                 rowData["col" + j] = input.value;
@@ -96,9 +101,19 @@ export default class CreateGrid {
         return { cell, cellRowData: rowData };
     }
 
-    getSelectElement(i) {
+    checkAndCreateSelects() {
+        return this.dataGrid.dataForms
+            .filter(({ type }) => type === "select")
+            .reduce((result, { title }) => {
+                result[title] = this.createSelectElement(title);
+                return result;
+            }, {});
+    }
+
+    createSelectElement(prop) {
+        const data = this.dataGrid.data.map((item) => item[prop]);
         const select = document.createElement("select");
-        this.selectListData.forEach((name, index) => {
+        data.forEach((name, index) => {
             const option = document.createElement("option");
             option.textContent = name;
             option.value = name;
@@ -107,14 +122,28 @@ export default class CreateGrid {
         return select;
     }
 
-    createDataList() {
+    checkAndCreateDatalists() {
+        return this.dataGrid.dataForms
+            .filter(({ type }) => type === "datalist")
+            .reduce((result, { title }) => {
+                result[title] = this.createDataList(title);
+                return result;
+            }, {});
+    }
+
+    createDataList(title) {
+        const data = this.dataGrid.data.map((item) => item[title]);
         const datalist = document.createElement("datalist");
-        datalist.id = "foodDataList";
-        this.foodDataList.forEach((item) => {
+        datalist.id = this.datalistId(title);
+        data.forEach((item) => {
             const option = document.createElement("option");
             option.value = item;
             datalist.appendChild(option);
         });
         document.body.appendChild(datalist);
+    }
+
+    datalistId(text) {
+        return `datalist-${text}`;
     }
 }
