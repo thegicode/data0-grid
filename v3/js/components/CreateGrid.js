@@ -1,9 +1,11 @@
-import { dataForms } from "../data/dataForms.js";
+import { FIELD_DEFINITIONS } from "../data/fieldDefinitions.js";
+import Cell from "./Cell.js";
+
 export default class CreateGrid {
     constructor(dataGrid) {
         this.dataGrid = dataGrid;
         this.manager = dataGrid.manager;
-        this.dataForms = dataForms;
+        this.FIELD_DEFINITIONS = FIELD_DEFINITIONS;
 
         // select 엘리먼트 생성하여 반환
         this.selectObject = this.checkAndCreateSelects();
@@ -20,7 +22,7 @@ export default class CreateGrid {
         const th = document.createElement("th");
         fragment.appendChild(th);
 
-        this.dataForms.forEach((aDataType) => {
+        this.FIELD_DEFINITIONS.forEach((aDataType) => {
             const th = document.createElement("th");
             th.textContent = aDataType.title;
             fragment.appendChild(th);
@@ -30,23 +32,16 @@ export default class CreateGrid {
     }
 
     createTbody() {
-        let originalData = [];
-
         for (let i = 0; i < this.manager.data.length; i++) {
             const row = document.createElement("tr");
             const rowHeader = document.createElement("th");
             rowHeader.textContent = i + 1;
             row.appendChild(rowHeader);
 
-            let rowData = { index: i + 1 };
-
-            for (let j = 0; j < this.dataForms.length; j++) {
-                const { cell, cellRowData } = this.createCell(i, j, rowData);
-                rowData = cellRowData;
+            for (let j = 0; j < this.FIELD_DEFINITIONS.length; j++) {
+                const cell = new Cell(this, i, j);
                 row.appendChild(cell);
             }
-
-            originalData.push(rowData);
 
             this.dataGrid.tbody.appendChild(row);
         }
@@ -58,7 +53,7 @@ export default class CreateGrid {
         cell.dataset.row = i;
         cell.dataset.col = j;
 
-        const currentDataForm = this.dataForms[j];
+        const currentDataForm = this.FIELD_DEFINITIONS[j];
         const dataValue = this.manager.data[i][currentDataForm.title];
 
         let input = document.createElement("input");
@@ -105,12 +100,12 @@ export default class CreateGrid {
     }
 
     checkAndCreateSelects() {
-        return this.dataForms
-            .filter(({ type }) => type === "select")
-            .reduce((result, { title }) => {
-                result[title] = this.createSelectElement(title);
-                return result;
-            }, {});
+        return this.FIELD_DEFINITIONS.filter(
+            ({ type }) => type === "select"
+        ).reduce((result, { title }) => {
+            result[title] = this.createSelectElement(title);
+            return result;
+        }, {});
     }
 
     createSelectElement(prop) {
@@ -126,12 +121,12 @@ export default class CreateGrid {
     }
 
     checkAndCreateDatalists() {
-        return this.dataForms
-            .filter(({ type }) => type === "datalist")
-            .reduce((result, { title }) => {
-                result[title] = this.createDataList(title);
-                return result;
-            }, {});
+        return this.FIELD_DEFINITIONS.filter(
+            ({ type }) => type === "datalist"
+        ).reduce((result, { title }) => {
+            result[title] = this.createDataList(title);
+            return result;
+        }, {});
     }
 
     createDataList(title) {

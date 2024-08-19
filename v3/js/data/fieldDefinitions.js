@@ -1,4 +1,4 @@
-export const dataForms = [
+export const FIELD_DEFINITIONS = [
     { title: "name", type: "text" },
     { title: "quantity", type: "number" },
     { title: "food", type: "datalist" },
