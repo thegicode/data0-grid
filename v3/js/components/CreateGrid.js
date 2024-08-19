@@ -5,6 +5,7 @@ export default class CreateGrid {
     constructor(dataGrid) {
         this.dataGrid = dataGrid;
         this.manager = dataGrid.manager;
+        this.selection = dataGrid.selection;
         this.FIELD_DEFINITIONS = FIELD_DEFINITIONS;
 
         // select 엘리먼트 생성하여 반환
@@ -86,7 +87,7 @@ export default class CreateGrid {
             option.value = item;
             datalist.appendChild(option);
         });
-        document.body.appendChild(datalist);
+        this.dataGrid.appendChild(datalist);
     }
 
     datalistId(text) {
