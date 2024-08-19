@@ -1,14 +1,13 @@
 export default class Cell {
     constructor(createGrid, i, j) {
         const currentField = createGrid.FIELD_DEFINITIONS[j];
-        const dataValue = createGrid.manager.data[i][currentField.title];
 
         this.createGrid = createGrid;
         this.row = i;
         this.col = j;
         this.type = currentField.type;
         this.title = currentField.title;
-        this.value = dataValue;
+        this.value = createGrid.manager.data[i][this.title];
 
         return this.createCell();
     }
