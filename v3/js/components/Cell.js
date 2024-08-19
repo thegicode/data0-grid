@@ -17,21 +17,19 @@ export default class Cell {
         const cell = document.createElement("td");
         cell.dataset.row = this.row;
         cell.dataset.col = this.col;
-
         const input = this.createInput();
-
         cell.appendChild(input);
+
+        this.input = input;
+        this.cell = cell;
+        this.addEvents();
+
         return cell;
     }
 
     createInput() {
         let input = document.createElement("input");
         switch (this.type) {
-            case "number":
-                input.type = "number";
-                input.value = this.value;
-                input.readOnly = true;
-                break;
             case "datalist":
                 input.type = "text";
                 input.setAttribute(
@@ -52,12 +50,27 @@ export default class Cell {
                 input.checked = Boolean(this.value);
                 input.ariaReadOnly = true;
                 break;
-            default:
-                input.type = "text";
+            default: // text, number
+                input.type = this.type;
                 input.value = this.value;
                 input.readOnly = true;
                 break;
         }
         return input;
+    }
+
+    addEvents() {
+        this.cell.addEventListener("dblclick", this.onDBClick.bind(this));
+    }
+
+    onDBClick() {
+        if (this.input) {
+            // if (input.ariaReadOnly === "true") {
+            //     input.ariaReadOnly = "false";
+            // } else {
+            this.input.readOnly = false;
+            // }
+            this.input.focus();
+        }
     }
 }

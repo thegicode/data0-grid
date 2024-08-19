@@ -22,9 +22,9 @@ export default class CreateGrid {
         const th = document.createElement("th");
         fragment.appendChild(th);
 
-        this.FIELD_DEFINITIONS.forEach((aDataType) => {
+        this.FIELD_DEFINITIONS.forEach((df) => {
             const th = document.createElement("th");
-            th.textContent = aDataType.title;
+            th.textContent = df.title;
             fragment.appendChild(th);
         });
 
@@ -45,58 +45,6 @@ export default class CreateGrid {
 
             this.dataGrid.tbody.appendChild(row);
         }
-    }
-
-    createCell(i, j, rowData) {
-        // rowData 필요없을 것 같음 -> 삭제
-        const cell = document.createElement("td");
-        cell.dataset.row = i;
-        cell.dataset.col = j;
-
-        const currentDataForm = this.FIELD_DEFINITIONS[j];
-        const dataValue = this.manager.data[i][currentDataForm.title];
-
-        let input = document.createElement("input");
-        switch (currentDataForm.type) {
-            case "number":
-                input.type = "number";
-                input.value = dataValue;
-                input.readOnly = true;
-                rowData["col" + j] = input.value;
-                break;
-            case "datalist":
-                input.type = "text";
-                input.setAttribute(
-                    "list",
-                    this.datalistId(currentDataForm.title)
-                );
-                input.value = dataValue;
-                input.readOnly = true;
-                rowData["col" + j] = input.value;
-                break;
-            case "select":
-                const select = this.selectObject[currentDataForm.title];
-                input = select.cloneNode(true);
-                input.value = dataValue;
-                input.ariaReadOnly = true;
-                rowData["col" + j] = input.value;
-                break;
-            case "checkbox":
-                input.type = "checkbox";
-                input.checked = Boolean(dataValue);
-                input.ariaReadOnly = true;
-                rowData["col" + j] = input.checked;
-                break;
-            default:
-                input.type = "text";
-                input.value = dataValue;
-                rowData["col" + j] = input.value;
-                input.readOnly = true;
-                break;
-        }
-
-        cell.appendChild(input);
-        return { cell, cellRowData: rowData };
     }
 
     checkAndCreateSelects() {
