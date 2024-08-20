@@ -23,7 +23,7 @@ export default class Cell {
 
     set readOnly(value) {
         if (this._input.hasAttribute("aria-readonly")) {
-            this._input.ariaReadOnly = Boolean(value);
+            this._input.ariaReadOnly = value;
         } else {
             this._input.readOnly = Boolean(value);
         }
@@ -33,7 +33,6 @@ export default class Cell {
         const cell = document.createElement("td");
         cell.dataset.row = this._row;
         cell.dataset.col = this._col;
-        // cell.tabIndex = 0;
 
         const input = this.createInput();
         cell.appendChild(input);
@@ -83,9 +82,6 @@ export default class Cell {
         this._cell.addEventListener("input", this.onInput.bind(this));
         this._cell.addEventListener("focusin", this.onFocusIn.bind(this));
         this._input.addEventListener("keydown", this.onKeyDown.bind(this));
-        // this._input.addEventListener("keydown", () => {
-        //     console.log("keydown");
-        // });
     }
 
     onClick(e) {
@@ -96,15 +92,12 @@ export default class Cell {
             this.selection.selectRange(Array.from(cells)[0], this._cell);
         } else {
             this.selection.selectCell(this._cell, e.shiftKey);
+            this._input.focus(); // checkbox 포커스 되어야 셀 이동이 된다.
         }
     }
 
     onDBClick() {
-        // if (input.ariaReadOnly === "true") {
-        //     input.ariaReadOnly = "false";
-        // } else {
         this._input.readOnly = false;
-        // }
         this._input.focus();
     }
 
@@ -127,48 +120,30 @@ export default class Cell {
         const cells = this.selection.selectedCells;
         if (!cells.size) return;
 
-        // const firstSelectedCell = Array.from(cells)[0];
-
         const isEditing = this.readOnly === false;
-
-        // console.log("isEditing", isEditing);
-        // console.log("isComposing", this.dataGrid.isComposing);
-
-        // if (this._input && e.key === " ") {
-        //     if (this._type === "checkbox") {
-        //         e.preventDefault();
-        //         this._input.focus();
-        //         this._input.checked = !this._input.checked;
-        //         return;
-        //     } else if (this._type === "select") {
-        //         this._input.focus();
-        //         // input.ariaReadOnly = "false";
-        //         return;
-        //     }
-        // }
+        const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
 
         if (isEditing && !this.dataGrid.isComposing) {
             switch (e.key) {
                 case "Enter":
-                    // 아래로 이동하고 포커스
-                    // shift key 인 경우 위로 이동
                     e.preventDefault();
-                    if (e.shiftKey) {
-                        this.selection.moveTo(this._row - 1, this._col, true);
-                    } else {
-                        this.selection.moveTo(this._row + 1, this._col, true);
-                    }
+                    this.moveUpDown(e.shiftKey);
                     break;
                 case "Tab":
                     e.preventDefault();
                     this._input.blur();
                     this.readOnly = true;
-                    if (e.shiftKey) {
-                        this.selection.moveTo(this._row, this._col - 1);
-                    } else {
-                        this.selection.moveTo(this._row, this._col + 1);
-                    }
+                    this.moveSide(e.shiftKey);
                     break;
+                case "Escape":
+                    e.preventDefault();
+                    this._input.value = this._originValue;
+                    this.readOnly = true;
+                    break;
+            }
+
+            if (this._type === "checkbox" && arrowKeys.includes(e.key)) {
+                this.handleArrowKey(e);
             }
         } else {
             switch (e.key) {
@@ -179,13 +154,50 @@ export default class Cell {
                     break;
                 case "Tab":
                     e.preventDefault();
-                    if (e.shiftKey) {
-                        this.selection.moveTo(this._row, this._col - 1);
-                    } else {
-                        this.selection.moveTo(this._row, this._col + 1);
-                    }
+                    this.moveSide(e.shiftKey);
                     break;
             }
+
+            if (arrowKeys.includes(e.key)) {
+                this.handleArrowKey(e);
+            }
+        }
+    }
+
+    moveUpDown(shiftKey) {
+        if (shiftKey) {
+            this.selection.moveTo(this._row - 1, this._col, true);
+        } else {
+            this.selection.moveTo(this._row + 1, this._col, true);
+        }
+    }
+
+    moveSide(shiftKey) {
+        if (shiftKey) {
+            this.selection.moveTo(this._row, this._col - 1);
+        } else {
+            this.selection.moveTo(this._row, this._col + 1);
+        }
+    }
+
+    handleArrowKey(e) {
+        switch (e.key) {
+            case "ArrowUp":
+                e.preventDefault();
+                this.selection.moveTo(this._row - 1, this._col);
+                break;
+            case "ArrowDown":
+                e.preventDefault();
+                this.selection.moveTo(this._row + 1, this._col);
+                break;
+            case "ArrowLeft":
+                e.preventDefault();
+                this.selection.moveTo(this._row, this._col - 1);
+                break;
+            case "ArrowRight":
+                e.preventDefault();
+                this.selection.moveTo(this._row, this._col + 1);
+                break;
         }
     }
 }

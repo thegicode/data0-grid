@@ -14,8 +14,8 @@ export default class Selectioon {
         this._selectedCells = arg;
     }
 
-    selectCell(cell, add = false) {
-        if (!add) {
+    selectCell(cell, isShiftKey = false) {
+        if (!isShiftKey) {
             this._selectedCells.forEach((selectedCell) => {
                 selectedCell.classList.remove("selected");
                 // const input =
@@ -63,7 +63,7 @@ export default class Selectioon {
         if (this._selectedCells.size > 1) this.dataGrid.csvButtonVisible = true;
     }
 
-    moveTo(row, col, isEditable) {
+    moveTo(row, col, editable) {
         const nextCell = this.dataGrid.tbody.querySelector(
             `td[data-row="${row}"][data-col="${col}"]`
         );
@@ -82,7 +82,7 @@ export default class Selectioon {
 
             nextInput.focus();
 
-            if (isEditable) {
+            if (editable) {
                 if (nextInput.hasAttribute("aria-readonly")) {
                     nextInput.ariaReadOnly = "false";
                 } else {
