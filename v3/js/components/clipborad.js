@@ -17,7 +17,7 @@ function copyCells(selectedCells, currentSelectionRange) {
     });
 }
 
-function pasteCells(selectedCells, tbody, manager, ingredients) {
+function pasteCells(selectedCells, tbody) {
     navigator.clipboard
         .readText()
         .then((text) => {
