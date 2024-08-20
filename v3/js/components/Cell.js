@@ -188,28 +188,25 @@ export default class Cell {
     }
 
     handleArrowKey(e) {
+        e.preventDefault();
         switch (e.key) {
             case "ArrowUp":
-                e.preventDefault();
                 this.selection.moveTo(this._row - 1, this._col);
                 break;
             case "ArrowDown":
-                e.preventDefault();
                 this.selection.moveTo(this._row + 1, this._col);
                 break;
             case "ArrowLeft":
-                e.preventDefault();
                 this.selection.moveTo(this._row, this._col - 1);
                 break;
             case "ArrowRight":
-                e.preventDefault();
                 this.selection.moveTo(this._row, this._col + 1);
                 break;
         }
     }
 
     onSelectChange() {
-        this._cell.readOnly = true;
+        this.readOnly = true;
         this.selection.moveTo(this._row + 1, this._col, true);
     }
 }
