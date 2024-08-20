@@ -13,6 +13,8 @@ export default class Thead {
 
     create(definitionData) {
         const fragment = new DocumentFragment();
+        const th = document.createElement("th");
+        fragment.appendChild(th);
 
         definitionData.forEach((df) => {
             const th = document.createElement("th");
