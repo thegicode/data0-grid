@@ -89,6 +89,11 @@ export default class Cell {
                 this.onSelectChange.bind(this)
             );
         }
+
+        // select range
+        this._cell.addEventListener("mousedown", this.onMouseDown.bind(this));
+        this._cell.addEventListener("mousemove", this.onMouseMove.bind(this));
+        this._cell.addEventListener("mouseup", this.onMouseUp.bind(this));
     }
 
     onClick(e) {
@@ -208,5 +213,26 @@ export default class Cell {
     onSelectChange() {
         this.readOnly = true;
         this.selection.moveTo(this._row + 1, this._col, true);
+    }
+
+    onMouseDown(e) {
+        if (e.shiftKey) return;
+        this.selection.isRangeSelecting = true;
+        this.selection.rangeSelectingStart = this._cell;
+        this.selection.clearSelection();
+        this.selection.selectCell(this._cell);
+    }
+
+    onMouseMove(e) {
+        if (this.selection.isRangeSelecting) {
+            this.selection.selectRange(
+                this.selection.rangeSelectingStart,
+                this._cell
+            );
+        }
+    }
+
+    onMouseUp() {
+        this.selection.isRangeSelecting = false;
     }
 }
