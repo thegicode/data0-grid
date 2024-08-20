@@ -1,5 +1,6 @@
 import { FIELD_DEFINITIONS } from "../data/fieldDefinitions.js";
 import Cell from "./Cell.js";
+import Thead from "./Thead.js";
 
 export default class CreateGrid {
     constructor(dataGrid) {
@@ -19,17 +20,8 @@ export default class CreateGrid {
     }
 
     createThead() {
-        const fragment = new DocumentFragment();
-        const th = document.createElement("th");
-        fragment.appendChild(th);
-
-        this.FIELD_DEFINITIONS.forEach((df) => {
-            const th = document.createElement("th");
-            th.textContent = df.title;
-            fragment.appendChild(th);
-        });
-
-        this.dataGrid.thead.appendChild(fragment);
+        const theadTr = new Thead(this.FIELD_DEFINITIONS, this.dataGrid);
+        this.dataGrid.thead.appendChild(theadTr);
     }
 
     createTbody() {

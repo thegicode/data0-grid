@@ -118,11 +118,10 @@ export default class Selectioon {
     }
 
     clearSelection() {
-        // const selctedTh =
-        //     this.dataGrid.querySelector.querySelector(".selected-th");
-        // if (selctedTh) {
-        //     selctedTh.classList.remove("selected-th");
-        // }
+        const selctedTh = this.dataGrid.querySelector(".selected-th");
+        if (selctedTh) {
+            selctedTh.classList.remove("selected-th");
+        }
 
         this._selectedCells.forEach((cell) => {
             cell.classList.remove("selected");
