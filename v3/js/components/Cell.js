@@ -15,15 +15,31 @@ export default class Cell {
         return this.createCell();
     }
 
+    get readOnly() {
+        return this._input.hasAttribute("aria-readonly")
+            ? this._input.ariaReadOnly === "true"
+            : this._input.readOnly;
+    }
+
+    set readOnly(value) {
+        if (this._input.hasAttribute("aria-readonly")) {
+            this._input.ariaReadOnly = Boolean(value);
+        } else {
+            this._input.readOnly = Boolean(value);
+        }
+    }
+
     createCell() {
         const cell = document.createElement("td");
         cell.dataset.row = this._row;
         cell.dataset.col = this._col;
+        // cell.tabIndex = 0;
+
         const input = this.createInput();
         cell.appendChild(input);
 
-        this.input = input;
-        this.cell = cell;
+        this._input = input;
+        this._cell = cell;
         this.addEvents();
 
         return cell;
@@ -62,10 +78,14 @@ export default class Cell {
     }
 
     addEvents() {
-        this.cell.addEventListener("click", this.onClick.bind(this));
-        this.cell.addEventListener("dblclick", this.onDBClick.bind(this));
-        this.cell.addEventListener("input", this.onInput.bind(this));
-        this.cell.addEventListener("focusin", this.onFocusIn.bind(this));
+        this._cell.addEventListener("click", this.onClick.bind(this));
+        this._cell.addEventListener("dblclick", this.onDBClick.bind(this));
+        this._cell.addEventListener("input", this.onInput.bind(this));
+        this._cell.addEventListener("focusin", this.onFocusIn.bind(this));
+        this._input.addEventListener("keydown", this.onKeyDown.bind(this));
+        // this._input.addEventListener("keydown", () => {
+        //     console.log("keydown");
+        // });
     }
 
     onClick(e) {
@@ -73,9 +93,9 @@ export default class Cell {
 
         const cells = this.selection.selectedCells;
         if (e.shiftKey && cells.size > 0) {
-            this.selection.selectRange(Array.from(cells)[0], this.cell);
+            this.selection.selectRange(Array.from(cells)[0], this._cell);
         } else {
-            this.selection.selectCell(this.cell, e.shiftKey);
+            this.selection.selectCell(this._cell, e.shiftKey);
         }
     }
 
@@ -83,21 +103,89 @@ export default class Cell {
         // if (input.ariaReadOnly === "true") {
         //     input.ariaReadOnly = "false";
         // } else {
-        this.input.readOnly = false;
+        this._input.readOnly = false;
         // }
-        this.input.focus();
+        this._input.focus();
     }
 
     onInput() {
-        this._value = this.input.value;
-        this.input.readOnly = false;
+        if (this.dataGrid.isComposing) return;
+
+        this._value = this._input.value;
+        this._input.readOnly = false;
 
         console.log(
-            `셀 (${this._row}, ${this._col}) 값 변경: ${this.input.value}`
+            `셀 (${this._row}, ${this._col}) 값 변경: ${this._input.value}`
         );
     }
 
     onFocusIn() {
         this._originValue = this._value;
+    }
+
+    onKeyDown(e) {
+        const cells = this.selection.selectedCells;
+        if (!cells.size) return;
+
+        // const firstSelectedCell = Array.from(cells)[0];
+
+        const isEditing = this.readOnly === false;
+
+        // console.log("isEditing", isEditing);
+        // console.log("isComposing", this.dataGrid.isComposing);
+
+        // if (this._input && e.key === " ") {
+        //     if (this._type === "checkbox") {
+        //         e.preventDefault();
+        //         this._input.focus();
+        //         this._input.checked = !this._input.checked;
+        //         return;
+        //     } else if (this._type === "select") {
+        //         this._input.focus();
+        //         // input.ariaReadOnly = "false";
+        //         return;
+        //     }
+        // }
+
+        if (isEditing && !this.dataGrid.isComposing) {
+            switch (e.key) {
+                case "Enter":
+                    // 아래로 이동하고 포커스
+                    // shift key 인 경우 위로 이동
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        this.selection.moveTo(this._row - 1, this._col, true);
+                    } else {
+                        this.selection.moveTo(this._row + 1, this._col, true);
+                    }
+                    break;
+                case "Tab":
+                    e.preventDefault();
+                    this._input.blur();
+                    this.readOnly = true;
+                    if (e.shiftKey) {
+                        this.selection.moveTo(this._row, this._col - 1);
+                    } else {
+                        this.selection.moveTo(this._row, this._col + 1);
+                    }
+                    break;
+            }
+        } else {
+            switch (e.key) {
+                case "Enter":
+                    e.preventDefault();
+                    this.readOnly = false;
+                    this._input.focus();
+                    break;
+                case "Tab":
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        this.selection.moveTo(this._row, this._col - 1);
+                    } else {
+                        this.selection.moveTo(this._row, this._col + 1);
+                    }
+                    break;
+            }
+        }
     }
 }

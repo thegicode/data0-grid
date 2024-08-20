@@ -62,4 +62,36 @@ export default class Selectioon {
 
         if (this._selectedCells.size > 1) this.dataGrid.csvButtonVisible = true;
     }
+
+    moveTo(row, col, isEditable) {
+        const nextCell = this.dataGrid.tbody.querySelector(
+            `td[data-row="${row}"][data-col="${col}"]`
+        );
+
+        if (nextCell) {
+            this.selectCell(nextCell);
+            nextCell.scrollIntoView({
+                behavior: "smooth",
+                block: "center", // 수직 정렬을 지정
+                inline: "end", // 수평 정렬을 지정
+            });
+
+            const nextInput =
+                nextCell.querySelector("input") ||
+                nextCell.querySelector("select");
+
+            nextInput.focus();
+
+            if (isEditable) {
+                if (nextInput.hasAttribute("aria-readonly")) {
+                    nextInput.ariaReadOnly = "false";
+                } else {
+                    nextInput.readOnly = false;
+                }
+            }
+
+            // if (isFocus) {
+            // }
+        }
+    }
 }

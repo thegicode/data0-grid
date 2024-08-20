@@ -13,6 +13,8 @@ export default class DataGrid extends HTMLElement {
         this.tbody = this.querySelector("tbody");
 
         this.csvButton = this.querySelector(".csv-button");
+
+        this.isComposing = false;
     }
 
     async connectedCallback() {
