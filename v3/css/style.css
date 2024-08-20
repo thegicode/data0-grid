@@ -72,6 +72,10 @@ td select {
     box-sizing: border-box;
 }
 
+td select {
+    width: 95%;
+}
+
 /* input[aria-readonly="true"],
 select[aria-readonly="true"] {
     pointer-events: none;

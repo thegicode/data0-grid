@@ -82,6 +82,13 @@ export default class Cell {
         this._cell.addEventListener("input", this.onInput.bind(this));
         this._cell.addEventListener("focusin", this.onFocusIn.bind(this));
         this._input.addEventListener("keydown", this.onKeyDown.bind(this));
+
+        if (this._type === "select") {
+            this._input.addEventListener(
+                "change",
+                this.onSelectChange.bind(this)
+            );
+        }
     }
 
     onClick(e) {
@@ -199,5 +206,10 @@ export default class Cell {
                 this.selection.moveTo(this._row, this._col + 1);
                 break;
         }
+    }
+
+    onSelectChange() {
+        this._cell.readOnly = true;
+        this.selection.moveTo(this._row + 1, this._col, true);
     }
 }
