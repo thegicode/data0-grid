@@ -1,5 +1,6 @@
 export const iniitialData = [
     {
+        id: "a-1",
         name: "name1",
         quantity: 1,
         food: "food1",
@@ -8,6 +9,7 @@ export const iniitialData = [
         ref: "ref1",
     },
     {
+        id: "a-2",
         name: "name2",
         quantity: 2,
         food: "food2",
@@ -16,6 +18,7 @@ export const iniitialData = [
         ref: "ref2",
     },
     {
+        id: "a-3",
         name: "name3",
         quantity: 3,
         food: "food3",
@@ -24,6 +27,7 @@ export const iniitialData = [
         ref: "ref3",
     },
     {
+        id: "a-4",
         name: "name4",
         quantity: 4,
         food: "food4",
@@ -32,6 +36,7 @@ export const iniitialData = [
         ref: "ref4",
     },
     {
+        id: "a-5",
         name: "name5",
         quantity: 5,
         food: "food5",

@@ -1,6 +1,7 @@
 export default class Cell {
     constructor(createGrid, i, j) {
         this.dataGrid = createGrid.dataGrid;
+        this.manager = this.dataGrid.manager;
         this.selection = createGrid.selection;
         this.createGrid = createGrid;
 
@@ -9,6 +10,7 @@ export default class Cell {
         this._col = j;
         this._type = currentField.type;
         this._title = currentField.title;
+        this._pureText = currentField.pureText;
         this._value = createGrid.manager.data[i][this._title];
         this._originValue = this._value;
 
@@ -34,12 +36,19 @@ export default class Cell {
         cell.dataset.row = this._row;
         cell.dataset.col = this._col;
 
+        if (this._title === "id") {
+            cell.dataset.id = this._value;
+        }
+
         const input = this.createInput();
+        if (this._pureText) input.dataset.noEdit = true;
+
         cell.appendChild(input);
 
         this._input = input;
         this._cell = cell;
-        this.addEvents();
+
+        this.bindEvnets();
 
         return cell;
     }
@@ -76,7 +85,7 @@ export default class Cell {
         return input;
     }
 
-    addEvents() {
+    bindEvnets() {
         this._cell.addEventListener("click", this.onClick.bind(this));
         this._cell.addEventListener("dblclick", this.onDBClick.bind(this));
         this._cell.addEventListener("input", this.onInput.bind(this));
@@ -109,14 +118,21 @@ export default class Cell {
     }
 
     onDBClick() {
+        if (this._input.dataset.noEdit === "true") return;
+
         this._input.readOnly = false;
         this._input.focus();
     }
 
-    onInput() {
+    onInput(e) {
+        if (this._input.dataset.noEdit === "true") return;
+
         if (this.dataGrid.isComposing) return;
 
-        this._value = this._input.value;
+        // if (this._value !== this._input.value) {
+        //     this._value = this._input.value;
+        // }
+
         this._input.readOnly = false;
 
         console.log(
@@ -125,7 +141,7 @@ export default class Cell {
     }
 
     onFocusIn() {
-        this._originValue = this._value;
+        // this._originValue = this._value;
     }
 
     onKeyDown(e) {
@@ -140,6 +156,12 @@ export default class Cell {
                 case "Enter":
                     e.preventDefault();
                     this.moveUpDown(e.shiftKey);
+
+                    if (this._value !== this._input.value) {
+                        this._value = this._input.value;
+                        this.saveCellData(this._row, this._col, this._value);
+                    }
+
                     break;
                 case "Tab":
                     e.preventDefault();
@@ -149,8 +171,9 @@ export default class Cell {
                     break;
                 case "Escape":
                     e.preventDefault();
-                    this._input.value = this._originValue;
+                    this._input.value = this._value;
                     this.readOnly = true;
+                    console.log(this._value, this._input.value);
                     break;
             }
 
@@ -234,5 +257,22 @@ export default class Cell {
 
     onMouseUp() {
         this.selection.isRangeSelecting = false;
+    }
+
+    saveCellData() {
+        const id = this.getCellId();
+        const title = this.getTitle();
+        this.manager.updateFieldValue(id, title, this._value);
+    }
+
+    getCellId() {
+        const cellWithId =
+            this._cell.parentElement.querySelector("td[data-id]");
+        return cellWithId ? cellWithId.dataset.id : null;
+    }
+
+    getTitle() {
+        const th = this.dataGrid.thead.querySelectorAll("th")[this._col + 1];
+        return th ? th.textContent : null;
     }
 }

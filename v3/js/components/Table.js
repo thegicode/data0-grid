@@ -28,20 +28,33 @@ export default class Table {
 
     createTbody() {
         const fragement = new DocumentFragment();
-        for (let i = 0; i < this.manager.data.length; i++) {
-            const row = document.createElement("tr");
-            const rowHeader = document.createElement("th");
-            rowHeader.textContent = i + 1;
-            row.appendChild(rowHeader);
+        const fieldCount = this.FIELD_DEFINITIONS.length;
 
-            for (let j = 0; j < this.FIELD_DEFINITIONS.length; j++) {
-                const cell = new Cell(this, i, j);
-                row.appendChild(cell);
-            }
-
+        this.manager.data.forEach((_, rowIndex) => {
+            const row = this.craeteRow(rowIndex, fieldCount);
             fragement.appendChild(row);
-        }
+        });
+
         return fragement;
+    }
+
+    craeteRow(rowIndex, fieldCount) {
+        const row = document.createElement("tr");
+        const rowHeader = this.createRowHeader(rowIndex);
+        row.appendChild(rowHeader);
+
+        for (let colIndex = 0; colIndex < fieldCount; colIndex++) {
+            const cell = new Cell(this, rowIndex, colIndex);
+            row.appendChild(cell);
+        }
+
+        return row;
+    }
+
+    createRowHeader(rowIndex) {
+        const rowHeader = document.createElement("th");
+        rowHeader.textContent = rowIndex + 1;
+        return rowHeader;
     }
 
     checkAndCreateSelects() {

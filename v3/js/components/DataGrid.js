@@ -1,5 +1,5 @@
 import { iniitialData } from "../data/data.js";
-import dataManager from "./DataGridManager.js";
+import dataManager from "./DataManager.js";
 
 import Table from "./Table.js";
 import Selection from "./Selection.js";

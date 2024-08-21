@@ -1,4 +1,5 @@
 export const FIELD_DEFINITIONS = [
+    { title: "id", type: "text", pureText: true },
     { title: "name", type: "text" },
     { title: "quantity", type: "number" },
     { title: "food", type: "datalist" },
