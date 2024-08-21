@@ -1,4 +1,4 @@
-export const data = [
+export const iniitialData = [
     {
         name: "name1",
         quantity: 1,

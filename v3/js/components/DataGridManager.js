@@ -1,13 +1,19 @@
-export default class DataGridManager {
-    constructor(data) {
-        this._data = data;
+class DataGridManager {
+    constructor(initialData = []) {
+        this._data = Array.isArray(initialData) ? [...initialData] : [];
     }
 
     get data() {
-        return [...this._data];
+        return this._data.map((item) => ({ ...item }));
     }
 
-    set data(data) {
-        this._data = data;
+    set data(newData) {
+        if (Array.isArray(newData)) {
+            this._data = newData.map((item) => ({ ...item }));
+        } else {
+            console.error("Data must be an array.");
+        }
     }
 }
+
+export default new DataGridManager();

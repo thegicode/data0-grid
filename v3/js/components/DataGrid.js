@@ -1,13 +1,16 @@
-import { data } from "../data/data.js";
-import CreateGrid from "./CreateGrid.js";
+import { iniitialData } from "../data/data.js";
+import dataManager from "./DataGridManager.js";
+
+import Table from "./Table.js";
 import Selection from "./Selection.js";
 import clipboard from "./clipborad.js";
-
-import DataGridManager from "./DataGridManager.js";
 
 export default class DataGrid extends HTMLElement {
     constructor() {
         super();
+
+        this.manager = dataManager;
+        this.selection = new Selection(this);
 
         this.table = this.querySelector("table");
         this.thead = this.querySelector("thead");
@@ -18,43 +21,43 @@ export default class DataGrid extends HTMLElement {
     }
 
     async connectedCallback() {
-        const fetchedData = await this.loadData();
-
-        this.manager = new DataGridManager(fetchedData);
-        this.selection = new Selection(this);
-
-        new CreateGrid(this);
-
-        // 초기 선택
-        this.selection.selectCell(this.tbody.querySelector("td"));
-
-        this.addEvents();
+        try {
+            this.manager.data = await this.loadData();
+            new Table(this);
+            this.selection.selectCell(this.tbody.querySelector("td")); // 초기 선택
+            this.bindEvents();
+        } catch (error) {
+            console.error("Data loading failed", error);
+        }
     }
 
     set csvButtonVisible(value) {
         this.csvButton.hidden = !Boolean(value);
     }
 
-    loadData() {
+    async loadData() {
         return new Promise((resolve) => {
             setTimeout(() => {
-                resolve(data);
+                resolve(iniitialData);
             }, 100);
         });
     }
 
-    addEvents() {
-        document.addEventListener("copy", (e) => {
-            e.preventDefault();
-            clipboard.copyCells(
-                this.selection.selectedCells,
-                this.selection.currentSelectionRange
-            );
-        });
+    bindEvents() {
+        document.addEventListener("copy", this.onCopy.bind(this));
+        document.addEventListener("paste", this.onPaste.bind(this));
+    }
 
-        document.addEventListener("paste", (e) => {
-            e.preventDefault();
-            clipboard.pasteCells(this.selection.selectedCells, this.tbody);
-        });
+    onCopy(e) {
+        e.preventDefault();
+        clipboard.copyCells(
+            this.selection.selectedCells,
+            this.selection.currentSelectionRange
+        );
+    }
+
+    onPaste(e) {
+        e.preventDefault();
+        clipboard.pasteCells(this.selection.selectedCells, this.tbody);
     }
 }
