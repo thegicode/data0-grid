@@ -86,9 +86,21 @@ export default class Thead {
             const cells = Array.from(row.children);
             const fromCell = cells[from + 1]; // +1 to account for row header
             const toCell = cells[to + 1];
+
+            // Move the cell
             row.insertBefore(fromCell, to < from ? toCell : toCell.nextSibling);
+
+            // Update data-col attributes after moving the cell
             fromCell.dataset.col = to;
             toCell.dataset.col = from;
+
+            // Update the _col value for the Cell instance
+            if (fromCell.instance) {
+                fromCell.instance._col = to;
+            }
+            if (toCell.instance) {
+                toCell.instance._col = from;
+            }
         });
 
         // Move column header

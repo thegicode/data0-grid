@@ -53,6 +53,9 @@ export default class Cell {
         this._input = input;
         this._cell = cell;
 
+        // Store the Cell instance reference in the DOM element
+        cell.instance = this;
+
         this.bindEvnets();
 
         return cell;
