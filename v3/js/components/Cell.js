@@ -1,7 +1,7 @@
 export default class Cell {
     constructor(table, i, j) {
         this.dataGrid = table.dataGrid;
-        this.manager = this.dataGrid.manager;
+        this.dataModel = this.dataGrid.dataModel;
         this.selection = table.selection;
         this.table = table;
 
@@ -11,7 +11,7 @@ export default class Cell {
         this._type = currentField.type;
         this._title = currentField.title;
         this._protected = currentField.protected === true;
-        this._value = table.manager.data[i][this._title];
+        this._value = this.dataModel.records[i][this._title];
         this._originValue = this._value;
 
         return this.createCell();
@@ -274,7 +274,7 @@ export default class Cell {
     saveCellData() {
         const id = this.getCellId();
         const title = this.getTitle();
-        this.manager.updateFieldValue(id, title, this._value);
+        this.dataModel.updateFieldValue(id, title, this._value);
     }
 
     getCellId() {

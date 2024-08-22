@@ -5,7 +5,7 @@ import Thead from "./Thead.js";
 export default class Table {
     constructor(dataGrid) {
         this.dataGrid = dataGrid;
-        this.manager = dataGrid.manager;
+        this.dataModel = dataGrid.dataModel;
         this.selection = dataGrid.selection;
         this.FIELD_DEFINITIONS = FIELD_DEFINITIONS;
 
@@ -30,7 +30,7 @@ export default class Table {
         const fragement = new DocumentFragment();
         const fieldCount = this.FIELD_DEFINITIONS.length;
 
-        this.manager.data.forEach((_, rowIndex) => {
+        this.dataModel.records.forEach((_, rowIndex) => {
             const row = this.craeteRow(rowIndex, fieldCount);
             fragement.appendChild(row);
         });
@@ -67,7 +67,7 @@ export default class Table {
     }
 
     createSelectElement(prop) {
-        const data = this.manager.data.map((item) => item[prop]);
+        const data = this.dataModel.records.map((item) => item[prop]);
         const select = document.createElement("select");
         data.forEach((name, index) => {
             const option = document.createElement("option");
@@ -88,7 +88,7 @@ export default class Table {
     }
 
     createDataList(title) {
-        const data = this.manager.data.map((item) => item[title]);
+        const data = this.dataModel.records.map((item) => item[title]);
         const datalist = document.createElement("datalist");
         datalist.id = this.datalistId(title);
         data.forEach((item) => {

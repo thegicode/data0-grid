@@ -1,5 +1,5 @@
 import { iniitialData } from "../data/data.js";
-import dataManager from "./DataManager.js";
+import dataModel from "./DataModel.js";
 
 import Table from "./Table.js";
 import Selection from "./Selection.js";
@@ -9,7 +9,7 @@ export default class DataGrid extends HTMLElement {
     constructor() {
         super();
 
-        this.manager = dataManager;
+        this.dataModel = dataModel;
         this.selection = new Selection(this);
 
         this.table = this.querySelector("table");
@@ -22,7 +22,7 @@ export default class DataGrid extends HTMLElement {
 
     async connectedCallback() {
         try {
-            this.manager.data = await this.loadData();
+            this.dataModel.records = await this.loadData();
             new Table(this);
             this.selection.selectCell(this.tbody.querySelector("td")); // 초기 선택
             this.bindEvents();
@@ -61,7 +61,7 @@ export default class DataGrid extends HTMLElement {
         clipboard.pasteCells(
             this.selection.selectedCells,
             this.tbody,
-            this.manager
+            this.dataModel
         );
     }
 }

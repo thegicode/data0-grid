@@ -26,7 +26,7 @@ function getInputValue(cell) {
         : inputElement.value;
 }
 
-function pasteCells(selectedCells, tbody, manager) {
+function pasteCells(selectedCells, tbody, dataModel) {
     navigator.clipboard
         .readText()
         .then((text) => {
@@ -62,7 +62,7 @@ function pasteCells(selectedCells, tbody, manager) {
                 });
 
                 if (pastedData.id) {
-                    manager.updateRecordFields(pastedData);
+                    dataModel.updateRecordFields(pastedData);
                 }
             });
         })
