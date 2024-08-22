@@ -58,6 +58,10 @@ export default class DataGrid extends HTMLElement {
 
     onPaste(e) {
         e.preventDefault();
-        clipboard.pasteCells(this.selection.selectedCells, this.tbody);
+        clipboard.pasteCells(
+            this.selection.selectedCells,
+            this.tbody,
+            this.manager
+        );
     }
 }

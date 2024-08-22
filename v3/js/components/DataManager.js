@@ -30,6 +30,21 @@ class DataGridManager {
         }
     }
 
+    updateRecordFields(updateData) {
+        const { id, ...fieldsToUpdate } = updateData;
+        const recordIndex = this._data.findIndex((item) => item.id === id);
+
+        if (recordIndex !== -1) {
+            this._data[recordIndex] = {
+                ...this._data[recordIndex],
+                ...fieldsToUpdate,
+            };
+            console.log(this.data); // 수정된 데이터를 출력합니다.
+        } else {
+            console.error(`Record with id: ${id} not found.`);
+        }
+    }
+
     // Method to add a new record to the data
     // addRecord(record) {
     //     if (record && typeof record === "object") {
