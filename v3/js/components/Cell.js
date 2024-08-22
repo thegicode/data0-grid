@@ -234,14 +234,21 @@ export default class Cell {
     }
 
     onChange(e) {
-        if (this._value !== this._input.value) {
-            this._value = this._input.value;
+        const currentValue =
+            this._type === "checkbox" ? this._input.checked : this._input.value;
+        if (this._value !== currentValue) {
+            this._value = currentValue;
             this.saveCellData();
         }
 
-        this.readOnly = true;
-        const inputElement = this.selection.moveTo(this._row + 1, this._col);
-        this.setEditable(inputElement);
+        if (this._type === "select") {
+            this.readOnly = true;
+            const inputElement = this.selection.moveTo(
+                this._row + 1,
+                this._col
+            );
+            this.setEditable(inputElement);
+        }
     }
 
     onMouseDown(e) {
