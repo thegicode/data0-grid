@@ -40,13 +40,36 @@ function pasteCells(selectedCells, tbody) {
                         targetCell.querySelector("select");
                     if (!input) return;
 
-                    switch (input.type) {
+                    switch (input.dataset.type) {
                         case "number":
                             if (parseInt(value)) input.value = parseInt(value);
                             break;
                         case "checkbox":
                             if (value === "true" || value === "false")
                                 input.checked = Boolean(value === "true");
+                            break;
+                        case "select":
+                            {
+                                const options =
+                                    input.querySelectorAll("option");
+                                const isIncluded = Array.from(options).some(
+                                    (option) => option.textContent === value
+                                );
+                                if (isIncluded) input.value = value;
+                            }
+                            break;
+                        case "datalist":
+                            {
+                                const listElement = document.querySelector(
+                                    `#${input.getAttribute("list")}`
+                                );
+                                const options =
+                                    listElement.querySelectorAll("option");
+                                const isIncluded = Array.from(options).some(
+                                    (option) => option.value === value
+                                );
+                                if (isIncluded) input.value = value;
+                            }
                             break;
                         default:
                             input.value = value;
