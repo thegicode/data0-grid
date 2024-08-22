@@ -45,7 +45,7 @@ export default class Selectioon {
         cell.classList.add("selected");
     }
 
-    moveTo(row, col, editable = false) {
+    moveTo(row, col) {
         const nextCell = this.dataGrid.tbody.querySelector(
             `td[data-row="${row}"][data-col="${col}"]`
         );
@@ -65,9 +65,8 @@ export default class Selectioon {
 
             if (nextInput) {
                 nextInput.focus();
-                if (editable) {
-                    this.setEditable(nextInput, true);
-                }
+
+                return nextInput;
             }
         }
     }
@@ -117,14 +116,6 @@ export default class Selectioon {
         const selctedTh = this.dataGrid.querySelector(".selected-th");
         if (selctedTh) {
             selctedTh.classList.remove("selected-th");
-        }
-    }
-
-    setEditable(inputElement, isEditable) {
-        if (inputElement.hasAttribute("aria-readonly")) {
-            inputElement.ariaReadOnly = String(!isEditable);
-        } else {
-            inputElement.readOnly = !isEditable;
         }
     }
 }

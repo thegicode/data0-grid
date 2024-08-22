@@ -10,7 +10,7 @@ export default class Cell {
         this._col = j;
         this._type = currentField.type;
         this._title = currentField.title;
-        this._pureText = currentField.pureText;
+        this._protected = currentField.protected === true;
         this._value = createGrid.manager.data[i][this._title];
         this._originValue = this._value;
 
@@ -24,11 +24,17 @@ export default class Cell {
     }
 
     set readOnly(value) {
+        if (this.protected) return;
+
         if (this._input.hasAttribute("aria-readonly")) {
             this._input.ariaReadOnly = value;
         } else {
             this._input.readOnly = Boolean(value);
         }
+    }
+
+    get protected() {
+        return this._input.dataset.protected === "true";
     }
 
     createCell() {
@@ -41,7 +47,6 @@ export default class Cell {
         }
 
         const input = this.createInput();
-        if (this._pureText) input.dataset.noEdit = true;
 
         cell.appendChild(input);
 
@@ -82,6 +87,11 @@ export default class Cell {
                 input.readOnly = true;
                 break;
         }
+
+        if (this._protected) {
+            input.dataset.protected = true;
+        }
+
         return input;
     }
 
@@ -89,15 +99,9 @@ export default class Cell {
         this._cell.addEventListener("click", this.onClick.bind(this));
         this._cell.addEventListener("dblclick", this.onDBClick.bind(this));
         this._cell.addEventListener("input", this.onInput.bind(this));
-        this._cell.addEventListener("focusin", this.onFocusIn.bind(this));
-        this._input.addEventListener("keydown", this.onKeyDown.bind(this));
+        this._input.addEventListener("change", this.onChange.bind(this));
 
-        if (this._type === "select") {
-            this._input.addEventListener(
-                "change",
-                this.onSelectChange.bind(this)
-            );
-        }
+        this._input.addEventListener("keydown", this.onKeyDown.bind(this));
 
         // select range
         this._cell.addEventListener("mousedown", this.onMouseDown.bind(this));
@@ -118,30 +122,25 @@ export default class Cell {
     }
 
     onDBClick() {
-        if (this._input.dataset.noEdit === "true") return;
-
-        this._input.readOnly = false;
+        this.readOnly = false;
         this._input.focus();
     }
 
     onInput(e) {
-        if (this._input.dataset.noEdit === "true") return;
-
         if (this.dataGrid.isComposing) return;
 
-        // if (this._value !== this._input.value) {
-        //     this._value = this._input.value;
-        // }
-
-        this._input.readOnly = false;
-
-        console.log(
-            `셀 (${this._row}, ${this._col}) 값 변경: ${this._input.value}`
-        );
+        // console.log(
+        //     `셀 (${this._row}, ${this._col}) 값 변경: ${this._input.value}`
+        // );
     }
 
-    onFocusIn() {
-        // this._originValue = this._value;
+    setEditable(inputElement, isEditable) {
+        if (!inputElement) return;
+        if (inputElement.hasAttribute("aria-readonly")) {
+            inputElement.ariaReadOnly = String(!isEditable);
+        } else {
+            inputElement.readOnly = !isEditable;
+        }
     }
 
     onKeyDown(e) {
@@ -155,13 +154,9 @@ export default class Cell {
             switch (e.key) {
                 case "Enter":
                     e.preventDefault();
-                    this.moveUpDown(e.shiftKey);
-
-                    if (this._value !== this._input.value) {
-                        this._value = this._input.value;
-                        this.saveCellData(this._row, this._col, this._value);
-                    }
-
+                    this.readOnly = true;
+                    const nextInput = this.moveUpDown(e.shiftKey);
+                    this.setEditable(nextInput);
                     break;
                 case "Tab":
                     e.preventDefault();
@@ -184,8 +179,13 @@ export default class Cell {
             switch (e.key) {
                 case "Enter":
                     e.preventDefault();
-                    this.readOnly = false;
-                    this._input.focus();
+                    if (this.protected) {
+                        this.moveUpDown(e.shiftKey);
+                    } else {
+                        this.readOnly = false;
+                        this._input.focus();
+                    }
+
                     break;
                 case "Tab":
                     e.preventDefault();
@@ -201,9 +201,9 @@ export default class Cell {
 
     moveUpDown(shiftKey) {
         if (shiftKey) {
-            this.selection.moveTo(this._row - 1, this._col, true);
+            return this.selection.moveTo(this._row - 1, this._col);
         } else {
-            this.selection.moveTo(this._row + 1, this._col, true);
+            return this.selection.moveTo(this._row + 1, this._col);
         }
     }
 
@@ -233,9 +233,15 @@ export default class Cell {
         }
     }
 
-    onSelectChange() {
+    onChange(e) {
+        if (this._value !== this._input.value) {
+            this._value = this._input.value;
+            this.saveCellData();
+        }
+
         this.readOnly = true;
-        this.selection.moveTo(this._row + 1, this._col, true);
+        const inputElement = this.selection.moveTo(this._row + 1, this._col);
+        this.setEditable(inputElement);
     }
 
     onMouseDown(e) {
