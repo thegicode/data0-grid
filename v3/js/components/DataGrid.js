@@ -60,7 +60,7 @@ export default class DataGrid extends HTMLElement {
         e.preventDefault();
         clipboard.pasteCells(
             this.selection.selectedCells,
-            this.tbody,
+            this.table,
             this.dataModel
         );
     }

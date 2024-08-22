@@ -1,5 +1,3 @@
-let clipboardData = [];
-
 function copyCells(selectedCells, currentSelectionRange) {
     const clipboardText =
         selectedCells.size === 1
@@ -26,7 +24,7 @@ function getInputValue(cell) {
         : inputElement.value;
 }
 
-function pasteCells(selectedCells, tbody, dataModel) {
+function pasteCells(selectedCells, table, dataModel) {
     navigator.clipboard
         .readText()
         .then((text) => {
@@ -37,11 +35,11 @@ function pasteCells(selectedCells, tbody, dataModel) {
 
             data.forEach((row, rowIndex) => {
                 const targetRow = firstRow + rowIndex;
-                const pastedData = { id: getRowId(targetRow) };
+                const pastedData = { id: getRowId(table, targetRow) };
 
                 row.forEach((value, colIndex) => {
                     const targetCell = findTargetCell(
-                        tbody,
+                        table,
                         targetRow,
                         firstCol + colIndex
                     );
@@ -54,7 +52,7 @@ function pasteCells(selectedCells, tbody, dataModel) {
 
                     const parsedValue = handleInputPaste(input, value);
                     if (parsedValue) {
-                        const propTitle = getTitle(firstCol + colIndex);
+                        const propTitle = getTitle(table, firstCol + colIndex);
                         pastedData[propTitle] = parsedValue;
                     }
 
@@ -75,8 +73,10 @@ function parseClipboardData(text) {
     return text.split("\n").map((row) => row.split("\t"));
 }
 
-function findTargetCell(tbody, row, col) {
-    return tbody.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
+function findTargetCell(table, row, col) {
+    return table.querySelector(
+        `tbody td[data-row="${row}"][data-col="${col}"]`
+    );
 }
 
 function highlightCell(cell, selectedCells) {
@@ -138,15 +138,13 @@ function updateDatalistInput(input, value) {
     return null;
 }
 
-function getRowId(index) {
-    const tr = document.querySelectorAll("tbody tr")[index];
+function getRowId(table, index) {
+    const tr = table.querySelectorAll("tbody tr")[index];
     return tr?.querySelector("td[data-id]")?.dataset.id || null;
 }
 
-function getTitle(col) {
-    const th = document.querySelector("data-grid thead").querySelectorAll("th")[
-        col + 1
-    ];
+function getTitle(table, col) {
+    const th = table.querySelector("thead").querySelectorAll("th")[col + 1];
     return th ? th.textContent : null;
 }
 
