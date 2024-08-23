@@ -4,6 +4,7 @@ import dataModel from "./DataModel.js";
 import Table from "./Table.js";
 import Selection from "./Selection.js";
 import clipboard from "./clipborad.js";
+import handleCsvButton from "./handleCsvButton.js";
 
 export default class DataGrid extends HTMLElement {
     constructor() {
@@ -46,6 +47,14 @@ export default class DataGrid extends HTMLElement {
     bindEvents() {
         document.addEventListener("copy", this.onCopy.bind(this));
         document.addEventListener("paste", this.onPaste.bind(this));
+        this.csvButton.addEventListener(
+            "click",
+            handleCsvButton.onCsvButtonClick.bind(
+                this,
+                this.selection,
+                this.csvButton
+            )
+        );
     }
 
     onCopy(e) {
