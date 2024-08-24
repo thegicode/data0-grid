@@ -2,6 +2,14 @@
 
 ## 작업 체크리스트
 
+### 240823
+
+    - sort
+    - td : text
+    - td : custom element
+    - select row
+    - show(save) current data
+
 ### 셀 이동
 
     -   [x] tab, shift+tab 이동

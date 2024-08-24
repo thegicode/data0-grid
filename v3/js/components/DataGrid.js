@@ -5,6 +5,7 @@ import Table from "./Table.js";
 import Selection from "./Selection.js";
 import clipboard from "./clipborad.js";
 import handleCsvButton from "./handleCsvButton.js";
+import Sort from "./Sort.js";
 
 export default class DataGrid extends HTMLElement {
     constructor() {
@@ -25,8 +26,11 @@ export default class DataGrid extends HTMLElement {
         try {
             this.dataModel.records = await this.loadData();
             new Table(this);
+
             this.selection.selectCell(this.tbody.querySelector("td")); // 초기 선택
             this.bindEvents();
+
+            this.sort = new Sort(this.thead, this.dataModel, ["id", "name"]);
         } catch (error) {
             console.error("Data loading failed", error);
         }
