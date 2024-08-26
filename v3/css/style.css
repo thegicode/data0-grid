@@ -113,14 +113,14 @@ select:focus:not([aria-readonly="true"]) {
     background-size: cover; /* 이미지를 전체 버튼 크기에 맞추기 */
     background-repeat: no-repeat; /* 이미지 반복 방지 */
     background-position: center; /* 이미지 위치 가운데 정렬 */
+    background-color: #fff;
     border: none; /* 버튼의 테두리 제거 */
     cursor: pointer; /* 마우스 커서 모양 변경 */
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    background-color: #fff;
 }
 .sort-button[data-sort=""] {
-    background-position: -10000rem;
-    /* transform: rotate(-90deg); */
+    transform: rotate(-90deg);
+    opacity: 0.3;
 }
 .sort-button[data-sort="ascending"] {
     transform: rotate(0);
