@@ -174,3 +174,8 @@ select:focus:not([aria-readonly="true"]) {
 .highlight {
     background-color: yellow;
 }
+
+#data-area pre {
+    font-size: 12px;
+    color: #666;
+}

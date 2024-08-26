@@ -17,6 +17,7 @@ export default class DataGrid extends HTMLElement {
         this.thead = this.querySelector("thead");
         this.tbody = this.querySelector("tbody");
         this.csvButton = this.querySelector(".csv-button");
+        this.dataButton = this.querySelector(".data-button");
 
         this.isComposing = false;
     }
@@ -50,6 +51,7 @@ export default class DataGrid extends HTMLElement {
     bindEvents() {
         document.addEventListener("copy", this.onCopy.bind(this));
         document.addEventListener("paste", this.onPaste.bind(this));
+
         this.csvButton.addEventListener(
             "click",
             handleCsvButton.onCsvButtonClick.bind(
@@ -57,6 +59,11 @@ export default class DataGrid extends HTMLElement {
                 this.selection,
                 this.csvButton
             )
+        );
+
+        this.dataButton.addEventListener(
+            "click",
+            this.onClickShowButton.bind(this)
         );
     }
 
@@ -74,6 +81,14 @@ export default class DataGrid extends HTMLElement {
             this.selection.selectedCells,
             this.table,
             this.dataModel
+        );
+    }
+
+    onClickShowButton(e) {
+        this.querySelector("#data-area pre").textContent = JSON.stringify(
+            this.dataModel.records,
+            null,
+            2
         );
     }
 }
