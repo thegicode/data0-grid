@@ -49,6 +49,20 @@ td {
     position: relative;
 }
 
+tbody tr th:first-child {
+    cursor: pointer;
+}
+
+tbody tr.selected-tr {
+    outline: 1px solid #1b73e8;
+    background-color: #eaf0fe;
+}
+
+tbody tr.selected-tr th:first-child {
+    background-color: #0957ce;
+    color: #fff;
+}
+
 tbody td {
     text-align: center;
     height: 100%;

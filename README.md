@@ -22,9 +22,9 @@ http://127.0.0.1:8080/v3/index.html
 ### 240823
 
     - sort
+    - select row
     - td : text
     - td : custom element
-    - select row
     - show(save) current data
 
 ### 셀 이동

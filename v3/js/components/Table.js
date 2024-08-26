@@ -11,6 +11,7 @@ export default class Table {
         this.sortItem = sortItem;
 
         this._columnOrder = this.FIELD_DEFINITIONS.map((d) => d.title);
+        this._selectedTr = null;
 
         this.render();
     }
@@ -84,8 +85,25 @@ export default class Table {
 
     createRowHeader(rowIndex) {
         const rowHeader = document.createElement("th");
+        rowHeader.tabIndex = 0;
         rowHeader.textContent = rowIndex + 1;
+        rowHeader.addEventListener("click", this.onClickRowHeader.bind(this));
         return rowHeader;
+    }
+
+    onClickRowHeader() {
+        const clickedRow = e.target.closest("tr"); // Ensure the target is the table row
+
+        if (this._selectedTr) {
+            this._selectedTr.classList.remove("selected-tr");
+        }
+
+        if (this._selectedTr !== clickedRow) {
+            this._selectedTr = clickedRow;
+            this._selectedTr.classList.add("selected-tr");
+        } else {
+            this._selectedTr = null; // Deselect if the same row is clicked
+        }
     }
 
     checkAndCreateSelects() {
