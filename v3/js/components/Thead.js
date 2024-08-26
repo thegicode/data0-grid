@@ -1,26 +1,37 @@
 export default class Thead {
-    constructor(FIELD_DEFINITIONS, dataGrid) {
+    constructor(columnNames, dataGrid, tableController) {
+        this.dataModel = dataGrid.dataModel;
         this.tbody = dataGrid.tbody;
         this.selection = dataGrid.selection;
+        this.tableController = tableController;
+        this.sortItem = tableController.sortItem;
 
         this._isDragging = false;
         this._draggingColumn = null;
+        this._activeSortButton = null;
 
-        this.theadTr = this.create(FIELD_DEFINITIONS);
+        this.theadTr = this.createHeader(columnNames);
 
         return this.theadTr;
     }
 
-    create(definitionData) {
-        const fragment = new DocumentFragment();
-        const th = document.createElement("th");
-        fragment.appendChild(th);
+    createHeader(columnNames) {
+        const fragment = document.createDocumentFragment();
 
-        definitionData.forEach((df) => {
+        // 빈 th
+        const rowHeader = document.createElement("th");
+        fragment.appendChild(rowHeader);
+
+        columnNames.forEach((name) => {
             const th = document.createElement("th");
-            th.textContent = df.title;
-            this.addThEvents(th);
+            th.textContent = name;
 
+            if (this.sortItem.includes(name)) {
+                const sortButton = this.createSortButton(name);
+                th.appendChild(sortButton);
+            }
+
+            this.addThEvents(th);
             fragment.appendChild(th);
         });
 
@@ -31,15 +42,28 @@ export default class Thead {
     }
 
     addThEvents(th) {
-        th.addEventListener("mousedown", this.onThMouseDown.bind(this, th));
-        th.addEventListener("mousemove", this.onThMouseMove.bind(this, th));
-        th.addEventListener("mouseup", this.onThMouseUp.bind(this, th));
+        ["mousedown", "mousemove", "mouseup"].forEach((event) => {
+            th.addEventListener(event, (e) =>
+                this.handleThEvents(th, event, e)
+            );
+        });
     }
 
-    onThMouseDown(thElement, e) {
-        this.selection.clearSelection();
+    handleThEvents(thElement, eventType, e) {
         const colIndex =
-            Array.from(thElement.parentNode.children).indexOf(thElement) - 1; // -1 to account for row header
+            Array.from(thElement.parentNode.children).indexOf(thElement) - 1;
+
+        if (eventType === "mousedown") {
+            this.handleThMouseDown(thElement, colIndex);
+        } else if (eventType === "mousemove" && this._isDragging) {
+            this.handleThMouseMove(colIndex);
+        } else if (eventType === "mouseup" && this._isDragging) {
+            this.handleThMouseUp(thElement);
+        }
+    }
+
+    handleThMouseDown(thElement, colIndex) {
+        this.selection.clearSelection();
         if (colIndex >= 0) {
             this._isDragging = true;
             this._draggingColumn = colIndex;
@@ -48,32 +72,24 @@ export default class Thead {
         }
     }
 
-    onThMouseMove(thElement, e) {
-        if (this._isDragging && this._draggingColumn !== null) {
-            const colIndex =
-                Array.from(thElement.parentNode.children).indexOf(thElement) -
-                1; // -1 to account for row header
-            if (colIndex >= 0 && colIndex !== this._draggingColumn) {
-                this.moveColumn(colIndex);
-                this._draggingColumn = colIndex;
-            }
+    handleThMouseMove(colIndex) {
+        if (colIndex >= 0 && colIndex !== this._draggingColumn) {
+            this.moveColumn(colIndex);
+            this._draggingColumn = colIndex;
         }
     }
 
-    onThMouseUp(thElement, e) {
-        if (this._isDragging && this._draggingColumn !== null) {
-            this._isDragging = false;
-            this._draggingColumn = null;
-            thElement.classList.remove("dragging");
-        }
+    handleThMouseUp(thElement) {
+        this._isDragging = false;
+        this._draggingColumn = null;
+        thElement.classList.remove("dragging");
     }
 
     selectColumn(col) {
         const cells = this.tbody.querySelectorAll(`td[data-col="${col}"]`);
         cells.forEach((cell) => this.selection.selectCell(cell, true));
 
-        // Add class to the selected th
-        const th = this.theadTr.querySelector(`th:nth-child(${col + 2})`); // +2 to account for row header and 0-index
+        const th = this.theadTr.querySelector(`th:nth-child(${col + 2})`);
         if (th) {
             th.classList.add("selected-th");
         }
@@ -82,28 +98,20 @@ export default class Thead {
     moveColumn(to) {
         const from = this._draggingColumn;
         const rows = this.tbody.querySelectorAll("tr");
+
         rows.forEach((row) => {
             const cells = Array.from(row.children);
-            const fromCell = cells[from + 1]; // +1 to account for row header
+            const fromCell = cells[from + 1];
             const toCell = cells[to + 1];
-
-            // Move the cell
             row.insertBefore(fromCell, to < from ? toCell : toCell.nextSibling);
 
-            // Update data-col attributes after moving the cell
             fromCell.dataset.col = to;
             toCell.dataset.col = from;
 
-            // Update the _col value for the Cell instance
-            if (fromCell.instance) {
-                fromCell.instance._col = to;
-            }
-            if (toCell.instance) {
-                toCell.instance._col = from;
-            }
+            if (fromCell.instance) fromCell.instance._col = to;
+            if (toCell.instance) toCell.instance._col = from;
         });
 
-        // Move column header
         const headers = this.theadTr.querySelectorAll("th");
         const fromHeader = headers[from + 1];
         const toHeader = headers[to + 1];
@@ -111,5 +119,64 @@ export default class Thead {
             fromHeader,
             to < from ? toHeader : toHeader.nextSibling
         );
+
+        this.tableController.setColumnOrder();
+    }
+
+    createSortButton(columnName) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.sort = "";
+        button.className = "sort-button";
+        button.addEventListener(
+            "click",
+            this.onClickSortButton.bind(this, columnName, button)
+        );
+        return button;
+    }
+
+    onClickSortButton(columnName, button) {
+        if (this._activeSortButton && this._activeSortButton !== button) {
+            this._activeSortButton.dataset.sort = "";
+        }
+
+        const sortOrder = this.getNextSortOrder(button.dataset.sort);
+        const sortedData = this.sortData(columnName, sortOrder);
+        const reorderedData = this.sortDataByColumnOrder(sortedData);
+
+        button.dataset.sort = sortOrder;
+        this.tableController.renderTbody(reorderedData);
+
+        this._activeSortButton = button;
+    }
+
+    getNextSortOrder(currentOrder) {
+        return currentOrder === ""
+            ? "ascending"
+            : currentOrder === "ascending"
+            ? "descending"
+            : "";
+    }
+
+    sortData(columnName, sortOrder) {
+        if (!sortOrder) return [...this.dataModel.records];
+
+        return [...this.dataModel.records].sort((a, b) => {
+            if (a[columnName] < b[columnName])
+                return sortOrder === "ascending" ? -1 : 1;
+            if (a[columnName] > b[columnName])
+                return sortOrder === "ascending" ? 1 : -1;
+            return 0;
+        });
+    }
+
+    sortDataByColumnOrder(sortData) {
+        return sortData.map((item) => {
+            const reorderedItem = {};
+            this.tableController.columnOrder.forEach((columnName) => {
+                reorderedItem[columnName] = item[columnName];
+            });
+            return reorderedItem;
+        });
     }
 }

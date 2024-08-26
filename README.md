@@ -1,5 +1,22 @@
 # data-grid
 
+## Server
+
+cd /Users/deokim/Documents/코딩/project-my/data-grid
+
+npx http-server
+
+http://127.0.0.1:8080
+http://172.29.113.96:8080
+
+http://127.0.0.1:8080/v2/data-grid.html
+
+http://127.0.0.1:8080/v3/index.html
+
+-   캐시 삭제 하면서 작업해야 함 : cmd + shift +r
+
+<br>
+
 ## 작업 체크리스트
 
 ### 240823

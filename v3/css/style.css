@@ -96,10 +96,6 @@ select:focus:not([aria-readonly="true"]) {
     background-color: #d0d0d0;
 }
 
-/* .selected {
-    outline: 2px solid #007bff;
-} */
-
 .startCell {
     outline: 2px solid #007bff;
 }
@@ -109,6 +105,7 @@ select:focus:not([aria-readonly="true"]) {
 }
 
 .sort-button {
+    float: right;
     width: 20px; /* SVG의 크기에 맞게 너비와 높이 설정 */
     height: 20px;
     border-radius: 50%;
@@ -120,10 +117,10 @@ select:focus:not([aria-readonly="true"]) {
     cursor: pointer; /* 마우스 커서 모양 변경 */
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
     background-color: #fff;
-    margin-left: 20px;
 }
-.sort-button[data-sort="none"] {
+.sort-button[data-sort=""] {
     background-position: -10000rem;
+    /* transform: rotate(-90deg); */
 }
 .sort-button[data-sort="ascending"] {
     transform: rotate(0);
@@ -162,12 +159,4 @@ select:focus:not([aria-readonly="true"]) {
 
 .highlight {
     background-color: yellow;
-}
-
-.icon-triangle {
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-bottom: 8px solid black;
 }

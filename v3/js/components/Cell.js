@@ -1,18 +1,16 @@
 export default class Cell {
-    constructor(table, i, j) {
-        this.dataGrid = table.dataGrid;
+    constructor(tableController, params) {
+        this.dataGrid = tableController.dataGrid;
         this.dataModel = this.dataGrid.dataModel;
-        this.selection = table.selection;
-        this.table = table;
+        this.selection = tableController.selection;
+        this.tableController = tableController;
 
-        const currentField = table.FIELD_DEFINITIONS[j];
-        this._row = i;
-        this._col = j;
-        this._type = currentField.type;
-        this._title = currentField.title;
-        this._protected = currentField.protected === true;
-        this._value = this.dataModel.records[i][this._title];
-        this._originValue = this._value;
+        this._row = params.row;
+        this._col = params.col;
+        this._type = params.type;
+        this._title = params.title;
+        this._protected = params.protected === true;
+        this._value = params.value;
 
         return this.createCell();
     }
@@ -66,12 +64,15 @@ export default class Cell {
         switch (this._type) {
             case "datalist":
                 input.type = "text";
-                input.setAttribute("list", this.table.datalistId(this._title));
+                input.setAttribute(
+                    "list",
+                    this.tableController.datalistId(this._title)
+                );
                 input.value = this._value;
                 input.readOnly = true;
                 break;
             case "select":
-                const select = this.table.selectObject[this._title];
+                const select = this.tableController.selectObject[this._title];
                 input = select.cloneNode(true);
                 input.value = this._value;
                 input.ariaReadOnly = true;

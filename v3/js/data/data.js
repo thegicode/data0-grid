@@ -19,7 +19,7 @@ export const iniitialData = [
     },
     {
         id: "a-3",
-        name: "name3",
+        name: "name0-3",
         quantity: 3,
         food: "food3",
         vegetable: "vegetable3",
