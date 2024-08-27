@@ -171,11 +171,19 @@ select:focus:not([aria-readonly="true"]) {
     cursor: pointer;
 }
 
-.highlight {
-    background-color: yellow;
-}
-
 #data-area pre {
     font-size: 12px;
     color: #666;
+}
+
+.highlight {
+    background-color: #c7eed2;
+    color: #567e62;
+}
+.highlight.selected {
+    outline: 1px solid #1b73e8;
+}
+.highlight input,
+.highlight select {
+    color: #567e62;
 }

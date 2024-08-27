@@ -116,6 +116,14 @@ export default class Cell {
         this.dataGrid.csvButtonVisible = false;
 
         const cells = this.selection.selectedCells;
+
+        cells.forEach((cell) => {
+            this.setEditable(
+                cell.querySelector("input") || cell.querySelector("select"),
+                false
+            );
+        });
+
         if (e.shiftKey && cells.size > 0) {
             this.selection.selectRange(Array.from(cells)[0], this._cell);
         } else {

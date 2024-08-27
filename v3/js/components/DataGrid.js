@@ -65,6 +65,20 @@ export default class DataGrid extends HTMLElement {
             "click",
             this.onClickShowButton.bind(this)
         );
+
+        document.addEventListener("keydown", this.onKeydown.bind(this));
+
+        this.addEventListener("click", this.onClickDocument.bind(this));
+    }
+
+    onKeydown(e) {
+        if (e.key === "f" && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            const searchText = prompt("Enter text to search:");
+            if (searchText) {
+                this.highlightSearchResults(searchText);
+            }
+        }
     }
 
     onCopy(e) {
@@ -90,5 +104,34 @@ export default class DataGrid extends HTMLElement {
             null,
             2
         );
+    }
+
+    onClickDocument(e) {
+        const td = e.target.closest("td");
+        if (!td) return;
+        const classList = e.target.closest("td").classList;
+        if (!classList.contains("highlight")) {
+            this.clearHighlights();
+        }
+    }
+
+    highlightSearchResults(searchText) {
+        this.clearHighlights();
+
+        const cells = this.tbody.querySelectorAll("td");
+        cells.forEach((cell) => {
+            const input =
+                cell.querySelector("input") || cell.querySelector("select");
+            if (input && input.value.includes(searchText)) {
+                cell.classList.add("highlight");
+            }
+        });
+    }
+
+    clearHighlights() {
+        const highlightedCells = this.tbody.querySelectorAll(".highlight");
+        highlightedCells.forEach((cell) => {
+            cell.classList.remove("highlight");
+        });
     }
 }
