@@ -91,7 +91,7 @@ export default class Table {
         return rowHeader;
     }
 
-    onClickRowHeader() {
+    onClickRowHeader(e) {
         const clickedRow = e.target.closest("tr"); // Ensure the target is the table row
 
         if (this._selectedTr) {
