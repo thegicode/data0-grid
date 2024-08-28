@@ -91,8 +91,8 @@ function downloadCSV(csv, filename) {
 }
 
 function getInputValue(cell) {
-    const inputElement =
-        cell.querySelector("input") || cell.querySelector("select");
+    const inputElement = cell.instance.inputElement;
+
     return inputElement.type === "checkbox"
         ? inputElement.checked
             ? "true"

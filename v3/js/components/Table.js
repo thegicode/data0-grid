@@ -72,7 +72,6 @@ export default class Table {
                 col: colIndex,
                 title: fieldDefinition.title,
                 type: fieldDefinition.type,
-                protected: fieldDefinition.protected,
                 value: rowData[fieldDefinition.title],
             };
 

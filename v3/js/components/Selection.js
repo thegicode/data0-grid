@@ -43,6 +43,7 @@ export default class Selectioon {
 
         this._selectedCells.add(cell);
         cell.classList.add("selected");
+        cell.instance.inputElement.focus();
     }
 
     moveTo(row, col) {
@@ -61,7 +62,8 @@ export default class Selectioon {
 
             const nextInput =
                 nextCell.querySelector("input") ||
-                nextCell.querySelector("select");
+                nextCell.querySelector("select") ||
+                nextCell.querySelector("span.text");
 
             if (nextInput) {
                 nextInput.focus();

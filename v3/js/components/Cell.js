@@ -9,7 +9,6 @@ export default class Cell {
         this._col = params.col;
         this._type = params.type;
         this._title = params.title;
-        this._protected = params.protected === true;
         this._value = params.value;
 
         return this.createCell();
@@ -22,7 +21,7 @@ export default class Cell {
     }
 
     set readOnly(value) {
-        if (this.protected) return;
+        if (this._type === "string") return;
 
         if (this._input.hasAttribute("aria-readonly")) {
             this._input.ariaReadOnly = value;
@@ -31,8 +30,8 @@ export default class Cell {
         }
     }
 
-    get protected() {
-        return this._input.dataset.protected === "true";
+    get inputElement() {
+        return this._input;
     }
 
     createCell() {
@@ -46,7 +45,7 @@ export default class Cell {
 
         let childElement = null;
 
-        if (this._protected) {
+        if (this._type === "string") {
             childElement = this.createText();
         } else {
             childElement = this.createInput();
@@ -105,10 +104,6 @@ export default class Cell {
 
         input.dataset.type = this._type;
 
-        // if (this._protected) {
-        //     input.dataset.protected = true;
-        // }
-
         return input;
     }
 
@@ -142,7 +137,7 @@ export default class Cell {
             this.selection.selectRange(Array.from(cells)[0], this._cell);
         } else {
             this.selection.selectCell(this._cell, e.shiftKey);
-            this._input.focus(); // checkbox 포커스 되어야 셀 이동이 된다.
+            // this._input.focus(); // checkbox 포커스 되어야 셀 이동이 된다.
         }
     }
 
@@ -204,7 +199,7 @@ export default class Cell {
             switch (e.key) {
                 case "Enter":
                     e.preventDefault();
-                    if (this.protected) {
+                    if (this._type === "string") {
                         this.moveUpDown(e.shiftKey);
                     } else {
                         this.readOnly = false;

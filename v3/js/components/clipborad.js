@@ -17,11 +17,19 @@ function copyCells(selectedCells, currentSelectionRange) {
 }
 
 function getInputValue(cell) {
-    const inputElement =
-        cell.querySelector("input") || cell.querySelector("select");
-    return inputElement?.type === "checkbox"
-        ? inputElement.checked
-        : inputElement.value;
+    const inputElement = cell.instance.inputElement;
+
+    if (inputElement) {
+        if (inputElement.tagName.toLowerCase() === "span") {
+            return inputElement.textContent;
+        }
+
+        return inputElement.type === "checkbox"
+            ? inputElement.checked
+            : inputElement.value;
+    }
+
+    return null; // inputElement가 없을 경우 null 반환
 }
 
 function pasteCells(selectedCells, table, dataModel) {
