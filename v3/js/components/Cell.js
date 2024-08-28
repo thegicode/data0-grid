@@ -44,11 +44,17 @@ export default class Cell {
             cell.dataset.id = this._value;
         }
 
-        const input = this.createInput();
+        let childElement = null;
 
-        cell.appendChild(input);
+        if (this._protected) {
+            childElement = this.createText();
+        } else {
+            childElement = this.createInput();
+        }
 
-        this._input = input;
+        cell.appendChild(childElement);
+
+        this._input = childElement;
         this._cell = cell;
 
         // Store the Cell instance reference in the DOM element
@@ -57,6 +63,14 @@ export default class Cell {
         this.bindEvnets();
 
         return cell;
+    }
+
+    createText() {
+        const el = document.createElement("span");
+        el.textContent = this._value;
+        el.className = "text";
+        el.tabIndex = 0;
+        return el;
     }
 
     createInput() {
@@ -91,9 +105,9 @@ export default class Cell {
 
         input.dataset.type = this._type;
 
-        if (this._protected) {
-            input.dataset.protected = true;
-        }
+        // if (this._protected) {
+        //     input.dataset.protected = true;
+        // }
 
         return input;
     }
