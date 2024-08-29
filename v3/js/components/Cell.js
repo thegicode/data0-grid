@@ -5,6 +5,7 @@ export default class Cell {
         this.selection = tableController.selection;
         this.tableController = tableController;
 
+        this._cell = null;
         this._row = params.row;
         this._col = params.col;
         this._type = params.type;
@@ -12,6 +13,28 @@ export default class Cell {
         this._value = params.value;
 
         return this.createCell();
+    }
+
+    get row() {
+        return this._row;
+    }
+
+    set row(value) {
+        this._cell.dataset.row = value;
+        this._row = value;
+    }
+
+    get col() {
+        return this._col;
+    }
+
+    set col(value) {
+        this._cell.dataset.col = value;
+        this._col = value;
+    }
+
+    get value() {
+        return this._value;
     }
 
     get readOnly() {
@@ -56,10 +79,10 @@ export default class Cell {
         this._input = childElement;
         this._cell = cell;
 
+        this.bindEvnets();
+
         // Store the Cell instance reference in the DOM element
         cell.instance = this;
-
-        this.bindEvnets();
 
         return cell;
     }

@@ -14,10 +14,10 @@ function onCsvButtonClick(selection, csvButton) {
 
 function sortSelectedCells(selectedCells) {
     return [...selectedCells].sort((a, b) => {
-        const aRow = parseInt(a.dataset.row);
-        const aCol = parseInt(a.dataset.col);
-        const bRow = parseInt(b.dataset.row);
-        const bCol = parseInt(b.dataset.col);
+        const aRow = parseInt(a.instance.row);
+        const aCol = parseInt(a.instance.col);
+        const bRow = parseInt(b.instance.row);
+        const bCol = parseInt(b.instance.col);
 
         return aRow === bRow ? aCol - bCol : aRow - bRow;
     });
@@ -28,9 +28,9 @@ function organizeSelectedCells(sortedCells) {
     const selectedCols = new Set();
 
     sortedCells.forEach((cell) => {
-        const row = parseInt(cell.dataset.row);
-        const col = parseInt(cell.dataset.col);
-        const value = getInputValue(cell);
+        const row = parseInt(cell.instance.row);
+        const col = parseInt(cell.instance.col);
+        const value = cell.instance.value;
 
         if (!rows[row]) {
             rows[row] = [];
@@ -88,16 +88,6 @@ function downloadCSV(csv, filename) {
 
     downloadLink.click();
     document.body.removeChild(downloadLink);
-}
-
-function getInputValue(cell) {
-    const inputElement = cell.instance.inputElement;
-
-    return inputElement.type === "checkbox"
-        ? inputElement.checked
-            ? "true"
-            : "false"
-        : inputElement.value;
 }
 
 export default { onCsvButtonClick };

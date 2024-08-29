@@ -120,9 +120,7 @@ export default class DataGrid extends HTMLElement {
 
         const cells = this.tbody.querySelectorAll("td");
         cells.forEach((cell) => {
-            const input =
-                cell.querySelector("input") || cell.querySelector("select");
-            if (input && input.value.includes(searchText)) {
+            if (cell.instance.value.toString().includes(searchText)) {
                 cell.classList.add("highlight");
             }
         });

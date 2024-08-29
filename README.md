@@ -19,12 +19,12 @@ http://127.0.0.1:8080/v3/index.html
 
 ## 작업 체크리스트
 
-### 240823
+### v3
 
-    - sort
-    - select row
-    - show(save) current data
-    - td : text
+    - [x] sort
+    - [x] select row
+    - [x] show(save) current data
+    - [x] td : text
     - td : custom element
 
 ### 셀 이동

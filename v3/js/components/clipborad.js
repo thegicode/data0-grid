@@ -53,12 +53,10 @@ function pasteCells(selectedCells, table, dataModel) {
                     );
                     if (!targetCell) return;
 
-                    const input =
-                        targetCell.querySelector("input") ||
-                        targetCell.querySelector("select");
-                    if (!input) return;
+                    const { inputElement } = targetCell.instance;
+                    if (!inputElement) return;
 
-                    const parsedValue = handleInputPaste(input, value);
+                    const parsedValue = handleInputPaste(inputElement, value);
                     if (parsedValue) {
                         const propTitle = getTitle(table, firstCol + colIndex);
                         pastedData[propTitle] = parsedValue;

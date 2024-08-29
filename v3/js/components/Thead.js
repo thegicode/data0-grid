@@ -105,11 +105,11 @@ export default class Thead {
             const toCell = cells[to + 1];
             row.insertBefore(fromCell, to < from ? toCell : toCell.nextSibling);
 
-            fromCell.dataset.col = to;
-            toCell.dataset.col = from;
+            fromCell.instance.col = to;
+            toCell.instance.col = from;
 
-            if (fromCell.instance) fromCell.instance._col = to;
-            if (toCell.instance) toCell.instance._col = from;
+            if (fromCell.instance) fromCell.instance.col = to;
+            if (toCell.instance) toCell.instance.col = from;
         });
 
         const headers = this.theadTr.querySelectorAll("th");

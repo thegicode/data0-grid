@@ -60,10 +60,7 @@ export default class Selectioon {
                 inline: "end", // 수평 정렬을 지정
             });
 
-            const nextInput =
-                nextCell.querySelector("input") ||
-                nextCell.querySelector("select") ||
-                nextCell.querySelector("span.text");
+            const nextInput = nextCell.instance.inputElement;
 
             if (nextInput) {
                 nextInput.focus();
@@ -74,10 +71,10 @@ export default class Selectioon {
     }
 
     selectRange(startCell, endCell) {
-        const startRow = parseInt(startCell.dataset.row, 10);
-        const startCol = parseInt(startCell.dataset.col, 10);
-        const endRow = parseInt(endCell.dataset.row, 10);
-        const endCol = parseInt(endCell.dataset.col, 10);
+        const startRow = parseInt(startCell.instance.row, 10);
+        const startCol = parseInt(startCell.instance.col, 10);
+        const endRow = parseInt(endCell.instance.row, 10);
+        const endCol = parseInt(endCell.instance.col, 10);
 
         const minRow = Math.min(startRow, endRow);
         const maxRow = Math.max(startRow, endRow);
