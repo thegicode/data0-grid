@@ -1,51 +1,8 @@
-export default class DataDataList extends HTMLElement {
-    constructor(title, value) {
-        super();
+import DataCellBase from "./DataCellBase.js";
 
-        this._title = title;
-        this._type = "datalist";
-        this._value = value;
-        this._readOnly = true;
-        this._el = null;
-    }
-
-    get readOnly() {
-        return this._readOnly;
-    }
-
-    set readOnly(value) {
-        this._readOnly = value;
-        this._el.readOnly = value;
-    }
-
-    get value() {
-        return this._value;
-    }
-
-    set value(arg) {
-        this._value = arg;
-        this._el.value = arg;
-    }
-
-    get currentValue() {
-        return this._el.value;
-    }
-
-    focus() {
-        this._el.focus();
-    }
-
-    blur() {
-        this._el.blur();
-    }
-
-    connectedCallback() {
-        this.render();
-    }
-
-    render() {
-        this._el = this.createElement();
-        this.appendChild(this._el);
+export default class DataDataList extends DataCellBase {
+    constructor(params) {
+        super(params);
     }
 
     createElement() {

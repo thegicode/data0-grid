@@ -81,26 +81,29 @@ export default class Cell {
 
     createChildElement() {
         let childElement = null;
+        const params = {
+            dataModel: this.dataModel,
+            type: this._type,
+            title: this._title,
+            value: this._value,
+        };
+
         switch (this._type) {
             case "text":
             case "number":
-                childElement = new DataInputTextNumber(this._type, this._value);
+                childElement = new DataInputTextNumber(params);
                 break;
             case "checkbox":
-                childElement = new DataCheckbox(this._value);
+                childElement = new DataCheckbox(params);
                 break;
             case "select":
-                childElement = new DataSelect(
-                    this.dataModel,
-                    this._title,
-                    this._value
-                );
+                childElement = new DataSelect(params);
                 break;
             case "datalist":
-                childElement = new DataDataList(this._title, this._value);
+                childElement = new DataDataList(params);
                 break;
             default: // "string":
-                childElement = new DataText(this._value);
+                childElement = new DataText(params);
         }
         return childElement;
     }
@@ -108,7 +111,7 @@ export default class Cell {
     bindEvnets() {
         this._cell.addEventListener("click", this.onClick.bind(this));
         this._cell.addEventListener("dblclick", this.onDBClick.bind(this));
-        this._cell.addEventListener("input", this.onInput.bind(this));
+        // this._cell.addEventListener("input", this.onInput.bind(this));
         this._dataCell.addEventListener("change", this.onChange.bind(this));
 
         this._dataCell.addEventListener("keydown", this.onKeyDown.bind(this));

@@ -1,30 +1,8 @@
-export default class DataText extends HTMLElement {
-    constructor(value) {
-        super();
+import DataCellBase from "./DataCellBase.js";
 
-        this._value = value;
-        this._el = null;
-    }
-
-    get value() {
-        return this._value;
-    }
-
-    focus() {
-        this._el.focus();
-    }
-
-    blur() {
-        this._el.blur();
-    }
-
-    connectedCallback() {
-        this.render();
-    }
-
-    render() {
-        this._el = this.createElement();
-        this.appendChild(this._el);
+export default class DataText extends DataCellBase {
+    constructor(params) {
+        super(params);
     }
 
     createElement() {
