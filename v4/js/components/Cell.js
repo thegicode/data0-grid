@@ -159,8 +159,8 @@ export default class Cell {
                 case "Enter":
                     e.preventDefault();
                     this.readOnly = true;
-                    const nextInput = this.moveUpDown(e.shiftKey);
-                    this.setEditable(nextInput);
+                    const nextDataCell = this.moveUpDown(e.shiftKey);
+                    this.setEditable(nextDataCell);
                     break;
                 case "Tab":
                     e.preventDefault();
@@ -172,7 +172,6 @@ export default class Cell {
                     e.preventDefault();
                     this._dataCell.value = this._value;
                     this.readOnly = true;
-                    console.log(this._value, this._dataCell.value);
                     break;
             }
 
@@ -238,10 +237,8 @@ export default class Cell {
     }
 
     onChange(e) {
-        const currentValue =
-            this._type === "checkbox"
-                ? this._dataCell.checked
-                : this._dataCell.value;
+        const currentValue = this._dataCell.currentValue;
+
         if (this._value !== currentValue) {
             this._value = currentValue;
             this.saveCellData();
@@ -249,8 +246,11 @@ export default class Cell {
 
         if (this._type === "select") {
             this.readOnly = true;
-            const dataCell = this.selection.moveTo(this._row + 1, this._col);
-            this.setEditable(dataCell);
+            const nextDataCell = this.selection.moveTo(
+                this._row + 1,
+                this._col
+            );
+            this.setEditable(nextDataCell);
         }
     }
 

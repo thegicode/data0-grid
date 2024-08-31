@@ -26,6 +26,10 @@ export default class DataCheckbox extends HTMLElement {
         this._el.checked = Boolean(arg);
     }
 
+    get currentValue() {
+        return this._el.checked;
+    }
+
     focus() {
         this._el.focus();
     }

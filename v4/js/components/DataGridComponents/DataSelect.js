@@ -30,6 +30,10 @@ export default class DataSelect extends HTMLElement {
         this._el.value = arg;
     }
 
+    get currentValue() {
+        return this._el.value;
+    }
+
     focus() {
         this._el.focus();
     }
