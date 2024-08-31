@@ -80,7 +80,6 @@ export default class Cell {
     }
 
     createChildElement() {
-        let childElement = null;
         const params = {
             dataModel: this.dataModel,
             type: this._type,
@@ -91,21 +90,16 @@ export default class Cell {
         switch (this._type) {
             case "text":
             case "number":
-                childElement = new DataInputTextNumber(params);
-                break;
+                return new DataInputTextNumber(params);
             case "checkbox":
-                childElement = new DataCheckbox(params);
-                break;
+                return new DataCheckbox(params);
             case "select":
-                childElement = new DataSelect(params);
-                break;
+                return new DataSelect(params);
             case "datalist":
-                childElement = new DataDataList(params);
-                break;
+                return new DataDataList(params);
             default: // "string":
-                childElement = new DataText(params);
+                return new DataText(params);
         }
-        return childElement;
     }
 
     bindEvnets() {
