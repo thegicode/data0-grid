@@ -1,10 +1,11 @@
 import { iniitialData } from "../data/data.js";
-import dataModel from "./DataModel.js";
+import dataModel from "../models/DataModel.js";
 
 import Table from "./Table.js";
 import Selection from "./Selection.js";
-import clipboard from "./clipborad.js";
-import handleCsvButton from "./handleCsvButton.js";
+
+import clipboard from "./helpers/clipborad.js";
+import handleCsvButton from "./helpers/handleCsvButton.js";
 
 export default class DataGrid extends HTMLElement {
     constructor() {

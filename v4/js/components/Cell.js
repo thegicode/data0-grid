@@ -1,3 +1,9 @@
+import DataInputTextNumber from "./DataGridComponents/DataInputTextNumber.js";
+import DataText from "./DataGridComponents/DataText.js";
+import DataSelect from "./DataGridComponents/DataSelect.js";
+import DataCheckbox from "./DataGridComponents/DataCheckbox.js";
+import DataDataList from "./DataGridComponents/DataDataList.js";
+
 export default class Cell {
     constructor(tableController, params) {
         this.dataGrid = tableController.dataGrid;
@@ -38,19 +44,21 @@ export default class Cell {
     }
 
     get readOnly() {
-        return this._input.hasAttribute("aria-readonly")
-            ? this._input.ariaReadOnly === "true"
-            : this._input.readOnly;
+        return this._input.readOnly;
+        // return this._input.hasAttribute("aria-readonly")
+        //     ? this._input.ariaReadOnly === "true"
+        //     : this._input.readOnly;
     }
 
     set readOnly(value) {
-        if (this._type === "string") return;
+        this._input.readOnly = value;
+        // if (this._type === "string") return;
 
-        if (this._input.hasAttribute("aria-readonly")) {
-            this._input.ariaReadOnly = value;
-        } else {
-            this._input.readOnly = Boolean(value);
-        }
+        // if (this._input.hasAttribute("aria-readonly")) {
+        //     this._input.ariaReadOnly = value;
+        // } else {
+        //     this._input.readOnly = Boolean(value);
+        // }
     }
 
     get inputElement() {
@@ -66,13 +74,7 @@ export default class Cell {
             cell.dataset.id = this._value;
         }
 
-        let childElement = null;
-
-        if (this._type === "string") {
-            childElement = this.createText();
-        } else {
-            childElement = this.createInput();
-        }
+        const childElement = this.createChildElement();
 
         cell.appendChild(childElement);
 
@@ -87,47 +89,37 @@ export default class Cell {
         return cell;
     }
 
-    createText() {
-        const el = document.createElement("span");
-        el.textContent = this._value;
-        el.className = "text";
-        el.tabIndex = 0;
-        return el;
-    }
-
-    createInput() {
-        let input = document.createElement("input");
+    createChildElement() {
+        let childElement = null;
         switch (this._type) {
-            case "datalist":
-                input.type = "text";
-                input.setAttribute(
-                    "list",
-                    this.tableController.datalistId(this._title)
-                );
-                input.value = this._value;
-                input.readOnly = true;
-                break;
-            case "select":
-                const select = this.tableController.selectObject[this._title];
-                input = select.cloneNode(true);
-                input.value = this._value;
-                input.ariaReadOnly = true;
+            // case "string":
+            //     childElement = new DataText(this._value);
+            //     break;
+            case "text":
+            case "number":
+                childElement = new DataInputTextNumber(this._type, this._value);
                 break;
             case "checkbox":
-                input.type = "checkbox";
-                input.checked = Boolean(this._value);
-                input.ariaReadOnly = true;
+                childElement = new DataCheckbox(this._value);
                 break;
-            default: // text, number
-                input.type = this._type;
-                input.value = this._value;
-                input.readOnly = true;
+            case "select":
+                childElement = new DataSelect(
+                    this.dataModel,
+                    this._title,
+                    this._value
+                );
                 break;
+            case "datalist":
+                childElement = new DataDataList(
+                    this.dataModel,
+                    this._title,
+                    this._value
+                );
+                break;
+            default:
+                childElement = new DataText(this._value);
         }
-
-        input.dataset.type = this._type;
-
-        return input;
+        return childElement;
     }
 
     bindEvnets() {
