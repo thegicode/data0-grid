@@ -31,6 +31,7 @@ export default class DataGrid extends HTMLElement {
             this.tableCP = new Table(this, sortItem);
 
             this.selection.selectCell(this.tbody.querySelector("td")); // 초기 선택
+
             this.bindEvents();
         } catch (error) {
             console.error("Data loading failed", error);

@@ -44,25 +44,15 @@ export default class Cell {
     }
 
     get readOnly() {
-        return this._input.readOnly;
-        // return this._input.hasAttribute("aria-readonly")
-        //     ? this._input.ariaReadOnly === "true"
-        //     : this._input.readOnly;
+        return this._dataCell.readOnly;
     }
 
     set readOnly(value) {
-        this._input.readOnly = value;
-        // if (this._type === "string") return;
-
-        // if (this._input.hasAttribute("aria-readonly")) {
-        //     this._input.ariaReadOnly = value;
-        // } else {
-        //     this._input.readOnly = Boolean(value);
-        // }
+        this._dataCell.readOnly = value;
     }
 
-    get inputElement() {
-        return this._input;
+    get dataCell() {
+        return this._dataCell;
     }
 
     createCell() {
@@ -78,7 +68,7 @@ export default class Cell {
 
         cell.appendChild(childElement);
 
-        this._input = childElement;
+        this._dataCell = childElement;
         this._cell = cell;
 
         this.bindEvnets();
@@ -92,9 +82,6 @@ export default class Cell {
     createChildElement() {
         let childElement = null;
         switch (this._type) {
-            // case "string":
-            //     childElement = new DataText(this._value);
-            //     break;
             case "text":
             case "number":
                 childElement = new DataInputTextNumber(this._type, this._value);
@@ -110,13 +97,9 @@ export default class Cell {
                 );
                 break;
             case "datalist":
-                childElement = new DataDataList(
-                    this.dataModel,
-                    this._title,
-                    this._value
-                );
+                childElement = new DataDataList(this._title, this._value);
                 break;
-            default:
+            default: // "string":
                 childElement = new DataText(this._value);
         }
         return childElement;
@@ -126,9 +109,9 @@ export default class Cell {
         this._cell.addEventListener("click", this.onClick.bind(this));
         this._cell.addEventListener("dblclick", this.onDBClick.bind(this));
         this._cell.addEventListener("input", this.onInput.bind(this));
-        this._input.addEventListener("change", this.onChange.bind(this));
+        this._dataCell.addEventListener("change", this.onChange.bind(this));
 
-        this._input.addEventListener("keydown", this.onKeyDown.bind(this));
+        this._dataCell.addEventListener("keydown", this.onKeyDown.bind(this));
 
         // select range
         this._cell.addEventListener("mousedown", this.onMouseDown.bind(this));
@@ -142,40 +125,26 @@ export default class Cell {
         const cells = this.selection.selectedCells;
 
         cells.forEach((cell) => {
-            this.setEditable(
-                cell.querySelector("input") || cell.querySelector("select"),
-                false
-            );
+            this.setEditable(cell.instance.dataCell, false);
         });
 
         if (e.shiftKey && cells.size > 0) {
             this.selection.selectRange(Array.from(cells)[0], this._cell);
         } else {
             this.selection.selectCell(this._cell, e.shiftKey);
-            // this._input.focus(); // checkbox 포커스 되어야 셀 이동이 된다.
         }
     }
 
     onDBClick() {
         this.readOnly = false;
-        this._input.focus();
+        this._dataCell.focus();
     }
 
     onInput(e) {
         if (this.dataGrid.isComposing) return;
-
         // console.log(
-        //     `셀 (${this._row}, ${this._col}) 값 변경: ${this._input.value}`
+        //     `셀 (${this._row}, ${this._col}) 값 변경: ${this._dataCell.value}`
         // );
-    }
-
-    setEditable(inputElement, isEditable) {
-        if (!inputElement) return;
-        if (inputElement.hasAttribute("aria-readonly")) {
-            inputElement.ariaReadOnly = String(!isEditable);
-        } else {
-            inputElement.readOnly = !isEditable;
-        }
     }
 
     onKeyDown(e) {
@@ -195,15 +164,15 @@ export default class Cell {
                     break;
                 case "Tab":
                     e.preventDefault();
-                    this._input.blur();
+                    this._dataCell.blur();
                     this.readOnly = true;
                     this.moveSide(e.shiftKey);
                     break;
                 case "Escape":
                     e.preventDefault();
-                    this._input.value = this._value;
+                    this._dataCell.value = this._value;
                     this.readOnly = true;
-                    console.log(this._value, this._input.value);
+                    console.log(this._value, this._dataCell.value);
                     break;
             }
 
@@ -218,7 +187,7 @@ export default class Cell {
                         this.moveUpDown(e.shiftKey);
                     } else {
                         this.readOnly = false;
-                        this._input.focus();
+                        this._dataCell.focus();
                     }
 
                     break;
@@ -270,7 +239,9 @@ export default class Cell {
 
     onChange(e) {
         const currentValue =
-            this._type === "checkbox" ? this._input.checked : this._input.value;
+            this._type === "checkbox"
+                ? this._dataCell.checked
+                : this._dataCell.value;
         if (this._value !== currentValue) {
             this._value = currentValue;
             this.saveCellData();
@@ -278,11 +249,8 @@ export default class Cell {
 
         if (this._type === "select") {
             this.readOnly = true;
-            const inputElement = this.selection.moveTo(
-                this._row + 1,
-                this._col
-            );
-            this.setEditable(inputElement);
+            const dataCell = this.selection.moveTo(this._row + 1, this._col);
+            this.setEditable(dataCell);
         }
     }
 
@@ -305,6 +273,11 @@ export default class Cell {
 
     onMouseUp() {
         this.selection.isRangeSelecting = false;
+    }
+
+    setEditable(dataCell, isEditable) {
+        if (!dataCell) return;
+        dataCell.readOnly = !isEditable;
     }
 
     saveCellData() {

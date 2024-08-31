@@ -13,8 +13,25 @@ export default class DataCheckbox extends HTMLElement {
     }
 
     set readOnly(value) {
-        this._readOnly = value;
-        this._el.ariaReadOnly = value;
+        this._readOnly = Boolean(value);
+        this._el.ariaReadOnly = Boolean(value);
+    }
+
+    get value() {
+        return this._value;
+    }
+
+    set value(arg) {
+        this._value = Boolean(arg);
+        this._el.checked = Boolean(arg);
+    }
+
+    focus() {
+        this._el.focus();
+    }
+
+    blur() {
+        this._el.blur();
     }
 
     connectedCallback() {
@@ -22,8 +39,8 @@ export default class DataCheckbox extends HTMLElement {
     }
 
     render() {
-        this.el = this.createElement();
-        this.appendChild(this.el);
+        this._el = this.createElement();
+        this.appendChild(this._el);
     }
 
     createElement() {

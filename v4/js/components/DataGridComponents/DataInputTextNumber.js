@@ -17,6 +17,23 @@ export default class DataInputTextNumber extends HTMLElement {
         this._el.readOnly = value;
     }
 
+    get value() {
+        return this._value;
+    }
+
+    set value(arg) {
+        this._value = arg;
+        this._el.value = arg;
+    }
+
+    focus() {
+        this._el.focus();
+    }
+
+    blur() {
+        this._el.blur();
+    }
+
     connectedCallback() {
         this.render();
     }

@@ -6,6 +6,18 @@ export default class DataText extends HTMLElement {
         this._el = null;
     }
 
+    get value() {
+        return this._value;
+    }
+
+    focus() {
+        this._el.focus();
+    }
+
+    blur() {
+        this._el.blur();
+    }
+
     connectedCallback() {
         this.render();
     }

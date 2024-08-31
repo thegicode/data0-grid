@@ -43,7 +43,7 @@ export default class Selectioon {
 
         this._selectedCells.add(cell);
         cell.classList.add("selected");
-        cell.instance.inputElement.focus();
+        cell.instance.dataCell.focus();
     }
 
     moveTo(row, col) {
@@ -60,12 +60,12 @@ export default class Selectioon {
                 inline: "end", // 수평 정렬을 지정
             });
 
-            const nextInput = nextCell.instance.inputElement;
+            const nextDataCell = nextCell.instance.dataCell;
 
-            if (nextInput) {
-                nextInput.focus();
+            if (nextDataCell) {
+                nextDataCell.focus();
 
-                return nextInput;
+                return nextDataCell;
             }
         }
     }

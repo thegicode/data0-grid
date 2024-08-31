@@ -17,7 +17,7 @@ function copyCells(selectedCells, currentSelectionRange) {
 }
 
 function getInputValue(cell) {
-    const inputElement = cell.instance.inputElement;
+    const inputElement = cell.instance.dataCell;
 
     if (inputElement) {
         if (inputElement.tagName.toLowerCase() === "span") {
