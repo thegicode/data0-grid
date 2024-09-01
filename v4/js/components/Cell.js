@@ -16,9 +16,8 @@ export default class Cell {
         this._col = params.col;
         this._type = params.type;
         this._title = params.title;
-        this._value = params.value;
 
-        return this.createCell();
+        return this.createCell(params.value);
     }
 
     get row() {
@@ -40,10 +39,10 @@ export default class Cell {
     }
 
     get value() {
-        return this._value;
+        return this._dataCell.value;
     }
+
     set value(arg) {
-        this._value = arg;
         this._dataCell.value = arg;
     }
 
@@ -59,23 +58,24 @@ export default class Cell {
         return this._dataCell;
     }
 
-    createCell() {
+    createCell(value) {
         const cell = document.createElement("td");
         cell.dataset.row = this._row;
         cell.dataset.col = this._col;
 
         if (this._title === "id") {
-            cell.dataset.id = this._value;
+            // cell.dataset.id = this._value;
+            cell.dataset.id = value;
         }
 
-        const childElement = this.createChildElement();
+        const childElement = this.createChildElement(value);
 
         cell.appendChild(childElement);
 
         this._dataCell = childElement;
         this._cell = cell;
 
-        this.bindEvnets();
+        this.bindEvents();
 
         // Store the Cell instance reference in the DOM element
         cell.instance = this;
@@ -83,12 +83,12 @@ export default class Cell {
         return cell;
     }
 
-    createChildElement() {
+    createChildElement(value) {
         const params = {
             dataModel: this.dataModel,
             type: this._type,
             title: this._title,
-            value: this._value,
+            value: value,
         };
 
         switch (this._type) {
@@ -106,7 +106,7 @@ export default class Cell {
         }
     }
 
-    bindEvnets() {
+    bindEvents() {
         this._cell.addEventListener("click", this.onClick.bind(this));
         this._cell.addEventListener("dblclick", this.onDBClick.bind(this));
         // this._cell.addEventListener("input", this.onInput.bind(this));
@@ -171,7 +171,7 @@ export default class Cell {
                     break;
                 case "Escape":
                     e.preventDefault();
-                    this._dataCell.value = this._value;
+                    this.value = this._dataCell._value; // Restore the original value
                     this.readOnly = true;
                     break;
             }
@@ -189,7 +189,6 @@ export default class Cell {
                         this.readOnly = false;
                         this._dataCell.focus();
                     }
-
                     break;
                 case "Tab":
                     e.preventDefault();
@@ -240,7 +239,7 @@ export default class Cell {
     onChange(e) {
         const currentValue = this._dataCell.currentValue;
 
-        if (this._value !== currentValue) {
+        if (this.value !== currentValue) {
             this.value = currentValue;
             this.saveCellData();
         }
@@ -281,7 +280,7 @@ export default class Cell {
         const id = this.getCellId();
         // const title = this.getTitle();
         // console.log(title, this._title);
-        this.dataModel.updateFieldValue(id, this._title, this._value);
+        this.dataModel.updateFieldValue(id, this._title, this.value);
     }
 
     getCellId() {

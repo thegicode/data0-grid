@@ -85,60 +85,6 @@ function highlightCell(cell, selectedCells) {
     cell.classList.add("selected");
 }
 
-function handleInputPaste(input, value) {
-    switch (input.dataset.type) {
-        case "number":
-            return pasteNumberInput(input, value);
-        case "checkbox":
-            return pasteCheckboxInput(input, value);
-        case "select":
-            return updateSelectInput(input, value);
-        case "datalist":
-            return updateDatalistInput(input, value);
-        default:
-            input.value = value;
-            return value;
-    }
-}
-
-function pasteNumberInput(input, value) {
-    if (!isNaN(value)) {
-        const parsedValue = parseInt(value, 10);
-        input.value = parsedValue;
-        return parsedValue;
-    }
-    return null;
-}
-
-function pasteCheckboxInput(input, value) {
-    const isChecked = value === "true";
-    input.checked = isChecked;
-    return isChecked;
-}
-
-function updateSelectInput(select, value) {
-    const isIncluded = [...select.options].some(
-        (option) => option.textContent === value
-    );
-    if (isIncluded) {
-        select.value = value;
-        return value;
-    }
-    return null;
-}
-
-function updateDatalistInput(input, value) {
-    const listElement = document.getElementById(input.getAttribute("list"));
-    const isIncluded =
-        listElement &&
-        [...listElement.options].some((option) => option.value === value);
-    if (isIncluded) {
-        input.value = value;
-        return value;
-    }
-    return null;
-}
-
 function getRowId(table, index) {
     const tr = table.querySelectorAll("tbody tr")[index];
     return tr?.querySelector("td[data-id]")?.dataset.id || null;

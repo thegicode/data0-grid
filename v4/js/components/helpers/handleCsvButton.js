@@ -30,7 +30,11 @@ function organizeSelectedCells(sortedCells) {
     sortedCells.forEach((cell) => {
         const row = parseInt(cell.instance.row);
         const col = parseInt(cell.instance.col);
-        const value = cell.instance.value;
+        let value = cell.instance.value;
+
+        if (value === false) {
+            value = "false";
+        }
 
         if (!rows[row]) {
             rows[row] = [];
