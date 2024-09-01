@@ -5,14 +5,23 @@ export default class DataCheckbox extends DataCellBase {
         super(params);
     }
 
+    get readOnly() {
+        return this._readOnly;
+    }
+
     set readOnly(value) {
         this._readOnly = Boolean(value);
         this._el.ariaReadOnly = Boolean(value);
     }
 
+    get value() {
+        return this._value;
+    }
+
     set value(arg) {
-        this._value = Boolean(arg);
-        this._el.checked = Boolean(arg);
+        const isChecked = arg === "true";
+        this._value = isChecked;
+        this._el.checked = isChecked;
     }
 
     get currentValue() {

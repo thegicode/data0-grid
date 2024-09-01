@@ -5,9 +5,24 @@ export default class DataSelect extends DataCellBase {
         super(params);
     }
 
+    get readOnly() {
+        return this._readOnly;
+    }
+
     set readOnly(value) {
         this._readOnly = value;
         this._el.ariaReadOnly = value;
+    }
+
+    checkValueType(value) {
+        const isIncluded = [...this._el.options].some(
+            (option) => option.textContent === value
+        );
+
+        if (isIncluded) {
+            return value;
+        }
+        return null;
     }
 
     createElement() {

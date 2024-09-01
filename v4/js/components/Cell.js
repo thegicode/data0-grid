@@ -42,6 +42,10 @@ export default class Cell {
     get value() {
         return this._value;
     }
+    set value(arg) {
+        this._value = arg;
+        this._dataCell.value = arg;
+    }
 
     get readOnly() {
         return this._dataCell.readOnly;
@@ -122,7 +126,7 @@ export default class Cell {
         const cells = this.selection.selectedCells;
 
         cells.forEach((cell) => {
-            this.setEditable(cell.instance.dataCell, false);
+            cell.instance.dataCell.readOnly = true;
         });
 
         if (e.shiftKey && cells.size > 0) {
@@ -157,7 +161,7 @@ export default class Cell {
                     e.preventDefault();
                     this.readOnly = true;
                     const nextDataCell = this.moveUpDown(e.shiftKey);
-                    this.setEditable(nextDataCell);
+                    nextDataCell.readOnly = true;
                     break;
                 case "Tab":
                     e.preventDefault();
@@ -237,7 +241,7 @@ export default class Cell {
         const currentValue = this._dataCell.currentValue;
 
         if (this._value !== currentValue) {
-            this._value = currentValue;
+            this.value = currentValue;
             this.saveCellData();
         }
 
@@ -247,7 +251,8 @@ export default class Cell {
                 this._row + 1,
                 this._col
             );
-            this.setEditable(nextDataCell);
+
+            nextDataCell.readOnly = false;
         }
     }
 
@@ -272,15 +277,11 @@ export default class Cell {
         this.selection.isRangeSelecting = false;
     }
 
-    setEditable(dataCell, isEditable) {
-        if (!dataCell) return;
-        dataCell.readOnly = !isEditable;
-    }
-
     saveCellData() {
         const id = this.getCellId();
-        const title = this.getTitle();
-        this.dataModel.updateFieldValue(id, title, this._value);
+        // const title = this.getTitle();
+        // console.log(title, this._title);
+        this.dataModel.updateFieldValue(id, this._title, this._value);
     }
 
     getCellId() {

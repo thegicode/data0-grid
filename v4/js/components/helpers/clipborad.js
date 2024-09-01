@@ -8,6 +8,8 @@ function copyCells(selectedCells, currentSelectionRange) {
                   )
                   .join("\n");
 
+    // console.log("copyCells: ", clipboardText);
+
     navigator.clipboard
         .writeText(clipboardText)
         .then(() => console.log("Data copied to clipboard"))
@@ -17,19 +19,9 @@ function copyCells(selectedCells, currentSelectionRange) {
 }
 
 function getInputValue(cell) {
-    const inputElement = cell.instance.dataCell;
-
-    if (inputElement) {
-        if (inputElement.tagName.toLowerCase() === "span") {
-            return inputElement.textContent;
-        }
-
-        return inputElement.type === "checkbox"
-            ? inputElement.checked
-            : inputElement.value;
-    }
-
-    return null; // inputElement가 없을 경우 null 반환
+    const dataCell = cell.instance.dataCell;
+    if (dataCell) return dataCell.value;
+    return null;
 }
 
 function pasteCells(selectedCells, table, dataModel) {
@@ -53,10 +45,13 @@ function pasteCells(selectedCells, table, dataModel) {
                     );
                     if (!targetCell) return;
 
-                    const { inputElement } = targetCell.instance;
-                    if (!inputElement) return;
+                    const dataCell = targetCell.instance.dataCell;
+                    if (!dataCell) return;
 
-                    const parsedValue = handleInputPaste(inputElement, value);
+                    dataCell.value = value;
+
+                    const parsedValue = dataCell.value;
+
                     if (parsedValue) {
                         const propTitle = getTitle(table, firstCol + colIndex);
                         pastedData[propTitle] = parsedValue;

@@ -26,8 +26,14 @@ export default class DataCellBase extends HTMLElement {
     }
 
     set value(arg) {
-        this._value = arg;
-        this._el.value = arg;
+        const newValue = this.checkValueType(arg);
+
+        // newValue가 null 또는 undefined인 경우 반환
+        if (newValue === null || newValue === undefined) return;
+
+        // 유효한 값이 있을 때만 값을 설정
+        this._value = newValue;
+        this._el.value = newValue;
     }
 
     get currentValue() {
@@ -52,6 +58,10 @@ export default class DataCellBase extends HTMLElement {
     }
 
     createElement() {
+        //
+    }
+
+    checkValueType() {
         //
     }
 }

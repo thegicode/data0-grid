@@ -5,6 +5,14 @@ export default class DataText extends DataCellBase {
         super(params);
     }
 
+    get value() {
+        return this._value;
+    }
+
+    set value(arg) {
+        // can't set value
+    }
+
     createElement() {
         const span = document.createElement("span");
         span.textContent = this._value;
