@@ -19,7 +19,13 @@ export default class DataCheckbox extends DataCellBase {
     }
 
     set value(arg) {
-        const isChecked = arg === "true";
+        // 불리언 값이 아니면 return
+        if (typeof arg !== "boolean" && arg !== "true" && arg !== "false") {
+            return;
+        }
+
+        const isChecked = arg === true || arg === "true";
+
         this._value = isChecked;
         this._el.checked = isChecked;
     }

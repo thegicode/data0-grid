@@ -103,13 +103,17 @@ export default class Thead {
             const cells = Array.from(row.children);
             const fromCell = cells[from + 1];
             const toCell = cells[to + 1];
-            row.insertBefore(fromCell, to < from ? toCell : toCell.nextSibling);
 
-            fromCell.instance.col = to;
-            toCell.instance.col = from;
+            row.insertBefore(fromCell, to < from ? toCell : toCell.nextSibling);
 
             if (fromCell.instance) fromCell.instance.col = to;
             if (toCell.instance) toCell.instance.col = from;
+
+            // 이유를 알 수 없는 dom 버그
+            const fromDataCell = fromCell.instance.dataCell;
+            if (fromDataCell.children.length > 1) {
+                fromDataCell.removeChild(fromDataCell.children[1]);
+            }
         });
 
         const headers = this.theadTr.querySelectorAll("th");
