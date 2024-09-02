@@ -1,6 +1,6 @@
 import DataCellBase from "./DataCellBase.js";
 
-export default class DataText extends DataCellBase {
+export default class DataString extends DataCellBase {
     constructor(params) {
         super(params);
     }

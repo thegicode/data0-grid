@@ -58,8 +58,8 @@ function pasteCells(table, dataModel, selection) {
                     const parsedValue = dataCell.value;
 
                     if (parsedValue) {
-                        const propTitle = getTitle(table, firstCol + colIndex);
-                        pastedData[propTitle] = parsedValue;
+                        // const propTitle = getTitle(table, firstCol + colIndex);
+                        pastedData[dataCell.title] = parsedValue;
                     }
 
                     highlightCell(targetCell, selection.selectedCells);
@@ -93,11 +93,6 @@ function highlightCell(cell, selectedCells) {
 function getRowId(table, index) {
     const tr = table.querySelectorAll("tbody tr")[index];
     return tr?.querySelector("td[data-id]")?.dataset.id || null;
-}
-
-function getTitle(table, col) {
-    const th = table.querySelector("thead").querySelectorAll("th")[col + 1];
-    return th ? th.textContent : null;
 }
 
 export default {

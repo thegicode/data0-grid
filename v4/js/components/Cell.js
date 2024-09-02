@@ -1,5 +1,5 @@
 import DataInputTextNumber from "./DataGridComponents/DataInputTextNumber.js";
-import DataText from "./DataGridComponents/DataText.js";
+import DataString from "./DataGridComponents/DataString.js";
 import DataSelect from "./DataGridComponents/DataSelect.js";
 import DataCheckbox from "./DataGridComponents/DataCheckbox.js";
 import DataDataList from "./DataGridComponents/DataDataList.js";
@@ -102,7 +102,7 @@ export default class Cell {
             case "datalist":
                 return new DataDataList(params);
             default: // "string":
-                return new DataText(params);
+                return new DataString(params);
         }
     }
 
@@ -161,7 +161,7 @@ export default class Cell {
                     e.preventDefault();
                     this.readOnly = true;
                     const nextDataCell = this.moveUpDown(e.shiftKey);
-                    nextDataCell.readOnly = true;
+                    if (nextDataCell) nextDataCell.readOnly = true;
                     break;
                 case "Tab":
                     e.preventDefault();
@@ -289,8 +289,8 @@ export default class Cell {
         return cellWithId ? cellWithId.dataset.id : null;
     }
 
-    getTitle() {
-        const th = this.dataGrid.thead.querySelectorAll("th")[this._col + 1];
-        return th ? th.textContent : null;
-    }
+    // getTitle() {
+    //     const th = this.dataGrid.thead.querySelectorAll("th")[this._col + 1];
+    //     return th ? th.textContent : null;
+    // }
 }
