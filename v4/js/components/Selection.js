@@ -6,6 +6,8 @@ export default class Selectioon {
         this._currentSelectionRange = [];
         this._isRangeSelecting = false;
         this._rangeSelectingStart = null;
+
+        this._copiedCells = [];
     }
 
     get selectedCells() {
@@ -34,6 +36,15 @@ export default class Selectioon {
 
     set rangeSelectingStart(value) {
         this._rangeSelectingStart = value;
+    }
+
+    set copiedCell(value) {
+        this._copiedCells = value;
+        console.log(this._copiedCells);
+    }
+
+    get copiedCell() {
+        return this._copiedCells;
     }
 
     selectCell(cell, append = false) {

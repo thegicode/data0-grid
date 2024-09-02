@@ -1,14 +1,13 @@
-function copyCells(selectedCells, currentSelectionRange) {
+function copyCells(selection) {
+    const { selectedCells } = selection;
     const clipboardText =
         selectedCells.size === 1
             ? getInputValue([...selectedCells][0])
-            : currentSelectionRange
+            : selection.currentSelectionRange
                   .map((row) =>
                       row.map((cell) => getInputValue(cell)).join("\t")
                   )
                   .join("\n");
-
-    // console.log("copyCells: ", clipboardText);
 
     navigator.clipboard
         .writeText(clipboardText)
@@ -16,6 +15,9 @@ function copyCells(selectedCells, currentSelectionRange) {
         .catch((err) =>
             console.error("Failed to copy data to clipboard: ", err)
         );
+
+    selectedCells.forEach((cell) => cell.classList.add("copiedCell"));
+    selection.copiedCell = [...selectedCells];
 }
 
 function getInputValue(cell) {
@@ -24,11 +26,14 @@ function getInputValue(cell) {
     return null;
 }
 
-function pasteCells(selectedCells, table, dataModel) {
+function pasteCells(table, dataModel, selection) {
+    selection.copiedCell.forEach((cell) => cell.classList.remove("copiedCell"));
+    selection.copiedCell = [];
+
     navigator.clipboard
         .readText()
         .then((text) => {
-            const [firstSelectedCell] = selectedCells;
+            const [firstSelectedCell] = selection.selectedCells;
             const firstRow = Number(firstSelectedCell.dataset.row);
             const firstCol = Number(firstSelectedCell.dataset.col);
             const data = parseClipboardData(text);
@@ -57,7 +62,7 @@ function pasteCells(selectedCells, table, dataModel) {
                         pastedData[propTitle] = parsedValue;
                     }
 
-                    highlightCell(targetCell, selectedCells);
+                    highlightCell(targetCell, selection.selectedCells);
                 });
 
                 if (pastedData.id) {

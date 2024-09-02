@@ -85,19 +85,12 @@ export default class DataGrid extends HTMLElement {
 
     onCopy(e) {
         e.preventDefault();
-        clipboard.copyCells(
-            this.selection.selectedCells,
-            this.selection.currentSelectionRange
-        );
+        clipboard.copyCells(this.selection);
     }
 
     onPaste(e) {
         e.preventDefault();
-        clipboard.pasteCells(
-            this.selection.selectedCells,
-            this.table,
-            this.dataModel
-        );
+        clipboard.pasteCells(this.table, this.dataModel, this.selection);
     }
 
     onClickShowButton(e) {
