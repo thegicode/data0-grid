@@ -1,28 +1,39 @@
 export default class Thead {
-    constructor(columnNames, dataGrid, tableController) {
+    constructor(headerOrders, dataGrid, tableController) {
         this.dataModel = dataGrid.dataModel;
         this.tbody = dataGrid.tbody;
         this.selection = dataGrid.selection;
         this.tableController = tableController;
         this.sortItem = tableController.sortItem;
 
+        this._headerOrders = headerOrders;
         this._isDragging = false;
         this._draggingColumn = null;
         this._activeSortButton = null;
 
-        this.theadTr = this.createHeader(columnNames);
+        this.theadTr = this.createHeader();
 
-        return this.theadTr;
+        return this;
     }
 
-    createHeader(columnNames) {
+    get headerOrders() {
+        return this._headerOrders;
+    }
+
+    setHeaderOrders() {
+        const headers = this.theadTr.querySelectorAll("th");
+        const columnOrder = Array.from(headers).map((th) => th.textContent);
+        this._headerOrders = columnOrder.slice(1);
+    }
+
+    createHeader() {
         const fragment = document.createDocumentFragment();
 
         // 빈 th
         const rowHeader = document.createElement("th");
         fragment.appendChild(rowHeader);
 
-        columnNames.forEach((name) => {
+        this._headerOrders.forEach((name) => {
             const th = document.createElement("th");
             th.textContent = name;
 
@@ -112,7 +123,7 @@ export default class Thead {
             // 이유를 알 수 없는 dom 버그
             const fromDataCell = fromCell.instance.dataCell;
             if (fromDataCell.children.length > 1) {
-                fromDataCell.removeChild(fromDataCell.children[1]);
+                fromDataCell.removeChild(fromDataCell.children[0]);
             }
         });
 
@@ -124,7 +135,7 @@ export default class Thead {
             to < from ? toHeader : toHeader.nextSibling
         );
 
-        this.tableController.setColumnOrder();
+        this.setHeaderOrders();
     }
 
     createSortButton(columnName) {
@@ -177,7 +188,7 @@ export default class Thead {
     sortDataByColumnOrder(sortData) {
         return sortData.map((item) => {
             const reorderedItem = {};
-            this.tableController.columnOrder.forEach((columnName) => {
+            this._headerOrders.forEach((columnName) => {
                 reorderedItem[columnName] = item[columnName];
             });
             return reorderedItem;

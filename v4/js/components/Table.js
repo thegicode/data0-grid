@@ -7,17 +7,14 @@ export default class Table {
         this.dataGrid = dataGrid;
         this.dataModel = dataGrid.dataModel;
         this.selection = dataGrid.selection;
-        this.FIELD_DEFINITIONS = FIELD_DEFINITIONS;
         this.sortItem = sortItem;
 
-        this._columnOrder = this.FIELD_DEFINITIONS.map((d) => d.title);
         this._selectedTr = null;
+        this._fieldDefinitions = FIELD_DEFINITIONS;
+
+        this.theadController = null;
 
         this.render();
-    }
-
-    get columnOrder() {
-        return this._columnOrder;
     }
 
     render() {
@@ -28,8 +25,12 @@ export default class Table {
     }
 
     renderTable(data) {
-        const theadTr = new Thead(this._columnOrder, this.dataGrid, this);
-        this.dataGrid.thead.appendChild(theadTr);
+        this.theadController = new Thead(
+            this._fieldDefinitions.map((d) => d.title),
+            this.dataGrid,
+            this
+        );
+        this.dataGrid.thead.appendChild(this.theadController.theadTr);
 
         this.renderTbody(data);
     }
@@ -54,27 +55,24 @@ export default class Table {
         const rowHeader = this.createRowHeader(rowIndex);
         row.appendChild(rowHeader);
 
-        for (
-            let colIndex = 0;
-            colIndex < Object.keys(rowData).length;
-            colIndex++
-        ) {
-            const columnTitle = this._columnOrder[colIndex];
-            const fieldDefinition = this.FIELD_DEFINITIONS.find(
+        this.theadController.headerOrders.forEach((columnTitle, colIndex) => {
+            const field = this._fieldDefinitions.find(
                 (d) => d.title === columnTitle
             );
+            const type = field ? field.type : "string";
 
             const params = {
                 row: rowIndex,
                 col: colIndex,
-                title: fieldDefinition.title,
-                type: fieldDefinition.type,
-                value: rowData[fieldDefinition.title],
+                title: columnTitle,
+                type: type,
+                value: rowData[columnTitle] || "", // 값이 없을 경우 빈 문자열로 처리
             };
 
+            // Cell 생성 및 추가
             const cell = new Cell(this, params);
             row.appendChild(cell);
-        }
+        });
 
         return row;
     }
@@ -103,12 +101,12 @@ export default class Table {
     }
 
     checkAndCreateDatalists() {
-        return this.FIELD_DEFINITIONS.filter(
-            ({ type }) => type === "datalist"
-        ).reduce((result, { title }) => {
-            result[title] = this.createDataList(title);
-            return result;
-        }, {});
+        return this._fieldDefinitions
+            .filter(({ type }) => type === "datalist")
+            .reduce((result, { title }) => {
+                result[title] = this.createDataList(title);
+                return result;
+            }, {});
     }
 
     createDataList(title) {
@@ -121,11 +119,5 @@ export default class Table {
             datalist.appendChild(option);
         });
         this.dataGrid.appendChild(datalist);
-    }
-
-    setColumnOrder() {
-        const headers = this.dataGrid.table.querySelectorAll("thead th");
-        const columnOrder = Array.from(headers).map((th) => th.textContent);
-        this._columnOrder = columnOrder.slice(1);
     }
 }
