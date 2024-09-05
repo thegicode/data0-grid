@@ -1,4 +1,4 @@
-import { iniitialData } from "../data/data.js";
+import { INITIAL_DATA } from "../data/data.js";
 import dataModel from "../models/DataModel.js";
 
 import Table from "./Table.js";
@@ -45,7 +45,7 @@ export default class DataGrid extends HTMLElement {
     async loadData() {
         return new Promise((resolve) => {
             setTimeout(() => {
-                resolve(iniitialData);
+                resolve(INITIAL_DATA);
             }, 100);
         });
     }
