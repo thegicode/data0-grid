@@ -21,9 +21,6 @@ export default class Table {
     }
 
     render() {
-        // select 엘리먼트 생성하여 반환
-        this.selectObject = this.checkAndCreateSelects();
-
         // datalist dom에 생성
         this.checkAndCreateDatalists();
 
@@ -105,27 +102,6 @@ export default class Table {
         }
     }
 
-    checkAndCreateSelects() {
-        return this.FIELD_DEFINITIONS.filter(
-            ({ type }) => type === "select"
-        ).reduce((result, { title }) => {
-            result[title] = this.createSelectElement(title);
-            return result;
-        }, {});
-    }
-
-    createSelectElement(prop) {
-        const data = this.dataModel.records.map((item) => item[prop]);
-        const select = document.createElement("select");
-        data.forEach((name, index) => {
-            const option = document.createElement("option");
-            option.textContent = name;
-            option.value = name;
-            select.appendChild(option);
-        });
-        return select;
-    }
-
     checkAndCreateDatalists() {
         return this.FIELD_DEFINITIONS.filter(
             ({ type }) => type === "datalist"
@@ -138,7 +114,7 @@ export default class Table {
     createDataList(title) {
         const data = this.dataModel.records.map((item) => item[title]);
         const datalist = document.createElement("datalist");
-        datalist.id = this.datalistId(title);
+        datalist.id = `datalist-${title}`;
         data.forEach((item) => {
             const option = document.createElement("option");
             option.value = item;
@@ -151,9 +127,5 @@ export default class Table {
         const headers = this.dataGrid.table.querySelectorAll("thead th");
         const columnOrder = Array.from(headers).map((th) => th.textContent);
         this._columnOrder = columnOrder.slice(1);
-    }
-
-    datalistId(text) {
-        return `datalist-${text}`;
     }
 }
