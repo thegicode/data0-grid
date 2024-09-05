@@ -49,8 +49,7 @@ function pasteCells(table, dataModel, selection) {
                     const parsedValue = targetCell.instance.value;
 
                     if (parsedValue) {
-                        // const propTitle = getTitle(table, firstCol + colIndex);
-                        pastedData[targetCell.instance.title] = parsedValue;
+                        pastedData[targetCell.instance.key] = parsedValue;
                     }
 
                     highlightCell(targetCell, selection.selectedCells);

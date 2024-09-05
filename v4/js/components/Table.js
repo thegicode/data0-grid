@@ -26,7 +26,7 @@ export default class Table {
 
     renderTable(data) {
         this.theadController = new Thead(
-            this._fieldDefinitions.map((d) => d.title),
+            this._fieldDefinitions.map((d) => d.key),
             this.dataGrid,
             this
         );
@@ -55,18 +55,18 @@ export default class Table {
         const rowHeader = this.createRowHeader(rowIndex);
         row.appendChild(rowHeader);
 
-        this.theadController.headerOrders.forEach((columnTitle, colIndex) => {
+        this.theadController.headerOrders.forEach((columnKey, colIndex) => {
             const field = this._fieldDefinitions.find(
-                (d) => d.title === columnTitle
+                (d) => d.key === columnKey
             );
             const type = field ? field.type : "string";
 
             const params = {
                 row: rowIndex,
                 col: colIndex,
-                title: columnTitle,
+                key: columnKey,
                 type: type,
-                value: rowData[columnTitle] || "", // 값이 없을 경우 빈 문자열로 처리
+                value: rowData[columnKey] || "", // 값이 없을 경우 빈 문자열로 처리
             };
 
             // Cell 생성 및 추가
@@ -103,16 +103,16 @@ export default class Table {
     checkAndCreateDatalists() {
         return this._fieldDefinitions
             .filter(({ type }) => type === "datalist")
-            .reduce((result, { title }) => {
-                result[title] = this.createDataList(title);
+            .reduce((result, { key }) => {
+                result[key] = this.createDataList(key);
                 return result;
             }, {});
     }
 
-    createDataList(title) {
-        const data = this.dataModel.records.map((item) => item[title]);
+    createDataList(key) {
+        const data = this.dataModel.records.map((item) => item[key]);
         const datalist = document.createElement("datalist");
-        datalist.id = `datalist-${title}`;
+        datalist.id = `datalist-${key}`;
         data.forEach((item) => {
             const option = document.createElement("option");
             option.value = item;

@@ -15,7 +15,7 @@ export default class Cell {
         this._row = params.row;
         this._col = params.col;
         this._type = params.type;
-        this._title = params.title;
+        this._key = params.key;
         this._dataCell = null;
 
         return this.createCell(params.value);
@@ -53,6 +53,10 @@ export default class Cell {
 
     //
 
+    get key() {
+        return this._key;
+    }
+
     get value() {
         return this._dataCell.value;
     }
@@ -74,7 +78,7 @@ export default class Cell {
         cell.dataset.row = this._row;
         cell.dataset.col = this._col;
 
-        if (this._title === "id") {
+        if (this._key === "id") {
             // cell.dataset.id = this._value;
             cell.dataset.id = value;
         }
@@ -98,7 +102,7 @@ export default class Cell {
         const params = {
             dataModel: this.dataModel,
             type: this._type,
-            title: this._title,
+            key: this._key,
             value: value,
         };
 
@@ -294,9 +298,7 @@ export default class Cell {
 
     saveCellData() {
         const id = this.getCellId();
-        // const title = this.getTitle();
-        // console.log(title, this._title);
-        this.dataModel.updateFieldValue(id, this._title, this.value);
+        this.dataModel.updateFieldValue(id, this._key, this.value);
     }
 
     getCellId() {
@@ -304,9 +306,4 @@ export default class Cell {
             this._cell.parentElement.querySelector("td[data-id]");
         return cellWithId ? cellWithId.dataset.id : null;
     }
-
-    // getTitle() {
-    //     const th = this.dataGrid.thead.querySelectorAll("th")[this._col + 1];
-    //     return th ? th.textContent : null;
-    // }
 }

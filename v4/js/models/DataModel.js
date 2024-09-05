@@ -15,12 +15,12 @@ class DataModel {
         }
     }
 
-    updateFieldValue(id, title, value) {
+    updateFieldValue(id, key, value) {
         const index = this._records.findIndex((item) => item.id === id);
         if (index !== -1) {
             this._records[index] = {
                 ...this._records[index],
-                [title]: value,
+                [key]: value,
             };
             console.log(this.records[index]); // 수정된 데이터를 출력합니다.
         } else {

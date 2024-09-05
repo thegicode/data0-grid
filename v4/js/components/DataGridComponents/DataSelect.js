@@ -38,7 +38,7 @@ export default class DataSelect extends DataCellBase {
     }
 
     createOptionElement(data) {
-        const text = data[this._title];
+        const text = data[this._key];
         const option = document.createElement("option");
         option.value = text;
         option.textContent = text;

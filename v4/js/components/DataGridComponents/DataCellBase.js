@@ -5,7 +5,7 @@ export default class DataCellBase extends HTMLElement {
         this.dataModel = params.dataModel;
 
         this._type = params.type;
-        this._title = params.title;
+        this._key = params.key;
         this._value = params.value;
 
         this._readOnly = true;
@@ -21,8 +21,8 @@ export default class DataCellBase extends HTMLElement {
         this._el.readOnly = value;
     }
 
-    get title() {
-        return this._title;
+    get key() {
+        return this._key;
     }
 
     get type() {
