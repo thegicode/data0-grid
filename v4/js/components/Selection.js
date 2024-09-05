@@ -40,7 +40,7 @@ export default class Selectioon {
 
     set copiedCell(value) {
         this._copiedCells = value;
-        console.log(this._copiedCells);
+        // console.log(this._copiedCells);
     }
 
     get copiedCell() {
@@ -54,7 +54,11 @@ export default class Selectioon {
 
         this._selectedCells.add(cell);
         cell.classList.add("selected");
-        cell.instance.dataCell.focus();
+        cell.instance.focus();
+
+        if (cell.instance.type === "checkbox") {
+            cell.instance.readOnly = false;
+        }
     }
 
     moveTo(row, col) {
@@ -71,13 +75,11 @@ export default class Selectioon {
                 inline: "end", // 수평 정렬을 지정
             });
 
-            const nextDataCell = nextCell.instance.dataCell;
+            // nextCell.focus();
 
-            if (nextDataCell) {
-                nextDataCell.focus();
+            if (nextCell.type === "checkbox") nextCell.readOnly = false;
 
-                return nextDataCell;
-            }
+            return nextCell.instance.dataCell;
         }
     }
 

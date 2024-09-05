@@ -38,6 +38,7 @@ tbody th {
 thead th {
     cursor: pointer;
     text-transform: capitalize;
+    font-size: 14px;
 }
 
 thead th span,
@@ -92,6 +93,10 @@ tbody td select {
     font-size: 14px;
     text-align: left;
     color: #333;
+}
+tbody td .text {
+    /* background-color: rgba(200, 100, 50, 0.01); */
+    color: #999;
 }
 
 tbody td select {

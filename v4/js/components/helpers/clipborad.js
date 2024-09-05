@@ -2,10 +2,10 @@ function copyCells(selection) {
     const { selectedCells } = selection;
     const clipboardText =
         selectedCells.size === 1
-            ? getInputValue([...selectedCells][0])
+            ? [...selectedCells][0].instance.value
             : selection.currentSelectionRange
                   .map((row) =>
-                      row.map((cell) => getInputValue(cell)).join("\t")
+                      row.map((cell) => cell.instance.value).join("\t")
                   )
                   .join("\n");
 
@@ -18,12 +18,6 @@ function copyCells(selection) {
 
     selectedCells.forEach((cell) => cell.classList.add("copiedCell"));
     selection.copiedCell = [...selectedCells];
-}
-
-function getInputValue(cell) {
-    const dataCell = cell.instance.dataCell;
-    if (dataCell) return dataCell.value;
-    return null;
 }
 
 function pasteCells(table, dataModel, selection) {
@@ -48,18 +42,15 @@ function pasteCells(table, dataModel, selection) {
                         targetRow,
                         firstCol + colIndex
                     );
-                    if (!targetCell) return;
+                    if (!targetCell || !targetCell.instance) return;
 
-                    const dataCell = targetCell.instance.dataCell;
-                    if (!dataCell) return;
+                    targetCell.instance.value = value;
 
-                    dataCell.value = value;
-
-                    const parsedValue = dataCell.value;
+                    const parsedValue = targetCell.instance.value;
 
                     if (parsedValue) {
                         // const propTitle = getTitle(table, firstCol + colIndex);
-                        pastedData[dataCell.title] = parsedValue;
+                        pastedData[targetCell.instance.title] = parsedValue;
                     }
 
                     highlightCell(targetCell, selection.selectedCells);

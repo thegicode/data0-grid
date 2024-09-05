@@ -25,6 +25,10 @@ export default class DataCellBase extends HTMLElement {
         return this._title;
     }
 
+    get type() {
+        return this._type;
+    }
+
     get value() {
         return this._value;
     }

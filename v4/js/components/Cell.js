@@ -16,6 +16,7 @@ export default class Cell {
         this._col = params.col;
         this._type = params.type;
         this._title = params.title;
+        this._dataCell = null;
 
         return this.createCell(params.value);
     }
@@ -38,12 +39,8 @@ export default class Cell {
         this._col = value;
     }
 
-    get value() {
-        return this._dataCell.value;
-    }
-
-    set value(arg) {
-        this._dataCell.value = arg;
+    get dataCell() {
+        return this._dataCell;
     }
 
     get readOnly() {
@@ -54,8 +51,22 @@ export default class Cell {
         this._dataCell.readOnly = value;
     }
 
-    get dataCell() {
-        return this._dataCell;
+    //
+
+    get value() {
+        return this._dataCell.value;
+    }
+
+    set value(arg) {
+        this._dataCell.value = arg;
+    }
+
+    get type() {
+        return this._type;
+    }
+
+    focus() {
+        this._dataCell.focus();
     }
 
     createCell(value) {
@@ -109,9 +120,9 @@ export default class Cell {
     bindEvents() {
         this._cell.addEventListener("click", this.onClick.bind(this));
         this._cell.addEventListener("dblclick", this.onDBClick.bind(this));
+
         // this._cell.addEventListener("input", this.onInput.bind(this));
         this._dataCell.addEventListener("change", this.onChange.bind(this));
-
         this._dataCell.addEventListener("keydown", this.onKeyDown.bind(this));
 
         // select range
@@ -124,9 +135,8 @@ export default class Cell {
         this.dataGrid.csvButtonVisible = false;
 
         const cells = this.selection.selectedCells;
-
         cells.forEach((cell) => {
-            cell.instance.dataCell.readOnly = true;
+            cell.instance.readOnly = true;
         });
 
         if (e.shiftKey && cells.size > 0) {
@@ -141,12 +151,12 @@ export default class Cell {
         this._dataCell.focus();
     }
 
-    onInput(e) {
-        if (this.dataGrid.isComposing) return;
-        // console.log(
-        //     `셀 (${this._row}, ${this._col}) 값 변경: ${this._dataCell.value}`
-        // );
-    }
+    // onInput(e) {
+    // if (this.dataGrid.isComposing) return;
+    // console.log(
+    //     `셀 (${this._row}, ${this._col}) 값 변경: ${this._dataCell.value}`
+    // );
+    // }
 
     onKeyDown(e) {
         const cells = this.selection.selectedCells;
@@ -159,9 +169,15 @@ export default class Cell {
             switch (e.key) {
                 case "Enter":
                     e.preventDefault();
-                    this.readOnly = true;
-                    const nextDataCell = this.moveUpDown(e.shiftKey);
-                    if (nextDataCell) nextDataCell.readOnly = true;
+                    if (this._type === "checkbox") {
+                        this.readOnly = true;
+                        const nextDataCell = this.moveUpDown(e.shiftKey);
+                        if (nextDataCell) nextDataCell.readOnly = false;
+                    } else {
+                        this.readOnly = true;
+                        const nextDataCell = this.moveUpDown(e.shiftKey);
+                        if (nextDataCell) nextDataCell.readOnly = true;
+                    }
                     break;
                 case "Tab":
                     e.preventDefault();
@@ -251,7 +267,7 @@ export default class Cell {
                 this._col
             );
 
-            nextDataCell.readOnly = false;
+            if (nextDataCell) nextDataCell.readOnly = false;
         }
     }
 
