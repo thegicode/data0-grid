@@ -1,8 +1,8 @@
-import DataInputTextNumber from "./DataGridComponents/DataInputTextNumber.js";
-import DataString from "./DataGridComponents/DataString.js";
-import DataSelect from "./DataGridComponents/DataSelect.js";
-import DataCheckbox from "./DataGridComponents/DataCheckbox.js";
-import DataDataList from "./DataGridComponents/DataDataList.js";
+import DataInputTextNumber from "./DataCell/DataInputTextNumber.js";
+import DataString from "./DataCell/DataString.js";
+import DataSelect from "./DataCell/DataSelect.js";
+import DataCheckbox from "./DataCell/DataCheckbox.js";
+import DataDataList from "./DataCell/DataDataList.js";
 
 export default class Cell {
     constructor(tableController, params) {
