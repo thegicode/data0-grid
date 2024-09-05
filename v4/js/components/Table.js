@@ -8,11 +8,10 @@ export default class Table {
         this.dataModel = dataGrid.dataModel;
         this.selection = dataGrid.selection;
         this.sortItem = sortItem;
-
-        this._selectedTr = null;
-        this._fieldDefinitions = FIELD_DEFINITIONS;
-
         this.theadController = null;
+
+        this._fieldDefinitions = FIELD_DEFINITIONS;
+        this._selectedTr = null;
 
         this.render();
     }
