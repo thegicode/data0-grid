@@ -79,7 +79,6 @@ export default class Cell {
         cell.dataset.col = this._col;
 
         if (this._key === "id") {
-            // cell.dataset.id = this._value;
             cell.dataset.id = value;
         }
 
@@ -126,8 +125,8 @@ export default class Cell {
         this._cell.addEventListener("click", this.onClick.bind(this));
         this._cell.addEventListener("dblclick", this.onDBClick.bind(this));
 
+        // TODO
         // this._cell.addEventListener("input", this.onInput.bind(this));
-        this._dataCell.addEventListener("keydown", this.onKeyDown.bind(this));
 
         // select range
         this._cell.addEventListener("mousedown", this.onMouseDown.bind(this));
@@ -161,96 +160,6 @@ export default class Cell {
     //     `셀 (${this._row}, ${this._col}) 값 변경: ${this._dataCell.value}`
     // );
     // }
-
-    onKeyDown(e) {
-        const cells = this.selection.selectedCells;
-        if (!cells.size) return;
-
-        const isEditing = this.readOnly === false;
-        const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
-
-        if (isEditing && !this.dataGrid.isComposing) {
-            switch (e.key) {
-                case "Enter":
-                    e.preventDefault();
-                    this.readOnly = true;
-                    const nextCell = this.moveUpDown(e.shiftKey);
-                    if (!nextCell) return;
-                    nextCell.readOnly =
-                        this._type === "checkbox" ? false : true;
-                    break;
-                case "Tab":
-                    e.preventDefault();
-                    this._dataCell.blur();
-                    this.readOnly = true;
-                    this.moveSide(e.shiftKey);
-                    break;
-                case "Escape":
-                    e.preventDefault();
-                    this.value = this._dataCell.value; // Restore the original value
-                    this.readOnly = true;
-                    break;
-            }
-
-            if (this._type === "checkbox" && arrowKeys.includes(e.key)) {
-                this.handleArrowKey(e);
-            }
-        } else {
-            switch (e.key) {
-                case "Enter":
-                    e.preventDefault();
-                    if (this._type === "string") {
-                        this.moveUpDown(e.shiftKey);
-                    } else {
-                        this.readOnly = false;
-                        this._dataCell.focus();
-                    }
-                    break;
-                case "Tab":
-                    e.preventDefault();
-                    this.moveSide(e.shiftKey);
-                    break;
-            }
-
-            if (arrowKeys.includes(e.key)) {
-                this.handleArrowKey(e);
-            }
-        }
-    }
-
-    moveUpDown(shiftKey) {
-        if (shiftKey) {
-            return this.selection.moveTo(this._row - 1, this._col);
-        } else {
-            return this.selection.moveTo(this._row + 1, this._col);
-        }
-    }
-
-    moveSide(shiftKey) {
-        if (shiftKey) {
-            this.selection.moveTo(this._row, this._col - 1);
-        } else {
-            this.selection.moveTo(this._row, this._col + 1);
-        }
-    }
-
-    handleArrowKey(e) {
-        e.preventDefault();
-        switch (e.key) {
-            case "ArrowUp":
-                this.selection.moveTo(this._row - 1, this._col);
-                break;
-            case "ArrowDown":
-                this.selection.moveTo(this._row + 1, this._col);
-                break;
-            case "ArrowLeft":
-                this.selection.moveTo(this._row, this._col - 1);
-                break;
-            case "ArrowRight":
-                this.selection.moveTo(this._row, this._col + 1);
-                break;
-        }
-    }
 
     onMouseDown(e) {
         if (e.shiftKey) return;
