@@ -10,6 +10,7 @@ export default class DataSelect extends DataCellBase {
     }
 
     set readOnly(value) {
+        // console.log("set readOnly", this, value);
         this._readOnly = value;
         this._el.ariaReadOnly = value;
     }
@@ -43,5 +44,16 @@ export default class DataSelect extends DataCellBase {
         option.value = text;
         option.textContent = text;
         return option;
+    }
+
+    onSelectChange() {
+        this.readOnly = true;
+        const nextCell = this.selection.moveTo(
+            this.cellController.row + 1,
+            this.cellController.col
+        );
+        if (nextCell) {
+            nextCell.instance.readOnly = false;
+        }
     }
 }

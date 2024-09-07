@@ -2,8 +2,9 @@ export default class DataCellBase extends HTMLElement {
     constructor(params) {
         super();
 
+        this.cellController = params.cellController;
         this.dataModel = params.dataModel;
-
+        this.selection = params.selection;
         this._type = params.type;
         this._key = params.key;
         this._value = params.value;
@@ -58,6 +59,8 @@ export default class DataCellBase extends HTMLElement {
 
     connectedCallback() {
         this.render();
+
+        this.addEventListener("change", this.onChange.bind(this));
     }
 
     render() {
@@ -71,5 +74,36 @@ export default class DataCellBase extends HTMLElement {
 
     checkValueType() {
         //
+    }
+
+    onChange(e) {
+        const currentValue = this._el.value;
+
+        if (this._value !== currentValue) {
+            this._value = currentValue;
+            this.saveCellData();
+        }
+
+        if (this._type === "select") {
+            this.onSelectChange();
+            this.readOnly = true;
+            const nextCell = this.selection.moveTo(
+                this.cellController.row + 1,
+                this.cellController.col
+            );
+            if (nextCell) nextCell.readOnly = false;
+        }
+    }
+
+    saveCellData() {
+        const id = this.getCellId();
+        this.dataModel.updateFieldValue(id, this._key, this.value);
+    }
+
+    // TODO
+    getCellId() {
+        const idCell =
+            this.parentElement.parentElement.querySelector("td[data-id]");
+        return idCell ? idCell.dataset.id : null;
     }
 }

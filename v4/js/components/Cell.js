@@ -84,7 +84,6 @@ export default class Cell {
         }
 
         const childElement = this.createChildElement(value);
-
         cell.appendChild(childElement);
 
         this._dataCell = childElement;
@@ -100,7 +99,9 @@ export default class Cell {
 
     createChildElement(value) {
         const params = {
+            cellController: this,
             dataModel: this.dataModel,
+            selection: this.selection,
             type: this._type,
             key: this._key,
             value: value,
@@ -126,7 +127,6 @@ export default class Cell {
         this._cell.addEventListener("dblclick", this.onDBClick.bind(this));
 
         // this._cell.addEventListener("input", this.onInput.bind(this));
-        this._dataCell.addEventListener("change", this.onChange.bind(this));
         this._dataCell.addEventListener("keydown", this.onKeyDown.bind(this));
 
         // select range
@@ -173,15 +173,11 @@ export default class Cell {
             switch (e.key) {
                 case "Enter":
                     e.preventDefault();
-                    if (this._type === "checkbox") {
-                        this.readOnly = true;
-                        const nextDataCell = this.moveUpDown(e.shiftKey);
-                        if (nextDataCell) nextDataCell.readOnly = false;
-                    } else {
-                        this.readOnly = true;
-                        const nextDataCell = this.moveUpDown(e.shiftKey);
-                        if (nextDataCell) nextDataCell.readOnly = true;
-                    }
+                    this.readOnly = true;
+                    const nextCell = this.moveUpDown(e.shiftKey);
+                    if (!nextCell) return;
+                    nextCell.readOnly =
+                        this._type === "checkbox" ? false : true;
                     break;
                 case "Tab":
                     e.preventDefault();
@@ -191,7 +187,7 @@ export default class Cell {
                     break;
                 case "Escape":
                     e.preventDefault();
-                    this.value = this._dataCell._value; // Restore the original value
+                    this.value = this._dataCell.value; // Restore the original value
                     this.readOnly = true;
                     break;
             }
@@ -256,25 +252,6 @@ export default class Cell {
         }
     }
 
-    onChange(e) {
-        const currentValue = this._dataCell.currentValue;
-
-        if (this.value !== currentValue) {
-            this.value = currentValue;
-            this.saveCellData();
-        }
-
-        if (this._type === "select") {
-            this.readOnly = true;
-            const nextDataCell = this.selection.moveTo(
-                this._row + 1,
-                this._col
-            );
-
-            if (nextDataCell) nextDataCell.readOnly = false;
-        }
-    }
-
     onMouseDown(e) {
         if (e.shiftKey) return;
         this.selection.isRangeSelecting = true;
@@ -294,16 +271,5 @@ export default class Cell {
 
     onMouseUp() {
         this.selection.isRangeSelecting = false;
-    }
-
-    saveCellData() {
-        const id = this.getCellId();
-        this.dataModel.updateFieldValue(id, this._key, this.value);
-    }
-
-    getCellId() {
-        const cellWithId =
-            this._cell.parentElement.querySelector("td[data-id]");
-        return cellWithId ? cellWithId.dataset.id : null;
     }
 }

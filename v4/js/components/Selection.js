@@ -79,7 +79,7 @@ export default class Selectioon {
 
             if (nextCell.type === "checkbox") nextCell.readOnly = false;
 
-            return nextCell.instance.dataCell;
+            return nextCell;
         }
     }
 
