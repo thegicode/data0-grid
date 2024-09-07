@@ -36,6 +36,9 @@ function organizeSelectedCells(sortedCells) {
             if (value === false || value === "") {
                 value = "false";
             }
+            if (value === true || value === "on") {
+                value = "true";
+            }
         }
 
         if (!rows[row]) {

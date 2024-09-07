@@ -1,6 +1,6 @@
 import DataCellBase from "./DataCellBase.js";
 
-export default class DataDataList extends DataCellBase {
+export default class DatalistCell extends DataCellBase {
     constructor(params) {
         super(params);
         this._dataListID = `datalist-${this._key}`;

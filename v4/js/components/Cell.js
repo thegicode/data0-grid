@@ -1,8 +1,8 @@
-import DataInputTextNumber from "./DataCell/DataInputTextNumber.js";
-import DataString from "./DataCell/DataString.js";
-import DataSelect from "./DataCell/DataSelect.js";
-import DataCheckbox from "./DataCell/DataCheckbox.js";
-import DataDataList from "./DataCell/DataDataList.js";
+import TextNumberCell from "./DataCells/TextNumberCell.js";
+import StringCell from "./DataCells/StringCell.js";
+import SelectCell from "./DataCells/SelectCell.js";
+import CheckboxCell from "./DataCells/CheckboxCell.js";
+import DatalistCell from "./DataCells/DatalistCell.js";
 
 export default class Cell {
     constructor(tableController, params) {
@@ -109,15 +109,15 @@ export default class Cell {
         switch (this._type) {
             case "text":
             case "number":
-                return new DataInputTextNumber(params);
+                return new TextNumberCell(params);
             case "checkbox":
-                return new DataCheckbox(params);
+                return new CheckboxCell(params);
             case "select":
-                return new DataSelect(params);
+                return new SelectCell(params);
             case "datalist":
-                return new DataDataList(params);
+                return new DatalistCell(params);
             default: // "string":
-                return new DataString(params);
+                return new StringCell(params);
         }
     }
 

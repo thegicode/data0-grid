@@ -1,13 +1,13 @@
 import DataGrid from "./components/DataGrid.js";
-import DataString from "./components/DataCell/DataString.js";
-import DataInputTextNumber from "./components/DataCell/DataInputTextNumber.js";
-import DataSelect from "./components/DataCell/DataSelect.js";
-import DataCheckbox from "./components/DataCell/DataCheckbox.js";
-import DataDataList from "./components/DataCell/DataDataList.js";
+import StringCell from "./components/DataCells/StringCell.js";
+import TextNumberCell from "./components/DataCells/TextNumberCell.js";
+import SelectCell from "./components/DataCells/SelectCell.js";
+import CheckboxCell from "./components/DataCells/CheckboxCell.js";
+import DatalistCell from "./components/DataCells/DatalistCell.js";
 
 customElements.define("data-grid", DataGrid);
-customElements.define("data-string", DataString);
-customElements.define("data-input-text-number", DataInputTextNumber);
-customElements.define("data-select", DataSelect);
-customElements.define("data-checkbox", DataCheckbox);
-customElements.define("data-datalist", DataDataList);
+customElements.define("string-cell", StringCell);
+customElements.define("text-number-cell", TextNumberCell);
+customElements.define("select-cell", SelectCell);
+customElements.define("checkbox-cell", CheckboxCell);
+customElements.define("datalist-cell", DatalistCell);

@@ -1,6 +1,6 @@
 import DataCellBase from "./DataCellBase.js";
 
-export default class DataCheckbox extends DataCellBase {
+export default class CheckboxCell extends DataCellBase {
     constructor(params) {
         super(params);
     }

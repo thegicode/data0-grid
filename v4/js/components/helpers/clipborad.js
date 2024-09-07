@@ -1,5 +1,10 @@
 function copyCells(selection) {
-    const { selectedCells } = selection;
+    const { copiedCell, selectedCells } = selection;
+
+    if (copiedCell.length > 0) {
+        clearCopiedCell(selection);
+    }
+
     const clipboardText =
         selectedCells.size === 1
             ? [...selectedCells][0].instance.value
@@ -20,9 +25,13 @@ function copyCells(selection) {
     selection.copiedCell = [...selectedCells];
 }
 
-function pasteCells(table, dataModel, selection) {
+function clearCopiedCell(selection) {
     selection.copiedCell.forEach((cell) => cell.classList.remove("copiedCell"));
     selection.copiedCell = [];
+}
+
+function pasteCells(table, dataModel, selection) {
+    clearCopiedCell(selection);
 
     navigator.clipboard
         .readText()
