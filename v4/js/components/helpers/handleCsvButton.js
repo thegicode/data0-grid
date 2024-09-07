@@ -32,8 +32,10 @@ function organizeSelectedCells(sortedCells) {
         const col = parseInt(cell.instance.col);
         let value = cell.instance.value;
 
-        if (value === false) {
-            value = "false";
+        if (cell.instance.type === "checkbox") {
+            if (value === false || value === "") {
+                value = "false";
+            }
         }
 
         if (!rows[row]) {

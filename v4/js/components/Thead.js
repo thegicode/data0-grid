@@ -121,9 +121,9 @@ export default class Thead {
             if (toCell.instance) toCell.instance.col = from;
 
             // 이유를 알 수 없는 dom 버그
-            const fromDataCell = fromCell.instance.dataCell;
-            if (fromDataCell.children.length > 1) {
-                fromDataCell.removeChild(fromDataCell.children[0]);
+            const fromElement = fromCell.instance.contentElement;
+            if (fromElement.children.length > 1) {
+                fromElement.removeChild(fromElement.children[0]);
             }
         });
 

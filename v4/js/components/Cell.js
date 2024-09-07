@@ -16,7 +16,7 @@ export default class Cell {
         this._col = params.col;
         this._type = params.type;
         this._key = params.key;
-        this._dataCell = null;
+        this._contnetElement = null;
 
         return this.createCell(params.value);
     }
@@ -39,16 +39,16 @@ export default class Cell {
         this._col = value;
     }
 
-    get dataCell() {
-        return this._dataCell;
+    get contentElement() {
+        return this._contnetElement;
     }
 
     get readOnly() {
-        return this._dataCell.readOnly;
+        return this._contnetElement.readOnly;
     }
 
     set readOnly(value) {
-        this._dataCell.readOnly = value;
+        this._contnetElement.readOnly = value;
     }
 
     //
@@ -58,11 +58,11 @@ export default class Cell {
     }
 
     get value() {
-        return this._dataCell.value;
+        return this._contnetElement.value;
     }
 
     set value(arg) {
-        this._dataCell.value = arg;
+        this._contnetElement.value = arg;
     }
 
     get type() {
@@ -70,7 +70,7 @@ export default class Cell {
     }
 
     focus() {
-        this._dataCell.focus();
+        this._contnetElement.focus();
     }
 
     createCell(value) {
@@ -85,7 +85,7 @@ export default class Cell {
         const childElement = this.createChildElement(value);
         cell.appendChild(childElement);
 
-        this._dataCell = childElement;
+        this._contnetElement = childElement;
         this._cell = cell;
 
         this.bindEvents();
@@ -151,13 +151,13 @@ export default class Cell {
 
     onDBClick() {
         this.readOnly = false;
-        this._dataCell.focus();
+        this._contnetElement.focus();
     }
 
     // onInput(e) {
     // if (this.dataGrid.isComposing) return;
     // console.log(
-    //     `셀 (${this._row}, ${this._col}) 값 변경: ${this._dataCell.value}`
+    //     `셀 (${this._row}, ${this._col}) 값 변경: ${this._contnetElement.value}`
     // );
     // }
 
