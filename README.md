@@ -1,6 +1,6 @@
 # data-grid
 
-## Server
+## Server : ~ v4
 
 cd /Users/deokim/Documents/코딩/project-my/data-grid
 

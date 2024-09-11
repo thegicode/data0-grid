@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "ES2020", // 서버에서 사용할 ECMAScript 버전
+        "module": "commonjs", // Node.js에서 사용되는 모듈 시스템 (CommonJS)
+        "esModuleInterop": true, // ES 모듈과 CommonJS 모듈 간의 호환성 설정
+        "strict": true, // 엄격한 타입 검사 활성화
+        "outDir": "./dist", // 컴파일된 JavaScript 파일이 저장될 디렉토리
+        "rootDir": "./src", // 소스 파일이 위치한 디렉토리
+        "moduleResolution": "node", // Node.js 스타일의 모듈 해석
+        "skipLibCheck": true // 라이브러리 타입 검사 생략 (성능 향상)
+    },
+    "include": ["src"],
+    "exclude": ["node_modules"]
+}

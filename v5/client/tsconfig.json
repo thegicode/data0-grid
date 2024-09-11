@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "ES6", // 브라우저에서 지원하는 ES6 버전 사용
+        "module": "ES6", // ES 모듈 시스템 사용 (브라우저 환경에 맞게 설정)
+        "strict": true, // 엄격한 타입 검사
+        "outDir": "./dist", // 컴파일된 JavaScript 파일이 저장될 디렉토리
+        "rootDir": "./src", // 소스 파일이 위치한 디렉토리
+        "esModuleInterop": true, // ES 모듈과 CommonJS 모듈 간의 호환성 설정
+        "moduleResolution": "node", // 모듈 해석 방식 설정 (node 스타일)
+        "skipLibCheck": true // 라이브러리 타입 검사 생략 (성능 향상)
+    },
+    "include": ["src"],
+    "exclude": ["node_modules"]
+}
