@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/scripts/app.ts", "../../src/scripts/index.ts"],
+  "sourcesContent": ["export const app = () => {\n    return `<p>This is a simple Vanilla JS + TypeScript App!</p>`;\n};\n", "import { app } from \"./app\";\n\ndocument.getElementById(\"app\")!.innerHTML = app();\n\n// const apiURL = \"http://localhost:5000/api/hello\";\n\n// async function fetchMessage() {\n//     try {\n//         const response = await fetch(apiURL);\n//         const data = await response.json();\n//         const messageElement = document.getElementById(\"message\");\n//         if (messageElement) {\n//             messageElement.textContent = data.message;\n//         }\n//     } catch (error) {\n//         console.error(\"Error fetching message:\", error);\n//     }\n// }\n\n// document.addEventListener(\"DOMContentLoaded\", () => {\n//     fetchMessage();\n// });\n"],
+  "mappings": "mBAAO,IAAMA,EAAM,IACR,uDCCX,SAAS,eAAe,KAAK,EAAG,UAAYC,EAAI",
+  "names": ["app", "app"]
+}

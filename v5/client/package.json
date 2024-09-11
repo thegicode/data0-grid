@@ -4,7 +4,7 @@
     "scripts": {
         "build": "node esbuild.config.js",
         "watch": "node esbuild.config.js --watch",
-        "start": "npm run build"
+        "start": "npm run watch"
     },
     "devDependencies": {
         "esbuild": "^0.14.0",

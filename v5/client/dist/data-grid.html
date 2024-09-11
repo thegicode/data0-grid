@@ -3,12 +3,33 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Data Grid</title>
+        <title>Data Grid - V5</title>
         <link rel="stylesheet" href="css/style.css" />
-        <script src="data-grid.js" type="module" async></script>
+        <script src="js/data-grid.js" type="module" async></script>
     </head>
     <body>
         <h1>Data Grid Page</h1>
-        <div id="data-grid"></div>
+        <data-grid>
+            <table>
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+
+            <br />
+
+            <button type="button" class="csv-button" hidden>
+                선택영역 CSV 파일로 저장
+            </button>
+
+            <br />
+            <br />
+
+            <button type="button" class="data-button">
+                현재 데이터 확인하기
+            </button>
+            <div id="data-area">
+                <pre></pre>
+            </div>
+        </data-grid>
     </body>
 </html>

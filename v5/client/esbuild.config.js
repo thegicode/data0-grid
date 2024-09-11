@@ -1,37 +1,35 @@
 const esbuild = require("esbuild");
 
-// 빌드 함수
-function build() {
+// 공통 빌드 함수
+function buildFile(entryPoint, outputFile, watchMode = false) {
     esbuild
         .build({
-            entryPoints: ["./src/index.ts"],
+            entryPoints: [entryPoint],
             bundle: true,
-            outfile: "./dist/index.js",
+            outfile: outputFile,
             target: "es6",
+            minify: true,
+            sourcemap: true,
+            watch: watchMode, // watch 모드를 옵션으로 설정
         })
-        .catch(() => process.exit(1));
-
-    esbuild
-        .build({
-            entryPoints: ["./src/data-grid.ts"],
-            bundle: true,
-            outfile: "./dist/data-grid.js",
-            target: "es6",
-        })
+        .then(() => console.log(`${outputFile} built successfully`))
         .catch(() => process.exit(1));
 }
 
-// watch 모드
+// 빌드 함수
+function build() {
+    buildFile("./src/scripts/index.ts", "./dist/js/index.js");
+    buildFile("./src/scripts/pages/data-grid.ts", "./dist/js/data-grid.js");
+}
+
+// watch 모드 함수
 function watch() {
-    esbuild
-        .build({
-            entryPoints: ["./src/index.ts"],
-            bundle: true,
-            outfile: "./dist/index.js",
-            target: "es6",
-            watch: true,
-        })
-        .catch(() => process.exit(1));
+    buildFile("./src/scripts/index.ts", "./dist/js/index.js", true);
+    buildFile(
+        "./src/scripts/pages/data-grid.ts",
+        "./dist/js/data-grid.js",
+        true
+    );
 }
 
 // 명령어 인자에 따라 빌드 또는 감시 모드 실행
