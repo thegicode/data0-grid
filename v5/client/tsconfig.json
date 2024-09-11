@@ -7,7 +7,8 @@
         "rootDir": "./src", // 소스 파일이 위치한 디렉토리
         "esModuleInterop": true, // ES 모듈과 CommonJS 모듈 간의 호환성 설정
         "moduleResolution": "node", // 모듈 해석 방식 설정 (node 스타일)
-        "skipLibCheck": true // 라이브러리 타입 검사 생략 (성능 향상)
+        "skipLibCheck": true, // 라이브러리 타입 검사 생략 (성능 향상)
+        "forceConsistentCasingInFileNames": true
     },
     "include": ["src"],
     "exclude": ["node_modules"]
