@@ -1,3 +1,10 @@
+## 실행
+
+cd /Users/deokim/Documents/코딩/project-my/data-grid/v5
+npm start
+
+## 구조
+
 my-project/
 ├── server/ # 서버 (Node.js + Express)
 │ ├── src/

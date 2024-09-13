@@ -1,5 +1,5 @@
-class DataModel {
-    private _records: DataItem[] = [];
+export default class DataModel {
+    private _records: IDataItem[] = [];
 
     constructor(initialData = []) {
         this._records = Array.isArray(initialData) ? [...initialData] : [];
@@ -30,7 +30,7 @@ class DataModel {
         }
     }
 
-    updateRecordFields(updateData: DataItem) {
+    updateRecordFields(updateData: IDataItem) {
         const { id, ...fieldsToUpdate } = updateData;
         const recordIndex = this._records.findIndex((item) => item.id === id);
 
@@ -72,5 +72,3 @@ class DataModel {
     //     }
     // }
 }
-
-export default new DataModel();

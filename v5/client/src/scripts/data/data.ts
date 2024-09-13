@@ -1,4 +1,4 @@
-export const INITIAL_DATA: DataItem[] = [
+export const INITIAL_DATA: IDataItem[] = [
     {
         id: "a-1",
         name: "name1",
