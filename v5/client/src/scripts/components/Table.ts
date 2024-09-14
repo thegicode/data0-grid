@@ -1,7 +1,8 @@
 import { FIELD_DEFINITIONS } from "../data/fieldDefinitions"; // fieldDefinitions에 타입 정의 추가
 import Cell from "./Cell";
 import Thead from "./Thead";
-import DataGrid from "./DataGrid"; // DataGrid의 타입 정의를 import (필요 시 정의)
+import DataGrid from "./DataGrid";
+import Selection from "./Selection";
 import DataModel from "./models/DataModel";
 
 interface TableParams {
@@ -12,7 +13,7 @@ interface TableParams {
 export default class Table {
     public dataGrid: DataGrid;
     public dataModel: DataModel;
-    public selection: any; // selection의 정확한 타입을 정의해 주세요
+    public selection: Selection;
     public sortItem: string[];
     private theadController: Thead | null;
     private _fieldDefinitions: IFieldDefinition[];
@@ -31,14 +32,14 @@ export default class Table {
         this.render();
     }
 
-    render(): void {
+    render() {
         // datalist dom에 생성
         this.checkAndCreateDatalists();
 
         this.renderTable(this.dataModel.records);
     }
 
-    renderTable(data: any[]): void {
+    renderTable(data: IDataItem[]) {
         this.theadController = new Thead(
             this._fieldDefinitions.map((d) => d.key),
             this.dataGrid,
@@ -49,14 +50,14 @@ export default class Table {
         this.renderTbody(data);
     }
 
-    renderTbody(data: any[]): void {
+    renderTbody(data: IDataItem[]) {
         const bodyFragment = this.createTbody(data);
         if (!this.dataGrid.tbody) return;
         this.dataGrid.tbody.innerHTML = "";
         this.dataGrid.tbody.appendChild(bodyFragment);
     }
 
-    createTbody(data: any[]): DocumentFragment {
+    createTbody(data: IDataItem[]): DocumentFragment {
         const fragment = new DocumentFragment();
         data.forEach((rowData, rowIndex) => {
             const row = this.createRow(rowData, rowIndex);
@@ -65,7 +66,7 @@ export default class Table {
         return fragment;
     }
 
-    createRow(rowData: any, rowIndex: number): HTMLTableRowElement {
+    createRow(rowData: IDataItem, rowIndex: number): HTMLTableRowElement {
         const row = document.createElement("tr");
         const rowHeader = this.createRowHeader(rowIndex);
         row.appendChild(rowHeader);
@@ -75,13 +76,13 @@ export default class Table {
                 (d) => d.key === columnKey
             );
             const type = field ? field.type : "string";
-
+            const key = columnKey as keyof IDataItem;
             const params = {
                 row: rowIndex,
                 col: colIndex,
                 key: columnKey,
                 type: type,
-                value: rowData[columnKey] || "", // 값이 없을 경우 빈 문자열로 처리
+                value: rowData[key],
             };
 
             // Cell 생성 및 추가
@@ -127,12 +128,14 @@ export default class Table {
     }
 
     createDataList(key: string): HTMLDataListElement {
-        const data = this.dataModel.records.map((item: any) => item[key]);
+        const data = this.dataModel.records.map(
+            (item: IDataItem) => item[key as keyof IDataItem]
+        );
         const datalist = document.createElement("datalist");
         datalist.id = `datalist-${key}`;
         data.forEach((item) => {
             const option = document.createElement("option");
-            option.value = item;
+            option.value = item.toString();
             datalist.appendChild(option);
         });
         this.dataGrid.appendChild(datalist);

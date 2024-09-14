@@ -62,7 +62,7 @@ export default class DataGrid extends HTMLElement {
         }
     }
 
-    async loadData(): Promise<any[]> {
+    async loadData(): Promise<IDataItem[]> {
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve(INITIAL_DATA);

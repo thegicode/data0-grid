@@ -2,7 +2,7 @@ import DataGrid from "./DataGrid";
 import Table from "./Table";
 
 interface DataModel {
-    records: any[];
+    records: IDataItem[];
 }
 
 interface TableController {

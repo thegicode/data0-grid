@@ -8,6 +8,14 @@ import DatalistCell from "./scripts/components/dataCells/DatalistCell";
 import StringCell from "./scripts/components/dataCells/StringCell";
 
 declare global {
+    interface ICellParams {
+        row: number;
+        col: number;
+        type: string;
+        key: string;
+        value: TDataValue;
+    }
+
     interface IDataItem {
         id: string;
         name: string;
@@ -30,7 +38,7 @@ declare global {
         selection: Selection;
         type: string;
         key: string;
-        value: string;
+        value: TDataValue;
     }
 
     interface IHTMLTableCellElementWithInstance extends HTMLTableCellElement {
@@ -43,4 +51,6 @@ declare global {
         | SelectCell
         | DatalistCell
         | StringCell;
+
+    type TDataValue = string | number | boolean;
 }

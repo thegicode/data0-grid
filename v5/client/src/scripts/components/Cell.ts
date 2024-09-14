@@ -5,20 +5,14 @@ import SelectCell from "./dataCells/SelectCell";
 import DatalistCell from "./dataCells/DatalistCell";
 import StringCell from "./dataCells/StringCell";
 import TextNumberCell from "./dataCells/TextNumberCell";
-
-interface IParams {
-    row: number;
-    col: number;
-    type: string;
-    key: string;
-    value: any;
-}
+import Table from "./Table";
+import DataGrid from "./DataGrid";
 
 export default class Cell {
-    public dataGrid: any;
+    public dataGrid: DataGrid;
     public dataModel: DataModel;
     public selection: Selection;
-    public tableController: any;
+    public tableController: Table;
 
     private _cell: IHTMLTableCellElementWithInstance | null;
     private _row: number;
@@ -27,7 +21,7 @@ export default class Cell {
     private _key: string;
     private _contentElement: TDataCell | null;
 
-    constructor(tableController: any, params: IParams) {
+    constructor(tableController: Table, params: ICellParams) {
         this.dataGrid = tableController.dataGrid;
         this.dataModel = this.dataGrid.dataModel;
         this.selection = tableController.selection;
@@ -107,7 +101,7 @@ export default class Cell {
         }
     }
 
-    createCell(value: any) {
+    createCell(value: TDataValue) {
         const cell = document.createElement(
             "td"
         ) as IHTMLTableCellElementWithInstance;
@@ -115,10 +109,10 @@ export default class Cell {
         cell.dataset.col = this._col.toString();
 
         if (this._key === "id") {
-            cell.dataset.id = value;
+            cell.dataset.id = value.toString();
         }
 
-        const childElement = this.createChildElement(value);
+        const childElement = this.createChildElement(value.toString());
         cell.appendChild(childElement);
 
         this._contentElement = childElement;
@@ -127,7 +121,7 @@ export default class Cell {
         this.bindEvents();
 
         // Store the Cell instance reference in the DOM element
-        (cell as any).instance = this;
+        (cell as IHTMLTableCellElementWithInstance).instance = this;
 
         // return cell;
     }
@@ -180,7 +174,8 @@ export default class Cell {
 
         const cells = this.selection.selectedCells;
         cells.forEach((cell) => {
-            (cell as any).instance.readOnly = true;
+            (cell as IHTMLTableCellElementWithInstance).instance.readOnly =
+                true;
         });
 
         if (!this._cell) return;
