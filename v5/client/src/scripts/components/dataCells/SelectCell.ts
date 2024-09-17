@@ -50,7 +50,9 @@ export default class SelectCell extends DataCellBase {
         return option;
     }
 
-    onSelectChange() {
+    onChange(e: Event) {
+        super.onChange(e);
+
         this.readOnly = true;
         const nextCell = this.selection.moveTo(
             this.cellController.row + 1,

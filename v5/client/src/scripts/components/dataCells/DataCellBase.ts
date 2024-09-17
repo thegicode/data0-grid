@@ -34,7 +34,7 @@ export default abstract class DataCellBase extends HTMLElement {
 
         this._type = params.type;
         this._key = params.key;
-        this._value = params.value;
+        this._value = params.value.toString();
 
         this._readOnly = true;
         this._el = null;
@@ -106,31 +106,16 @@ export default abstract class DataCellBase extends HTMLElement {
         }
     }
 
-    checkValueType(arg: string): string | number | null {
+    checkValueType(arg: string | number | boolean) {
         // 기본 값 검증 로직
         return arg ? arg : null;
     }
 
     onChange(e: Event) {
-        if (this._el) {
-            const currentValue = (
-                this._el as HTMLInputElement | HTMLSelectElement
-            ).value;
-
-            if (this._value !== currentValue) {
-                this._value = currentValue;
-                this.updateData();
-            }
-
-            if (this._type === "select") {
-                this.onSelectChange();
-                this.readOnly = true;
-                const nextCell = this.selection.moveTo(
-                    this.cellController.row + 1,
-                    this.cellController.col
-                );
-                if (nextCell) nextCell.instance.readOnly = false;
-            }
+        if (!this._el || !this.currentValue) return;
+        if (this._value !== this.currentValue) {
+            this._value = this.currentValue?.toString();
+            this.updateData();
         }
     }
 
@@ -259,9 +244,5 @@ export default abstract class DataCellBase extends HTMLElement {
         const idCell =
             this.parentElement?.parentElement?.querySelector("td[data-id]");
         return idCell ? idCell.getAttribute("data-id") : null;
-    }
-
-    onSelectChange() {
-        // select 요소 변경 시 호출될 메서드 (필요 시 구현)
     }
 }

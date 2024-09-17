@@ -37,7 +37,7 @@ export default class Cell {
         this.createCell(params.value); // return 제거
     }
 
-    get row(): number {
+    get row() {
         return this._row;
     }
 
@@ -48,7 +48,7 @@ export default class Cell {
         this._row = value;
     }
 
-    get col(): number {
+    get col() {
         return this._col;
     }
 

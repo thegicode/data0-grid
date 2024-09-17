@@ -13,7 +13,13 @@ function copyCells(selection: Selection): void {
             ? [...selectedCells][0].instance.value
             : selection.currentSelectionRange
                   .map((row) =>
-                      row.map((cell) => (cell as any).instance.value).join("\t")
+                      row
+                          .map(
+                              (cell) =>
+                                  (cell as IHTMLTableCellElementWithInstance)
+                                      .instance.value
+                          )
+                          .join("\t")
                   )
                   .join("\n");
 
@@ -50,23 +56,32 @@ function pasteCells(
 
             data.forEach((row, rowIndex) => {
                 const targetRow = firstRow + rowIndex;
-                const pastedData: any = { id: getRowId(table, targetRow) };
+                const pastedData: any = {
+                    id: getRowId(table, targetRow) || "", // 기본값 제공
+                    name: "", // 여기에 나머지 필드들도 추가해야 합니다.
+                    description: "",
+                    quantity: 0,
+                    food: "",
+                    vegetable: "",
+                    option: false,
+                    ref: "",
+                };
 
                 row.forEach((value, colIndex) => {
                     const targetCell = findTargetCell(
                         table,
                         targetRow,
                         firstCol + colIndex
-                    ) as HTMLTableCellElement | null;
+                    ) as IHTMLTableCellElementWithInstance | null;
 
-                    if (!targetCell || !(targetCell as any).instance) return;
+                    if (!targetCell || !targetCell.instance) return;
 
-                    (targetCell as any).instance.value = value;
-                    const parsedValue = (targetCell as any).instance.value;
+                    targetCell.instance.value = value;
+                    const parsedValue = targetCell.instance.value;
 
                     if (parsedValue) {
-                        pastedData[(targetCell as any).instance.key] =
-                            parsedValue;
+                        const key = targetCell.instance.key;
+                        pastedData[key] = parsedValue.toString();
                     }
 
                     highlightCell(targetCell, selection.selectedCells);
@@ -104,10 +119,10 @@ function highlightCell(
     cell.classList.add("selected");
 }
 
-function getRowId(table: HTMLTableElement, index: number): string | null {
-    const tr = table.querySelectorAll("tbody tr")[index] as HTMLElement; // tr을 HTMLElement로 캐스팅
-    const td = tr?.querySelector("td[data-id]") as HTMLElement; // td를 HTMLElement로 캐스팅
-    return td?.dataset.id || null; // dataset 속성을 안전하게 접근
+function getRowId(table: HTMLTableElement, index: number) {
+    const tr = table.querySelectorAll("tbody tr")[index] as HTMLElement;
+    const td = tr?.querySelector("td[data-id]") as HTMLElement;
+    return td.dataset.id;
 }
 
 export default {

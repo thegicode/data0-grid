@@ -1,19 +1,12 @@
 import DataGrid from "./DataGrid";
+import DataModel from "./models/DataModel";
+import Selection from "./Selection";
 import Table from "./Table";
-
-interface DataModel {
-    records: IDataItem[];
-}
-
-interface TableController {
-    sortItem: string[];
-    renderTbody(data: any[]): void;
-}
 
 export default class Thead {
     public dataModel: DataModel;
     public tbody: HTMLElement | null = null;
-    public selection: any; // Define the correct type for selection
+    public selection: Selection; // Define the correct type for selection
     public tableController: Table;
     public theadTr: HTMLTableRowElement;
     private sortItem: string[];
@@ -64,10 +57,12 @@ export default class Thead {
 
         this._headerOrders.forEach((name) => {
             const th = document.createElement("th");
-            th.textContent = name;
+            th.textContent = name.toString();
 
             if (this.sortItem.includes(name)) {
-                const sortButton = this.createSortButton(name);
+                const sortButton = this.createSortButton(
+                    name as keyof IDataItem
+                );
                 th.appendChild(sortButton);
             }
 
@@ -132,7 +127,13 @@ export default class Thead {
     selectColumn(col: number): void {
         const cells =
             this.tbody && this.tbody.querySelectorAll(`td[data-col="${col}"]`);
-        cells && cells.forEach((cell) => this.selection.selectCell(cell, true));
+        cells &&
+            cells.forEach((cell) =>
+                this.selection.selectCell(
+                    cell as IHTMLTableCellElementWithInstance,
+                    true
+                )
+            );
 
         const th = this.theadTr.querySelector(`th:nth-child(${col + 2})`);
         if (th) {
@@ -147,22 +148,24 @@ export default class Thead {
         rows &&
             rows.forEach((row) => {
                 const cells = Array.from(row.children);
-                const fromCell = cells[from + 1];
-                const toCell = cells[to + 1];
+                const fromCell = cells[
+                    from + 1
+                ] as IHTMLTableCellElementWithInstance;
+                const toCell = cells[
+                    to + 1
+                ] as IHTMLTableCellElementWithInstance;
 
                 row.insertBefore(
                     fromCell,
                     to < from ? toCell : toCell.nextSibling
                 );
 
-                if ((fromCell as any).instance)
-                    (fromCell as any).instance.col = to;
-                if ((toCell as any).instance)
-                    (toCell as any).instance.col = from;
+                if (fromCell.instance) fromCell.instance.col = to;
+                if (toCell.instance) toCell.instance.col = from;
 
                 // 이유를 알 수 없는 DOM 버그
-                const fromElement = (fromCell as any).instance.contentElement;
-                if (fromElement.children.length > 1) {
+                const fromElement = fromCell.instance.contentElement;
+                if (fromElement && fromElement.children.length > 1) {
                     fromElement.removeChild(fromElement.children[0]);
                 }
             });
@@ -178,7 +181,7 @@ export default class Thead {
         this.setHeaderOrders();
     }
 
-    createSortButton(columnName: string): HTMLButtonElement {
+    createSortButton(columnName: keyof IDataItem) {
         const button = document.createElement("button");
         button.type = "button";
         button.dataset.sort = "";
@@ -190,7 +193,7 @@ export default class Thead {
         return button;
     }
 
-    onClickSortButton(columnName: string, button: HTMLButtonElement): void {
+    onClickSortButton(columnName: keyof IDataItem, button: HTMLButtonElement) {
         if (this._activeSortButton && this._activeSortButton !== button) {
             this._activeSortButton.dataset.sort = "";
         }
@@ -213,7 +216,7 @@ export default class Thead {
             : "";
     }
 
-    sortData(columnName: string, sortOrder: string) {
+    sortData(columnName: keyof IDataItem, sortOrder: string) {
         if (!sortOrder) return [...this.dataModel.records];
 
         return [...this.dataModel.records].sort((a, b) => {
@@ -225,11 +228,15 @@ export default class Thead {
         });
     }
 
-    sortDataByColumnOrder(sortData: any[]) {
+    sortDataByColumnOrder(sortData: IDataItem[]) {
         return sortData.map((item) => {
             const reorderedItem: any = {};
             this._headerOrders.forEach((columnName) => {
-                reorderedItem[columnName] = item[columnName];
+                if (columnName in item) {
+                    const value = item[columnName as keyof IDataItem];
+                    // 값이 undefined일 때 빈 문자열로 대체
+                    reorderedItem[columnName as keyof IDataItem] = value;
+                }
             });
             return reorderedItem;
         });

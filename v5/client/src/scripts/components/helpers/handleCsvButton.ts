@@ -1,51 +1,66 @@
 import DataGrid from "../DataGrid";
 import Selection from "../Selection";
 
-function onCsvButtonClick(selection: Selection, csvButton: HTMLButtonElement) {
+function onCsvButtonClick(
+    this: DataGrid,
+    selection: Selection,
+    csvButton: HTMLButtonElement
+) {
     const sortedCells = sortSelectedCells(selection.selectedCells);
 
     const { rows, selectedCols } = organizeSelectedCells(sortedCells);
 
     const filteredRows = filterEmptyRows(rows);
 
-    const csvText = convertToCsv(filteredRows, selectedCols, this as DataGrid);
+    const csvText = convertToCsv(filteredRows, selectedCols, this);
 
     downloadCSV(csvText, "data.csv");
 
     csvButton.hidden = true;
 }
 
-function sortSelectedCells(selectedCells: Set<HTMLTableCellElement>) {
+function sortSelectedCells(
+    selectedCells: Set<IHTMLTableCellElementWithInstance>
+) {
     return [...selectedCells].sort((a, b) => {
-        const aRow = parseInt((a as any).instance.row);
-        const aCol = parseInt((a as any).instance.col);
-        const bRow = parseInt((b as any).instance.row);
-        const bCol = parseInt((b as any).instance.col);
+        const aRow = a.instance.row;
+        const aCol = a.instance.col;
+        const bRow = b.instance.row;
+        const bCol = b.instance.col;
 
         return aRow === bRow ? aCol - bCol : aRow - bRow;
     });
 }
 
-function organizeSelectedCells(sortedCells: HTMLTableCellElement[]): {
-    rows: string[][];
-    selectedCols: Set<number>;
-} {
+function organizeSelectedCells(
+    sortedCells: IHTMLTableCellElementWithInstance[]
+) {
     const rows: string[][] = [];
     const selectedCols = new Set<number>();
 
     sortedCells.forEach((cell) => {
-        const row = parseInt((cell as any).instance.row);
-        const col = parseInt((cell as any).instance.col);
-        let value = (cell as any).instance.value;
+        const row = cell.instance.row;
+        const col = cell.instance.col;
+        let value: string | boolean = cell.instance.value;
 
-        if ((cell as any).instance.type === "checkbox") {
-            if (value === false || value === "") {
+        if (cell.instance.type === "checkbox") {
+            // value가 boolean이면 true/false를 문자열로 변환
+            if (typeof value === "boolean") {
+                value = value ? "true" : "false";
+            }
+            // value가 "on"이면 "true", 그 외는 "false"로 처리
+            else if (value === "on") {
+                value = "true";
+            } else {
                 value = "false";
             }
-            if (value === true || value === "on") {
-                value = "true";
-            }
         }
+
+        // if (value === false || value === "") {
+        //     value = "false";
+        // } else if (value === true || value === "on") {
+        //     value = "true";
+        // }
 
         if (!rows[row]) {
             rows[row] = [];

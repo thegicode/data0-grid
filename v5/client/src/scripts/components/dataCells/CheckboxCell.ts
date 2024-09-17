@@ -16,21 +16,21 @@ export default class CheckboxCell extends DataCellBase {
         if (this._el) this._el.ariaReadOnly = String(Boolean(value));
     }
 
-    get value() {
-        return this._value;
-    }
+    // get value() {
+    //     return this._value;
+    // }
 
-    set value(arg) {
-        // 불리언 값이 아니면 return
-        if (typeof arg !== "boolean" && arg !== "true" && arg !== "false") {
-            return;
-        }
+    // set value(arg) {
+    //     // 불리언 값이 아니면 return
+    //     if (typeof arg !== "boolean" && arg !== "true" && arg !== "false") {
+    //         return;
+    //     }
 
-        const isChecked = Boolean(arg) === true;
+    //     const isChecked = Boolean(arg) === true;
 
-        this._value = isChecked.toString();
-        if (this._el) this._el.checked = isChecked;
-    }
+    //     this._value = isChecked.toString();
+    //     if (this._el) this._el.checked = isChecked;
+    // }
 
     get currentValue() {
         return this._el ? this._el.checked.toString() : "";
@@ -39,7 +39,7 @@ export default class CheckboxCell extends DataCellBase {
     createElement() {
         const input = document.createElement("input");
         input.type = "checkbox";
-        input.checked = Boolean(this._value);
+        input.checked = Boolean(this._value === "true");
         input.ariaReadOnly = this._readOnly.toString();
         return input;
     }
