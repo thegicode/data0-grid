@@ -45,11 +45,13 @@ function organizeSelectedCells(
 
         if (cell.instance.type === "checkbox") {
             // value가 boolean이면 true/false를 문자열로 변환
+
             if (typeof value === "boolean") {
                 value = value ? "true" : "false";
             }
+
             // value가 "on"이면 "true", 그 외는 "false"로 처리
-            else if (value === "on") {
+            else if (value === "true" || value === "on") {
                 value = "true";
             } else {
                 value = "false";
