@@ -230,15 +230,17 @@ export default class Thead {
 
     sortDataByColumnOrder(sortData: IDataItem[]) {
         return sortData.map((item) => {
-            const reorderedItem: any = {};
+            let reorderedItem = {}; //
             this._headerOrders.forEach((columnName) => {
                 if (columnName in item) {
-                    const value = item[columnName as keyof IDataItem];
-                    // 값이 undefined일 때 빈 문자열로 대체
-                    reorderedItem[columnName as keyof IDataItem] = value;
+                    const key = columnName as keyof IDataItem;
+                    reorderedItem = {
+                        ...reorderedItem,
+                        [key]: item[key],
+                    };
                 }
             });
-            return reorderedItem;
+            return reorderedItem as IDataItem;
         });
     }
 }

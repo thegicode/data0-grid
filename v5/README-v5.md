@@ -3,6 +3,10 @@
 cd /Users/deokim/Documents/코딩/project-my/data-grid/v5
 npm start
 
+## URL
+
+http://localhost:3000/data-grid
+
 ## 구조
 
 my-project/

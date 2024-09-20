@@ -15,7 +15,8 @@ export default class Table {
     public dataModel: DataModel;
     public selection: Selection;
     public sortItem: string[];
-    private theadController: Thead | null;
+    public theadController: Thead | null;
+
     private _fieldDefinitions: IFieldDefinition[];
     private _selectedTr: HTMLTableRowElement | null;
 
@@ -86,7 +87,7 @@ export default class Table {
             };
 
             // Cell 생성 및 추가
-            const cell = new Cell(this, params);
+            const cell = new Cell(this, params, row);
             if (cell.cellElement) {
                 row.appendChild(cell.cellElement);
             }

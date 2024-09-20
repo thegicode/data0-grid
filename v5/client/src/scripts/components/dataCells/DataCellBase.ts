@@ -234,15 +234,15 @@ export default abstract class DataCellBase extends HTMLElement {
     }
 
     updateData() {
-        const id = this.getCellId();
+        const id = this.getId();
         if (id) {
             this.dataModel.updateFieldValue(id, this._key, this.value);
         }
     }
 
-    getCellId(): string | null {
-        const idCell =
-            this.parentElement?.parentElement?.querySelector("td[data-id]");
-        return idCell ? idCell.getAttribute("data-id") : null;
+    getId(): string | null {
+        const row = this.closest("tr");
+        if (!row) return null;
+        return row.dataset.id || null;
     }
 }

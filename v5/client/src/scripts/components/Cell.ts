@@ -15,19 +15,25 @@ export default class Cell {
     public tableController: Table;
 
     private _cell: IHTMLTableCellElementWithInstance | null;
+    private _rowElement: HTMLTableRowElement | null;
     private _row: number;
     private _col: number;
     private _type: string;
     private _key: string;
     private _contentElement: TDataCell | null;
 
-    constructor(tableController: Table, params: ICellParams) {
+    constructor(
+        tableController: Table,
+        params: ICellParams,
+        row: HTMLTableRowElement
+    ) {
         this.dataGrid = tableController.dataGrid;
         this.dataModel = this.dataGrid.dataModel;
         this.selection = tableController.selection;
         this.tableController = tableController;
 
         this._cell = null;
+        this._rowElement = row;
         this._row = params.row;
         this._col = params.col;
         this._type = params.type;
@@ -108,10 +114,6 @@ export default class Cell {
         cell.dataset.row = this._row.toString();
         cell.dataset.col = this._col.toString();
 
-        if (this._key === "id") {
-            cell.dataset.id = value.toString();
-        }
-
         const childElement = this.createChildElement(value.toString());
         cell.appendChild(childElement);
 
@@ -123,7 +125,13 @@ export default class Cell {
         // Store the Cell instance reference in the DOM element
         (cell as IHTMLTableCellElementWithInstance).instance = this;
 
-        // return cell;
+        this.setRowId(value);
+    }
+
+    setRowId(value: TDataValue) {
+        if (this._key === "id" && this._rowElement) {
+            this._rowElement.dataset.id = value.toString();
+        }
     }
 
     createChildElement(value: string) {

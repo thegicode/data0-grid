@@ -43,7 +43,7 @@ function pasteCells(
     table: HTMLTableElement,
     dataModel: DataModel,
     selection: Selection
-): void {
+) {
     clearCopiedCell(selection);
 
     navigator.clipboard
@@ -56,8 +56,8 @@ function pasteCells(
 
             data.forEach((row, rowIndex) => {
                 const targetRow = firstRow + rowIndex;
-                const pastedData: any = {
-                    id: getRowId(table, targetRow) || "", // 기본값 제공
+                let pastedData: IDataItem = {
+                    id: getId(table, targetRow) || "", // 기본값 제공
                     name: "", // 여기에 나머지 필드들도 추가해야 합니다.
                     description: "",
                     quantity: 0,
@@ -80,8 +80,11 @@ function pasteCells(
                     const parsedValue = targetCell.instance.value;
 
                     if (parsedValue) {
-                        const key = targetCell.instance.key;
-                        pastedData[key] = parsedValue.toString();
+                        const key = targetCell.instance.key as keyof IDataItem;
+                        pastedData = {
+                            ...pastedData,
+                            [key]: parsedValue.toString(),
+                        };
                     }
 
                     highlightCell(targetCell, selection.selectedCells);
@@ -119,10 +122,10 @@ function highlightCell(
     cell.classList.add("selected");
 }
 
-function getRowId(table: HTMLTableElement, index: number) {
+function getId(table: HTMLTableElement, index: number) {
     const tr = table.querySelectorAll("tbody tr")[index] as HTMLElement;
-    const td = tr?.querySelector("td[data-id]") as HTMLElement;
-    return td.dataset.id;
+    if (!tr) return null;
+    return tr.dataset.id;
 }
 
 export default {
