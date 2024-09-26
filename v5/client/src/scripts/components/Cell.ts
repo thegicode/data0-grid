@@ -83,13 +83,13 @@ export default class Cell {
         }
     }
 
-    get key(): string {
+    get key() {
         return this._key;
     }
 
-    get value(): string {
-        return this._contentElement ? this._contentElement.value : "";
-    }
+    // get value() {
+    // return this._contentElement ? this._contentElement.value : null;
+    // }
 
     set value(arg: string) {
         if (this._contentElement) {
@@ -97,7 +97,7 @@ export default class Cell {
         }
     }
 
-    get type(): string {
+    get type() {
         return this._type;
     }
 
@@ -114,7 +114,7 @@ export default class Cell {
         cell.dataset.row = this._row.toString();
         cell.dataset.col = this._col.toString();
 
-        const childElement = this.createChildElement(value.toString());
+        const childElement = this.createChildElement(value);
         cell.appendChild(childElement);
 
         this._contentElement = childElement;
@@ -134,7 +134,7 @@ export default class Cell {
         }
     }
 
-    createChildElement(value: string) {
+    createChildElement(value: TDataValue) {
         const params = {
             cellController: this,
             dataModel: this.dataModel,

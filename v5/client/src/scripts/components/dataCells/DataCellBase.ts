@@ -9,7 +9,7 @@ export default abstract class DataCellBase extends HTMLElement {
 
     protected _type: string;
     protected _key: string;
-    protected _value: string;
+    protected _value: TDataValue;
     protected _readOnly: boolean;
     protected _el:
         | HTMLInputElement
@@ -34,7 +34,7 @@ export default abstract class DataCellBase extends HTMLElement {
 
         this._type = params.type;
         this._key = params.key;
-        this._value = params.value.toString();
+        this._value = params.value;
 
         this._readOnly = true;
         this._el = null;
@@ -63,25 +63,29 @@ export default abstract class DataCellBase extends HTMLElement {
         return this._value;
     }
 
-    set value(arg: string) {
-        const newValue = this.checkValueType(arg);
-        if (newValue === null || newValue === undefined) return;
+    set value(arg: TDataValue) {
+        this._value = arg;
 
-        this._value = newValue.toString();
         if (
             this._el instanceof HTMLInputElement ||
             this._el instanceof HTMLSelectElement
         ) {
-            this._el.value = newValue.toString();
+            this._el.value = arg.toString();
         }
     }
 
-    get currentValue() {
+    get currentInputValue() {
         if (
             this._el instanceof HTMLInputElement ||
             this._el instanceof HTMLSelectElement
         ) {
-            return this._el?.value || "";
+            if (this._type === "number") {
+                return Number(this._el.value);
+            } else if (this._type === "checkbox") {
+                return (this._el as HTMLInputElement).checked;
+            } else {
+                return this._el.value;
+            }
         }
     }
 
@@ -106,15 +110,12 @@ export default abstract class DataCellBase extends HTMLElement {
         }
     }
 
-    checkValueType(arg: string | number | boolean) {
-        // 기본 값 검증 로직
-        return arg ? arg : null;
-    }
-
     onChange(e: Event) {
-        if (!this._el || !this.currentValue) return;
-        if (this._value !== this.currentValue) {
-            this._value = this.currentValue?.toString();
+        const newValue = this.currentInputValue;
+        if (newValue === null || newValue === undefined) return;
+
+        if (this._value !== newValue) {
+            this.value = newValue;
             this.updateData();
         }
     }

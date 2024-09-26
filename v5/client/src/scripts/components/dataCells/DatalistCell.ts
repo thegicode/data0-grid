@@ -8,24 +8,24 @@ export default class DatalistCell extends DataCellBase {
         this._dataListID = `datalist-${this._key}`;
     }
 
-    checkValueType(value: string) {
-        const listElement = document.getElementById(
-            this._dataListID
-        ) as HTMLDataListElement;
-        const isIncluded =
-            listElement &&
-            [...listElement.options].some((option) => option.value === value);
-        if (isIncluded) {
-            return value;
-        }
-        return null;
-    }
+    // convertToDataType(value: string) {
+    //     const listElement = document.getElementById(
+    //         this._dataListID
+    //     ) as HTMLDataListElement;
+    //     const isIncluded =
+    //         listElement &&
+    //         [...listElement.options].some((option) => option.value === value);
+    //     if (isIncluded) {
+    //         return value;
+    //     }
+    //     return null;
+    // }
 
     createElement() {
         const input = document.createElement("input");
         input.type = "text";
         input.setAttribute("list", this._dataListID);
-        input.value = this._value;
+        input.value = this._value.toString();
         input.readOnly = true;
         return input;
     }

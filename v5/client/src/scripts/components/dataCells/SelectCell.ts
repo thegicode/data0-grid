@@ -17,18 +17,18 @@ export default class SelectCell extends DataCellBase {
         if (this._el) this._el.ariaReadOnly = value.toString();
     }
 
-    checkValueType(value: string) {
-        if (!this._el) return null;
+    // convertToDataType(value: string) {
+    //     if (!this._el) return null;
 
-        const isIncluded = [...this._el.options].some(
-            (option) => option.textContent === value
-        );
+    //     const isIncluded = [...this._el.options].some(
+    //         (option) => option.textContent === value
+    //     );
 
-        if (isIncluded) {
-            return value;
-        }
-        return null;
-    }
+    //     if (isIncluded) {
+    //         return value;
+    //     }
+    //     return null;
+    // }
 
     createElement() {
         const select = document.createElement("select");
@@ -38,7 +38,7 @@ export default class SelectCell extends DataCellBase {
             .forEach((optionElement) => fragment.appendChild(optionElement));
         select.appendChild(fragment);
         select.ariaReadOnly = "true";
-        select.value = this._value;
+        select.value = this._value.toString();
         return select;
     }
 

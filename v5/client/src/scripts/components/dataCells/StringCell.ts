@@ -15,7 +15,7 @@ export default class StringCell extends DataCellBase {
 
     createElement() {
         const span = document.createElement("span");
-        span.textContent = this._value;
+        span.textContent = this._value.toString();
         span.className = "text";
         span.tabIndex = 0;
         return span;

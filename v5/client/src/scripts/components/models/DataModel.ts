@@ -17,7 +17,7 @@ export default class DataModel {
         }
     }
 
-    updateFieldValue(id: string, key: string, value: string) {
+    updateFieldValue(id: string, key: string, value: TDataValue) {
         const index = this._records.findIndex((item) => item.id === id);
         if (index !== -1) {
             this._records[index] = {
