@@ -1,25 +1,14 @@
 import DataCellBase from "./DataCellBase.js";
 
 export default class DatalistCell extends DataCellBase {
+    private _isFix: boolean;
     private _dataListID: string;
 
-    constructor(params: IDataCellParams) {
+    constructor(params: IDataCellParams, isFix = false) {
         super(params);
+        this._isFix = isFix;
         this._dataListID = `datalist-${this._key}`;
     }
-
-    // convertToDataType(value: string) {
-    //     const listElement = document.getElementById(
-    //         this._dataListID
-    //     ) as HTMLDataListElement;
-    //     const isIncluded =
-    //         listElement &&
-    //         [...listElement.options].some((option) => option.value === value);
-    //     if (isIncluded) {
-    //         return value;
-    //     }
-    //     return null;
-    // }
 
     createElement() {
         const input = document.createElement("input");

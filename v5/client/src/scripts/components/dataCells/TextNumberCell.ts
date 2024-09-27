@@ -5,12 +5,6 @@ export default class TextNumberCell extends DataCellBase {
         super(params);
     }
 
-    // set value(arg: TDataValue) {
-    //     if (this._type === "number") {
-    //         this._value = Number(arg);
-    //     }
-    // }
-
     createElement() {
         const input = document.createElement("input");
         input.type = this._type;

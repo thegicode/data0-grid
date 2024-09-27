@@ -12,23 +12,9 @@ export default class SelectCell extends DataCellBase {
     }
 
     set readOnly(value) {
-        // console.log("set readOnly", this, value);
         this._readOnly = value;
         if (this._el) this._el.ariaReadOnly = value.toString();
     }
-
-    // convertToDataType(value: string) {
-    //     if (!this._el) return null;
-
-    //     const isIncluded = [...this._el.options].some(
-    //         (option) => option.textContent === value
-    //     );
-
-    //     if (isIncluded) {
-    //         return value;
-    //     }
-    //     return null;
-    // }
 
     createElement() {
         const select = document.createElement("select");

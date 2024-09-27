@@ -22,6 +22,7 @@ declare global {
         description: string;
         quantity: number;
         food: string;
+        food_fix: string;
         vegetable: string;
         option: boolean;
         ref: string;

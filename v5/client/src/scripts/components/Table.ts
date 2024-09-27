@@ -121,7 +121,9 @@ export default class Table {
 
     checkAndCreateDatalists(): Record<string, HTMLDataListElement> {
         return this._fieldDefinitions
-            .filter(({ type }) => type === "datalist")
+            .filter(
+                ({ type }) => type === "datalist" || type === "datalist-fix"
+            )
             .reduce((result, { key }) => {
                 result[key] = this.createDataList(key);
                 return result;

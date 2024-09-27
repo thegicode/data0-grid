@@ -154,6 +154,9 @@ export default class Cell {
                 return new SelectCell(params);
             case "datalist":
                 return new DatalistCell(params);
+            case "datalist-fix":
+                const isFix = true;
+                return new DatalistCell(params, isFix);
             default: // "string":
                 return new StringCell(params);
         }

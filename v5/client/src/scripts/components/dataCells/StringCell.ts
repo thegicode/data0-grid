@@ -5,10 +5,12 @@ export default class StringCell extends DataCellBase {
         super(params);
     }
 
+    // Don't remove
     get value() {
         return this._value;
     }
 
+    // Don't remove
     set value(arg) {
         // can't set value
     }
