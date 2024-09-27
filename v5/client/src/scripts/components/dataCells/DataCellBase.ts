@@ -11,19 +11,9 @@ export default abstract class DataCellBase extends HTMLElement {
     protected _key: string;
     protected _value: TDataValue;
     protected _readOnly: boolean;
-    protected _el:
-        | HTMLInputElement
-        | HTMLSelectElement
-        | HTMLDataListElement
-        | HTMLElement
-        | null; // _el은 구체적인 타입을 정의
+    protected _el: TDataCellElement; // _el은 구체적인 타입을 정의
 
-    protected abstract createElement():
-        | HTMLElement
-        | HTMLInputElement
-        | HTMLSelectElement
-        | HTMLDataListElement
-        | null;
+    protected abstract createElement(): TDataCellElement;
 
     constructor(params: IDataCellParams) {
         super();
@@ -66,19 +56,13 @@ export default abstract class DataCellBase extends HTMLElement {
     set value(arg: TDataValue) {
         this._value = arg;
 
-        if (
-            this._el instanceof HTMLInputElement ||
-            this._el instanceof HTMLSelectElement
-        ) {
+        if (this._el instanceof (HTMLInputElement || HTMLSelectElement)) {
             this._el.value = arg.toString();
         }
     }
 
     get currentInputValue() {
-        if (
-            this._el instanceof HTMLInputElement ||
-            this._el instanceof HTMLSelectElement
-        ) {
+        if (this._el instanceof (HTMLInputElement || HTMLSelectElement)) {
             if (this._type === "number") {
                 return Number(this._el.value);
             } else if (this._type === "checkbox") {

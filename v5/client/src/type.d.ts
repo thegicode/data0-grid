@@ -53,4 +53,11 @@ declare global {
         | StringCell;
 
     type TDataValue = string | number | boolean;
+
+    type TDataCellElement =
+        | HTMLInputElement
+        | HTMLSelectElement
+        | HTMLDataListElement
+        | HTMLElement
+        | null;
 }
