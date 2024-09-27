@@ -17,6 +17,10 @@ export default class DataModel {
         }
     }
 
+    getValuesForKey(keyString: string) {
+        return this._records.map((r) => r[keyString as keyof IDataItem]);
+    }
+
     updateFieldValue(id: string, key: string, value: TDataValue) {
         const index = this._records.findIndex((item) => item.id === id);
         if (index !== -1) {
