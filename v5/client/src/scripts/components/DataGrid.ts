@@ -73,7 +73,6 @@ export default class DataGrid extends HTMLElement {
     bindEvents() {
         document.addEventListener("copy", this.onCopy.bind(this));
         document.addEventListener("paste", this.onPaste.bind(this));
-
         if (this.csvButton) {
             this.csvButton.addEventListener(
                 "click",

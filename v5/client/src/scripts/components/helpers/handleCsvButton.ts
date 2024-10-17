@@ -6,6 +6,7 @@ function onCsvButtonClick(
     selection: Selection,
     csvButton: HTMLButtonElement
 ) {
+    console.log("onCsvButtonClick");
     const sortedCells = sortSelectedCells(selection.selectedCells);
 
     const { rows, selectedCols } = organizeSelectedCells(sortedCells);
@@ -41,7 +42,7 @@ function organizeSelectedCells(
     sortedCells.forEach((cell) => {
         const row = cell.instance.row;
         const col = cell.instance.col;
-        let value: string | boolean = cell.instance.value;
+        let value = cell.instance.value;
 
         if (cell.instance.type === "checkbox") {
             // value가 boolean이면 true/false를 문자열로 변환
@@ -69,7 +70,7 @@ function organizeSelectedCells(
         }
 
         if (value !== "") {
-            rows[row][col] = value;
+            rows[row][col] = value.toString();
             selectedCols.add(col);
         }
     });

@@ -20,6 +20,7 @@ export default class Cell {
     private _col: number;
     private _type: string;
     private _key: string;
+    private _value: TDataValue;
     private _contentElement: TDataCell | null;
 
     constructor(
@@ -38,6 +39,7 @@ export default class Cell {
         this._col = params.col;
         this._type = params.type;
         this._key = params.key;
+        this._value = params.value;
         this._contentElement = null;
 
         this.createCell(params.value); // return 제거
@@ -73,7 +75,7 @@ export default class Cell {
         return this._contentElement;
     }
 
-    get readOnly(): boolean {
+    get readOnly() {
         return this._contentElement ? this._contentElement.readOnly : true;
     }
 
@@ -87,11 +89,12 @@ export default class Cell {
         return this._key;
     }
 
-    // get value() {
-    // return this._contentElement ? this._contentElement.value : null;
-    // }
+    get value() {
+        return this._value;
+    }
 
-    set value(arg: string) {
+    set value(arg: TDataValue) {
+        this._value = arg;
         if (this._contentElement) {
             this._contentElement.value = arg;
         }
