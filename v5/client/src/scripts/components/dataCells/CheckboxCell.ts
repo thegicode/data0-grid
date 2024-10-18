@@ -7,6 +7,18 @@ export default class CheckboxCell extends DataCellBase {
         super(params);
     }
 
+    get value() {
+        return this._value;
+    }
+
+    set value(arg: TDataValue) {
+        const result = Boolean(arg === "true" || arg === true);
+        this._value = result;
+        if (this._el instanceof HTMLInputElement) {
+            this._el.checked = result;
+        }
+    }
+
     get readOnly() {
         return this._readOnly;
     }

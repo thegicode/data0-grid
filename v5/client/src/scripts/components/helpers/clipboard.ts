@@ -59,7 +59,7 @@ function pasteCells(
                     (item) => item.id === getId(table, targetRow)
                 ) as IDataItem;
 
-                let parsedData = { ...originData };
+                let resultData = { ...originData };
                 row.forEach((value, colIndex) => {
                     const targetCell = findTargetCell(
                         table,
@@ -69,24 +69,21 @@ function pasteCells(
 
                     if (!targetCell || !targetCell.instance) return;
 
+                    const key = targetCell.instance.key as keyof IDataItem;
+                    resultData =
+                        targetCell.instance.type === "string"
+                            ? resultData
+                            : {
+                                  ...resultData,
+                                  [key]: parseValue(targetCell, value),
+                              };
+
                     targetCell.instance.value = value;
-                    if (value) {
-                        const key = targetCell.instance.key as keyof IDataItem;
-
-                        parsedData =
-                            targetCell.instance.type === "string"
-                                ? parsedData
-                                : {
-                                      ...parsedData,
-                                      [key]: value.toString(),
-                                  };
-                    }
-
                     highlightCell(targetCell, selection.selectedCells);
                 });
 
-                if (parsedData && parsedData.id) {
-                    dataModel.updateRecordFields(parsedData);
+                if (resultData && resultData.id) {
+                    dataModel.updateRecordFields(resultData);
                 }
             });
         })
@@ -121,6 +118,18 @@ function getId(table: HTMLTableElement, index: number) {
     const tr = table.querySelectorAll("tbody tr")[index] as HTMLElement;
     if (!tr) return null;
     return tr.dataset.id;
+}
+
+function parseValue(
+    cell: IHTMLTableCellElementWithInstance,
+    value: TDataValue
+) {
+    if (cell.instance.type === "checkbox") {
+        return Boolean(value === "true" || value === "on");
+    } else if (cell.instance.type === "number") {
+        return Number(value);
+    }
+    return value;
 }
 
 export default {
