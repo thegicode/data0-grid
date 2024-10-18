@@ -55,23 +55,11 @@ function pasteCells(
             data.forEach((row, rowIndex) => {
                 const targetRow = firstRow + rowIndex;
 
-                // let pastedData: IDataItem = {
-                //     id: getId(table, targetRow) || "", // 기본값 제공
-                //     name: "", // 여기에 나머지 필드들도 추가해야 합니다.
-                //     description: "",
-                //     quantity: 0,
-                //     food: "",
-                //     food_fix: "",
-                //     vegetable: "",
-                //     option: false,
-                //     ref: "",
-                // };
-
-                const targetData = dataModel.records.find(
+                const originData = dataModel.records.find(
                     (item) => item.id === getId(table, targetRow)
                 ) as IDataItem;
 
-                let parsedData = { ...targetData };
+                let parsedData = { ...originData };
                 row.forEach((value, colIndex) => {
                     const targetCell = findTargetCell(
                         table,
@@ -82,19 +70,17 @@ function pasteCells(
                     if (!targetCell || !targetCell.instance) return;
 
                     targetCell.instance.value = value;
-                    const parsedValue = targetCell.instance.value;
-
-                    if (parsedValue) {
-                        if (targetCell.instance.type === "string") return;
+                    if (value) {
                         const key = targetCell.instance.key as keyof IDataItem;
 
-                        parsedData = {
-                            ...targetData,
-                            [key]: parsedValue.toString(),
-                        };
+                        parsedData =
+                            targetCell.instance.type === "string"
+                                ? parsedData
+                                : {
+                                      ...parsedData,
+                                      [key]: value.toString(),
+                                  };
                     }
-
-                    console.log(parsedValue);
 
                     highlightCell(targetCell, selection.selectedCells);
                 });
@@ -124,9 +110,9 @@ function findTargetCell(
 }
 
 function highlightCell(
-    cell: HTMLTableCellElement,
+    cell: IHTMLTableCellElementWithInstance,
     selectedCells: Set<HTMLTableCellElement>
-): void {
+) {
     selectedCells.add(cell);
     cell.classList.add("selected");
 }
