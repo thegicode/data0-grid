@@ -1,6 +1,5 @@
 ## 실행
 
-cd /Users/deokim/Documents/코딩/project-my/data-grid/v5
 npm start
 
 ## URL
@@ -20,7 +19,6 @@ my-project/
 │ ├── index.ts # TypeScript 진입 파일
 │ ├── app.ts # 애플리케이션 로직
 │ └── style.css # 스타일 파일
-├── dist/ # 번들된 결과물
 ├── package.json # 클라이언트 의존성
 ├── tsconfig.json # 클라이언트 TypeScript 설정
 └── index.html # HTML 파일
